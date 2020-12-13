@@ -1,0 +1,14 @@
+{
+  "tables": {
+	"S1_T1": {
+		"columns": {
+			"Id": { "type": "int identity" },
+			"Name": { "type": "varchar(255)", "nullable": false },
+			"Age": { "type": "int" },
+			"Price": { "type": "decimal(18, 2)" },
+			"DoB": { "type": "date" },
+			"Deleted": { "type": "bit", "nullable": false, "default": 0 },
+		}
+	}
+  }
+}

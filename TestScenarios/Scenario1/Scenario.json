@@ -1,0 +1,6 @@
+{
+	"commandLine": "vcdb --export --database=Scenario1",
+	"comparison": "json",
+	"strict": true,
+	"stdout": true
+}

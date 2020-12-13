@@ -1,0 +1,1 @@
+This scenario tests vcdb to confirm it can create the expected schema JSON from a given database.
