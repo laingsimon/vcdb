@@ -1,13 +1,14 @@
 {
-  "tables": {
-	"S1_T1": {
-		"columns": {
-			"Id": { "type": "int identity" },
-			"Name": { "type": "varchar(255)", "nullable": false },
-			"Age": { "type": "int" },
-			"Price": { "type": "decimal(18, 2)" },
-			"DoB": { "type": "date" },
-			"Deleted": { "type": "bit", "nullable": false, "default": 0 },
+  "Tables": {
+	"dbo.S1_T1": {
+		"Columns": {
+			"Id": { "type": "int identity", "nullable": false },
+			"Name": { "type": "nvarchar(255)", "nullable": false },
+			"Title": { "type": "varchar(10)", "nullable": true },
+			"Age": { "type": "int", "nullable": true },
+			"Price": { "type": "decimal(18, 2)", "nullable": true },
+			"DoB": { "type": "date", "nullable": true },
+			"Deleted": { "type": "bit", "nullable": false, "default": "0" }
 		}
 	}
   }

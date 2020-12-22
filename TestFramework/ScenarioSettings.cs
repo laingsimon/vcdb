@@ -1,4 +1,5 @@
 ﻿using JsonEqualityComparer;
+using System;
 
 namespace TestFramework
 {
@@ -14,7 +15,10 @@ namespace TestFramework
         public static readonly ScenarioSettings Default = new ScenarioSettings
         {
             Strict = false,
-            JsonComparison = new ComparisonOptions()
+            JsonComparison = new ComparisonOptions
+            {
+                PropertyNameComparer = StringComparison.OrdinalIgnoreCase
+            }
         };
     }
 }

@@ -16,19 +16,22 @@ namespace TestFramework
         private readonly IJson json;
         private readonly ExecutionContext executionContext;
         private readonly IJsonEqualityComparer jsonEqualityComparer;
+        private readonly Options options;
 
         public ScenarioExecutor(
             ILogger<ScenarioExecutor> log, 
             ISql sql, 
             IJson json, 
             ExecutionContext executionContext,
-            IJsonEqualityComparer jsonEqualityComparer)
+            IJsonEqualityComparer jsonEqualityComparer,
+            Options options)
         {
             this.log = log;
             this.sql = sql;
             this.json = json;
             this.executionContext = executionContext;
             this.jsonEqualityComparer = jsonEqualityComparer;
+            this.options = options;
         }
 
         public async Task Execute(DirectoryInfo scenario)
@@ -65,7 +68,7 @@ namespace TestFramework
             var expected = json.ReadJsonFromFile("ExpectedOutput.json");
             var context = new ComparisonContext
             {
-                DefaultComparisonOptions = settings.JsonComparison ?? new ComparisonOptions()
+                DefaultComparisonOptions = settings.JsonComparison ?? new ComparisonOptions { PropertyNameComparer = StringComparison.OrdinalIgnoreCase }
             };
 
             jsonEqualityComparer.Compare(actual, expected, context);
@@ -83,7 +86,7 @@ namespace TestFramework
                 StartInfo =
                 {
                     FileName = Environment.GetEnvironmentVariable("comspec"),
-                    Arguments = $"/c \"{settings.CommandLine}\"",
+                    Arguments = $"/c \"{settings.CommandLine.Replace("{ConnectionString}", options.ConnectionString)}\"",
                     WorkingDirectory = scenario.FullName,
                     RedirectStandardOutput = true //settings.StdOut
                 }

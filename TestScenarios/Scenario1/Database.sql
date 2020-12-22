@@ -9,7 +9,8 @@ GO
 
 CREATE TABLE S1_T1 (
 	Id 		int	identity,
-	Name 	varchar(255) not null,
+	Name 	nvarchar(255) not null,
+	Title	varchar(10),
 	Age		int,
 	Price	decimal(18, 2),
 	DoB		date,
