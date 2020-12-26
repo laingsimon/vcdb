@@ -1,6 +1,6 @@
 {
   "Tables": {
-	"dbo.S1_T1": {
+	"dbo.Person": {
 		"Columns": {
 			"Id": { "type": "int identity", "nullable": false },
 			"Name": { "type": "nvarchar(255)", "nullable": false },

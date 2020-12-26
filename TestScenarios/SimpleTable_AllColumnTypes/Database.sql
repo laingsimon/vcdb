@@ -1,13 +1,13 @@
-DROP DATABASE IF EXISTS [Scenario1]
+DROP DATABASE IF EXISTS [SimpleTable_AllColumnTypes]
 GO
 
-CREATE DATABASE [Scenario1]
+CREATE DATABASE [SimpleTable_AllColumnTypes]
 GO
 
-USE [Scenario1]
+USE [SimpleTable_AllColumnTypes]
 GO
 
-CREATE TABLE S1_T1 (
+CREATE TABLE dbo.Person (
 	Id 			int	identity,
 	Name 		nvarchar(255) not null,
 	Title		varchar(10),
