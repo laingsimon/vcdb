@@ -91,7 +91,7 @@ namespace TestFramework
                     FileName = Environment.GetEnvironmentVariable("comspec"),
                     Arguments = $"/c \"{commandLine}\"",
                     WorkingDirectory = scenario.FullName,
-                    RedirectStandardOutput = true //settings.StdOut
+                    RedirectStandardOutput = true
                 }
             };
 

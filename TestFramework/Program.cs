@@ -16,7 +16,7 @@ namespace TestFramework
                    {
                        var serviceCollection = new ServiceCollection();
                        serviceCollection
-                        .AddLogging(builder => builder.AddConsole())
+                        .AddLogging(builder => builder.AddSimpleConsole(o => o.SingleLine = true))
                         .Configure<LoggerFilterOptions>(opts => opts.MinLevel = o.MinLogLevel);
 
                        serviceCollection.AddSingleton(o);

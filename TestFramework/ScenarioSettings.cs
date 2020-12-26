@@ -8,7 +8,6 @@ namespace TestFramework
     {
         public string CommandLine { get; set; }
         public ExecutionMode? Mode { get; set; }
-        public bool StdOut { get; set; }
         public ComparisonOptions JsonComparison { get; set; }
         public int? ExpectedExitCode { get; set; }
         public string VcDbBuildConfiguraton { get; set; }

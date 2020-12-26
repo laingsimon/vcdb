@@ -21,7 +21,7 @@ namespace vcdb
 
                        var serviceCollection = new ServiceCollection();
                        serviceCollection
-                        .AddLogging(builder => builder.AddConsole())
+                        .AddLogging(builder => builder.AddSimpleConsole(o => o.SingleLine = true))
                         .Configure<LoggerFilterOptions>(opts => opts.MinLevel = LogLevel.Information);
 
                        serviceCollection.AddSingleton<IOutputFactory>(outputFactory);
