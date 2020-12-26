@@ -1,0 +1,44 @@
+{
+  "tables": {
+	"dbo.Person": {
+		"columns": {
+			"Id": { "type": "int identity", "nullable": false },
+			"Name": { "type": "nvarchar(255)", "nullable": false },
+			"Age": { "type": "int", "nullable": true }
+		},
+		"indexes": {
+			"IX_Person_Id": {
+				"columns": {
+					"id": { "descending": false }
+				},
+				"includedColumns": {},
+				"clustered": true
+			},
+			"IX_Person_Name": { 
+				"columns": { 
+					"name": { "descending": false } 
+				},
+				"includedColumns": {},
+				"clustered": false
+			},
+			"IX_Person_Name_Age": { 
+				"columns": { 
+					"Name": { "descending": false }, 
+					"Age": { "descending": true } 
+				},
+				"includedColumns": {},
+				"clustered": false 
+			},
+			"IX_Person_Name_IncAge": { 
+				"columns": { 
+					"Name": { "descending": false }
+				},
+				"includedColumns": {
+					"Age": { "descending": false } 
+				},
+				"clustered": false 
+			}
+		}
+	}
+  }
+}

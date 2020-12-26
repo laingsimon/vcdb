@@ -2,7 +2,7 @@
   "profiles": {
     "vcdb": {
       "commandName": "Project",
-      "commandLineArgs": "--connectionString server=\"localhost;user id=sa;password=vcdb_2020\" --database Scenario1"
+      "commandLineArgs": "--connectionString server=\"localhost;user id=sa;password=vcdb_2020\" --database SimpleTable_WithCustomIndexes"
     }
   }
 }

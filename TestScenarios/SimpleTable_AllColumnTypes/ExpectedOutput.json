@@ -1,7 +1,7 @@
 {
-  "Tables": {
+  "tables": {
 	"dbo.Person": {
-		"Columns": {
+		"columns": {
 			"Id": { "type": "int identity", "nullable": false },
 			"Name": { "type": "nvarchar(255)", "nullable": false },
 			"Title": { "type": "varchar(10)", "nullable": true },
@@ -10,7 +10,8 @@
 			"DoB": { "type": "date", "nullable": true },
 			"Deleted": { "type": "bit", "nullable": false, "default": "0" },
 			"UniqueId": { "type": "uniqueidentifier", "nullable": true } 
-		}
+		},
+		"indexes": { }
 	}
   }
 }

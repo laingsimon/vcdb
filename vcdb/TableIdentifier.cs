@@ -1,6 +1,6 @@
-﻿namespace vcdb.SqlServer
+﻿namespace vcdb
 {
-    public class TableIdentifiers
+    public class TableIdentifier
     {
         public string TABLE_NAME { get; set; }
         public string TABLE_SCHEMA { get; set; }

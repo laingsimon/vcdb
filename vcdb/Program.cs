@@ -40,6 +40,8 @@ namespace vcdb
             services.AddSingleton<IConnectionFactory, ConnectionFactory>();
             services.AddSingleton<IDatabaseRepository, DatabaseRepository>();
             services.AddSingleton<ITableRepository, SqlServerTableRepository>();
+            services.AddSingleton<IColumnsRepository, SqlServerColumnsRepository>();
+            services.AddSingleton<IIndexesRepository, SqlServerIndexesRepository>();
             services.AddSingleton<IOutput, ConsoleOutput>();
 
             services.AddSingleton(new JsonSerializer

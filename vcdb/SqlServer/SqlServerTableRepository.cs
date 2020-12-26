@@ -1,71 +1,38 @@
 ﻿using Dapper;
 using System.Collections.Generic;
 using System.Data.Common;
-using System.Linq;
 using System.Threading.Tasks;
 
 namespace vcdb.SqlServer
 {
     public class SqlServerTableRepository : ITableRepository
     {
-        private readonly Options options;
+        private readonly IColumnsRepository columnsRepository;
+        private readonly IIndexesRepository indexesRepository;
 
-        public SqlServerTableRepository(Options options)
+        public SqlServerTableRepository(IColumnsRepository columnsRepository, IIndexesRepository indexesRepository)
         {
-            this.options = options;
+            this.columnsRepository = columnsRepository;
+            this.indexesRepository = indexesRepository;
         }
 
         public async Task<Dictionary<string, TableDetails>> GetTables(DbConnection connection)
         {
-            var tables = await connection.QueryAsync<TableIdentifiers>(@"
+            var tables = await connection.QueryAsync<TableIdentifier>(@"
 select TABLE_NAME, TABLE_SCHEMA
 from INFORMATION_SCHEMA.TABLES
 where TABLE_TYPE = 'BASE TABLE'");
 
-            return tables.ToDictionary(
+            return await tables.ToDictionaryAsync(
                 tableIdentifier => $"{tableIdentifier.TABLE_SCHEMA}.{tableIdentifier.TABLE_NAME}",
-                tableIdentifier =>
+                async tableIdentifier =>
             {
-                var tableColumns = connection.Query<SpColumnsOutput>(@"
-sp_columns @table_name = @table_name, @table_owner = @table_owner",
-new 
-{ 
-    table_name = tableIdentifier.TABLE_NAME, 
-    table_owner = tableIdentifier.TABLE_SCHEMA 
-});
-
                 return new TableDetails
                 {
-                    Columns = tableColumns.ToDictionary(
-                        column => column.COLUMN_NAME,
-                        column =>
-                        {
-                            return new ColumnDetails
-                            {
-                                Type = GetDataType(column),
-                                Nullable = column.NULLABLE,
-                                Default = column.COLUMN_DEF?.Trim('(', ')')
-                            };
-                        })
+                    Columns = await columnsRepository.GetColumns(connection, tableIdentifier),
+                    Indexes = await indexesRepository.GetIndexes(connection, tableIdentifier)
                 };
             });
-        }
-
-        private string GetDataType(SpColumnsOutput  column)
-        {
-            switch (column.TYPE_NAME)
-            {
-                case "char":
-                case "varchar":
-                    return $"{column.TYPE_NAME}({column.CHAR_OCTET_LENGTH})";
-                case "nchar":
-                case "nvarchar":
-                    return $"{column.TYPE_NAME}({column.CHAR_OCTET_LENGTH / 2})";
-                case "decimal":
-                    return $"{column.TYPE_NAME}({column.PRECISION}, {column.SCALE})";
-                default:
-                    return column.TYPE_NAME;
-            }
         }
     }
 }
