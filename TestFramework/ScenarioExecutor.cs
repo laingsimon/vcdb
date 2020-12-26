@@ -1,6 +1,5 @@
 ﻿using JsonEqualityComparer;
 using Microsoft.Extensions.Logging;
-using Newtonsoft.Json;
 using System;
 using System.Diagnostics;
 using System.IO;
@@ -52,7 +51,7 @@ namespace TestFramework
                 throw new InvalidOperationException("Process exited with null or empty content");
             }
 
-            if (settings.Comparison == null || settings.Comparison == Comparison.Json)
+            if (settings.Mode == null || settings.Mode == vcdb.ExecutionMode.Construct)
             {
                 await CompareJsonResult(settings, result, scenario);
             }
@@ -75,18 +74,22 @@ namespace TestFramework
 
             executionContext.ScenarioComplete(
                 scenario, 
-                !context.Differences.Any(), 
+                !context.Differences.Any(),
                 context.Differences.Select(difference => $"- Found a difference: {difference}"));
         }
 
         private async Task<ExecutionResult> ExecuteCommandLine(ScenarioSettings settings, DirectoryInfo scenario)
         {
+            var vcdbBuildConfiguration = settings.VcDbBuildConfiguraton ?? "Debug";
+            var fileName = settings.VcDbPath ?? $@"../../vcdb/bin/{vcdbBuildConfiguration}/netcoreapp3.1/vcdb.dll";
+            var commandLine = $"dotnet \"{fileName}\" --mode {settings.Mode} {settings.CommandLine.Replace("{ConnectionString}", options.ConnectionString)}";
+
             var process = new Process
             {
                 StartInfo =
                 {
                     FileName = Environment.GetEnvironmentVariable("comspec"),
-                    Arguments = $"/c \"{settings.CommandLine.Replace("{ConnectionString}", options.ConnectionString)}\"",
+                    Arguments = $"/c \"{commandLine}\"",
                     WorkingDirectory = scenario.FullName,
                     RedirectStandardOutput = true //settings.StdOut
                 }

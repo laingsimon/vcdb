@@ -1,0 +1,12 @@
+{
+	"commandLine": "--connectionString \"{ConnectionString}\" --database=Scenario1",
+	"vcdbBuildConfiguration": "Debug",
+	"vcdbPath": null,
+	"mode": "construct",
+	"stdout": true,
+	"jsonComparison": {
+		"propertyNameComparer": "OrdinalIgnoreCase",
+		"explicit": true
+	},
+	"expectedExitCode": 0
+}

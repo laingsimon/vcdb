@@ -8,6 +8,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Include="..\vcdb\ExecutionMode.cs" Link="ExecutionMode.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="CommandLineParser" Version="2.8.0" />
     <PackageReference Include="JsonEqualityComparer" Version="1.0.21" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="5.0.1" />

@@ -1,4 +1,5 @@
 ﻿using CommandLine;
+using Microsoft.Extensions.Logging;
 
 namespace TestFramework
 {
@@ -15,5 +16,8 @@ namespace TestFramework
 
         [Option("include", Required = false)]
         public string IncludeScenarioFilter { get; set; }
+
+        [Option("logLevel", Default = LogLevel.Information)]
+        public LogLevel MinLogLevel { get; set; }
     }
 }

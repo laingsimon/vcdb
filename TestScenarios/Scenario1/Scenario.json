@@ -1,6 +1,0 @@
-{
-	"commandLine": "dotnet ../../vcdb/bin/Debug/netcoreapp3.1/vcdb.dll --mode Construct --connectionString \"{ConnectionString}\" --database=Scenario1",
-	"comparison": "json",
-	"strict": true,
-	"stdout": true
-}
