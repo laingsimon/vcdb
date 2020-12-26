@@ -1,6 +1,11 @@
 ﻿using Microsoft.Extensions.Logging;
 using System;
 using System.Threading.Tasks;
+using vcdb.CommandLine;
+using vcdb.Models;
+using vcdb.Output;
+using vcdb.SchemaBuilding;
+using vcdb.Scripting;
 
 namespace vcdb
 {
@@ -11,19 +16,25 @@ namespace vcdb
         private readonly IDatabaseRepository databaseRepository;
         private readonly IOutput output;
         private readonly ILogger<Executor> logger;
+        private readonly IInput input;
+        private readonly IDatabaseScriptBuilder scriptBuilder;
 
         public Executor(
             IConnectionFactory connectionFactory,
             Options options,
             IDatabaseRepository databaseRepository,
             IOutput output,
-            ILogger<Executor> logger)
+            ILogger<Executor> logger,
+            IInput input,
+            IDatabaseScriptBuilder scriptBuilder)
         {
             this.connectionFactory = connectionFactory;
             this.options = options;
             this.databaseRepository = databaseRepository;
             this.output = output;
             this.logger = logger;
+            this.input = input;
+            this.scriptBuilder = scriptBuilder;
         }
 
         public async Task Execute()
@@ -58,10 +69,13 @@ namespace vcdb
             }
         }
 
-        private Task<IOutputable> ConstructUpgradeScriptOutput(DatabaseDetails database)
+        private async Task<IOutputable> ConstructUpgradeScriptOutput(DatabaseDetails currentDatabaseRepresentation)
         {
-            //construct a SQL script that is required to change the database from <database> to the <input representation>
-            throw new NotImplementedException();
+            var requiredDatabaseRepresentation = await input.Read<DatabaseDetails>();
+            var databaseScripts = scriptBuilder.CreateUpgradeScripts(
+                currentDatabaseRepresentation, 
+                requiredDatabaseRepresentation);
+            return new AsyncEnumerableOutput<string>(databaseScripts);
         }
 
         private Task<IOutputable> ConstructRepresentationOutput(DatabaseDetails database)

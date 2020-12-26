@@ -1,6 +1,6 @@
 ﻿using CommandLine;
 
-namespace vcdb
+namespace vcdb.CommandLine
 {
     public class Options
     {
@@ -12,5 +12,11 @@ namespace vcdb
 
         [Option('m', "mode", Default = ExecutionMode.Construct, HelpText = "The mode for execution")]
         public ExecutionMode Mode { get; set; }
+
+        [Option('i', "input", Required = false, HelpText = "The path to the required database representation, if appropriate, otherwise pipe into the command")]
+        public string InputFile { get; set; }
+
+        [Option('t', "type", Required = false, HelpText = "The type of database server to connect to", Default = DatabaseType.SqlServer)]
+        public DatabaseType DatabaseType { get; set; }
     }
 }

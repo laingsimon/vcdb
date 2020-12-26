@@ -1,6 +1,7 @@
 ﻿using System.Threading.Tasks;
+using vcdb.Models;
 
-namespace vcdb
+namespace vcdb.Output
 {
     internal class OutputableObject<T> : IOutputable
     {

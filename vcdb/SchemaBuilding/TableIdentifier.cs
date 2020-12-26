@@ -1,4 +1,4 @@
-﻿namespace vcdb
+﻿namespace vcdb.SchemaBuilding
 {
     public class TableIdentifier
     {

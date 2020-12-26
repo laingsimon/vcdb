@@ -1,7 +1,6 @@
-﻿using Newtonsoft.Json;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 
-namespace vcdb
+namespace vcdb.Models
 {
     public class IndexDetails
     {

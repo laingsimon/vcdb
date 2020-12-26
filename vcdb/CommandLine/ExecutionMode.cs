@@ -1,4 +1,4 @@
-﻿namespace vcdb
+﻿namespace vcdb.CommandLine
 {
     public enum ExecutionMode
     {

@@ -4,6 +4,9 @@ using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 using System;
+using vcdb.CommandLine;
+using vcdb.Output;
+using vcdb.SchemaBuilding;
 using vcdb.SqlServer;
 
 namespace vcdb
@@ -26,23 +29,31 @@ namespace vcdb
 
                        serviceCollection.AddSingleton<IOutputFactory>(outputFactory);
                        serviceCollection.AddSingleton(o);
-                       ConfigureServices(serviceCollection);
+                       ConfigureServices(serviceCollection, o);
                        var serviceProvider = serviceCollection.BuildServiceProvider();
                        var executor = serviceProvider.GetRequiredService<IExecutor>();
 
-                       executor.Execute().Wait();
+                       try
+                       {
+                           executor.Execute().Wait();
+                       }
+                       catch (Exception exc)
+                       {
+                           var logger = serviceProvider.GetRequiredService<ILogger<object>>();
+                           logger.LogError(exc, "Error executing vcdb process");
+                       }
                    });
         }
 
-        private static void ConfigureServices(ServiceCollection services)
+        private static void ConfigureServices(ServiceCollection services, Options options)
         {
             services.AddSingleton<IExecutor, Executor>();
             services.AddSingleton<IConnectionFactory, ConnectionFactory>();
             services.AddSingleton<IDatabaseRepository, DatabaseRepository>();
-            services.AddSingleton<ITableRepository, SqlServerTableRepository>();
-            services.AddSingleton<IColumnsRepository, SqlServerColumnsRepository>();
-            services.AddSingleton<IIndexesRepository, SqlServerIndexesRepository>();
             services.AddSingleton<IOutput, ConsoleOutput>();
+            services.AddSingleton<IInput, Input>();
+            var databaseServicesInstaller = GetDatabaseServicesInstaller(options);
+            databaseServicesInstaller.RegisterServices(services);
 
             services.AddSingleton(new JsonSerializer
             {
@@ -53,6 +64,17 @@ namespace vcdb
                 Formatting = Formatting.Indented,
                 NullValueHandling = NullValueHandling.Ignore
             });
+        }
+
+        private static IServicesInstaller GetDatabaseServicesInstaller(Options options)
+        {
+            switch (options.DatabaseType)
+            {
+                case DatabaseType.SqlServer:
+                    return new SqlServerInstaller();
+            }
+
+            throw new NotSupportedException($"Database type {options.DatabaseType} isn't currently supported");
         }
     }
 }

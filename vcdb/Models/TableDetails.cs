@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace vcdb
+namespace vcdb.Models
 {
     public class TableDetails
     {

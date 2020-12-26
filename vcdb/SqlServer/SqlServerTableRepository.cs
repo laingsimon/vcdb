@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.Data.Common;
 using System.Threading.Tasks;
+using vcdb.Models;
+using vcdb.SchemaBuilding;
 
 namespace vcdb.SqlServer
 {

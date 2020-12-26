@@ -1,7 +1,7 @@
 ﻿using System;
 using System.IO;
 
-namespace vcdb
+namespace vcdb.Output
 {
     internal class OutputFactory : IOutputFactory
     {

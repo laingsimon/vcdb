@@ -20,5 +20,12 @@ namespace vcdb
 
             return dictionary;
         }
+
+        public static TValue ItemOrDefault<TKey, TValue>(this IDictionary<TKey, TValue> dict, TKey key)
+        {
+            return dict.ContainsKey(key)
+                ? dict[key]
+                : default(TValue);
+        }
     }
 }

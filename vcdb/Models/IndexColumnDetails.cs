@@ -1,4 +1,4 @@
-﻿namespace vcdb
+﻿namespace vcdb.Models
 {
     public class IndexColumnDetails
     {

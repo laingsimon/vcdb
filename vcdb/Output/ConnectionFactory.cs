@@ -3,8 +3,9 @@ using Microsoft.Extensions.Logging;
 using System.Data.Common;
 using System.Data.SqlClient;
 using System.Threading.Tasks;
+using vcdb.CommandLine;
 
-namespace vcdb
+namespace vcdb.Output
 {
     public class ConnectionFactory : IConnectionFactory
     {

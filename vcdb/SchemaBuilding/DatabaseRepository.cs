@@ -1,7 +1,8 @@
 ﻿using System.Data.Common;
 using System.Threading.Tasks;
+using vcdb.Models;
 
-namespace vcdb
+namespace vcdb.SchemaBuilding
 {
     public class DatabaseRepository : IDatabaseRepository
     {

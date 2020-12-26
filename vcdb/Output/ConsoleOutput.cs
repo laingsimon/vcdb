@@ -2,7 +2,7 @@
 using System.IO;
 using System.Threading.Tasks;
 
-namespace vcdb
+namespace vcdb.Output
 {
     public class ConsoleOutput : IOutput
     {
@@ -12,7 +12,7 @@ namespace vcdb
         public ConsoleOutput(JsonSerializer jsonSerializer, IOutputFactory outputFactory)
         {
             this.jsonSerializer = jsonSerializer;
-            this.consoleOutput = outputFactory.GetActualConsoleOutput();
+            consoleOutput = outputFactory.GetActualConsoleOutput();
         }
 
         public async Task WriteJsonToOutput<T>(T output)
