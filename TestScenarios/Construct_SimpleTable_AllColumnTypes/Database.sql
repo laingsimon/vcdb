@@ -1,10 +1,10 @@
-DROP DATABASE IF EXISTS [SimpleTable_AllColumnTypes]
+DROP DATABASE IF EXISTS [Construct_SimpleTable_AllColumnTypes]
 GO
 
-CREATE DATABASE [SimpleTable_AllColumnTypes]
+CREATE DATABASE [Construct_SimpleTable_AllColumnTypes]
 GO
 
-USE [SimpleTable_AllColumnTypes]
+USE [Construct_SimpleTable_AllColumnTypes]
 GO
 
 CREATE TABLE dbo.Person (

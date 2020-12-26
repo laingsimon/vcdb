@@ -1,9 +1,8 @@
 {
-	"commandLine": "--connectionString \"{ConnectionString}\" --database=SimpleTable_AllColumnTypes",
+	"commandLine": "--connectionString \"{ConnectionString}\" --database=Construct_SimpleTable_AllColumnTypes",
 	"vcdbBuildConfiguration": "Debug",
 	"vcdbPath": null,
 	"mode": "construct",
-	"stdout": true,
 	"jsonComparison": {
 		"propertyNameComparer": "OrdinalIgnoreCase",
 		"explicit": true

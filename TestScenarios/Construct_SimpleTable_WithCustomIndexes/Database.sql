@@ -1,10 +1,10 @@
-DROP DATABASE IF EXISTS [SimpleTable_WithCustomIndexes]
+DROP DATABASE IF EXISTS [Construct_SimpleTable_WithCustomIndexes]
 GO
 
-CREATE DATABASE [SimpleTable_WithCustomIndexes]
+CREATE DATABASE [Construct_SimpleTable_WithCustomIndexes]
 GO
 
-USE [SimpleTable_WithCustomIndexes]
+USE [Construct_SimpleTable_WithCustomIndexes]
 GO
 
 CREATE TABLE dbo.Person (
