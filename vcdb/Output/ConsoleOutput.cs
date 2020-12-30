@@ -23,7 +23,14 @@ namespace vcdb.Output
                 {
                     jsonSerializer.Serialize(writer, output);
                 }
+
+                consoleOutput.WriteLine();
             });
+        }
+
+        public async Task WriteToOutput(string output)
+        {
+            await consoleOutput.WriteLineAsync(output);
         }
     }
 }

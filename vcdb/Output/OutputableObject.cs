@@ -1,13 +1,12 @@
 ﻿using System.Threading.Tasks;
-using vcdb.Models;
 
 namespace vcdb.Output
 {
     internal class OutputableObject<T> : IOutputable
     {
-        private DatabaseDetails value;
+        private T value;
 
-        public OutputableObject(DatabaseDetails value)
+        public OutputableObject(T value)
         {
             this.value = value;
         }

@@ -75,7 +75,7 @@ namespace vcdb
             var databaseScripts = scriptBuilder.CreateUpgradeScripts(
                 currentDatabaseRepresentation, 
                 requiredDatabaseRepresentation);
-            return new AsyncEnumerableOutput<string>(databaseScripts);
+            return new AsyncEnumerableOutput<SqlScript>(databaseScripts);
         }
 
         private Task<IOutputable> ConstructRepresentationOutput(DatabaseDetails database)

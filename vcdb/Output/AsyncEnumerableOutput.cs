@@ -16,7 +16,12 @@ namespace vcdb.Output
         {
             await foreach (var item in input)
             {
-                await output.WriteJsonToOutput(item);
+                var outputtable = item as IOutputable;
+
+                if (outputtable != null)
+                    await outputtable.WriteToOutput(output);
+                else
+                    await output.WriteJsonToOutput(item);
             }
         }
     }

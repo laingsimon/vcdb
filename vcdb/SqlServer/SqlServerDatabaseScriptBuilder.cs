@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using vcdb.CommandLine;
 using vcdb.Models;
+using vcdb.Output;
 using vcdb.Scripting;
 
 namespace vcdb.SqlServer
@@ -18,7 +19,7 @@ namespace vcdb.SqlServer
             this.tableScriptBuilder = tableScriptBuilder;
         }
 
-        public async IAsyncEnumerable<string> CreateUpgradeScripts(DatabaseDetails current, DatabaseDetails required)
+        public async IAsyncEnumerable<SqlScript> CreateUpgradeScripts(DatabaseDetails current, DatabaseDetails required)
         {
             var tableScripts = tableScriptBuilder.CreateUpgradeScripts(current.Tables, required.Tables);
             await foreach (var script in tableScripts)

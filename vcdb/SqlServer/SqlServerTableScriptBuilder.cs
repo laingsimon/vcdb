@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using vcdb.CommandLine;
 using vcdb.Models;
+using vcdb.Output;
 using vcdb.Scripting;
 
 namespace vcdb.SqlServer
@@ -17,7 +18,7 @@ namespace vcdb.SqlServer
             this.options = options;
         }
 
-        public async IAsyncEnumerable<string> CreateUpgradeScripts(
+        public async IAsyncEnumerable<SqlScript> CreateUpgradeScripts(
             IDictionary<TableName, TableDetails> current, 
             IDictionary<TableName, TableDetails> required)
         {
@@ -37,28 +38,28 @@ namespace vcdb.SqlServer
             }
         }
 
-        private async Task<string> GetAlterTableScript(TableDetails currentTable, TableDetails requiredTable, TableName tableName)
+        private async Task<SqlScript> GetAlterTableScript(TableDetails currentTable, TableDetails requiredTable, TableName tableName)
         {
             throw new System.NotImplementedException();
         }
 
-        private Task<string> GetRenameTableScript(TableName current, TableName required)
+        private Task<SqlScript> GetRenameTableScript(TableName current, TableName required)
         {
-            return Task.FromResult(@$"
+            return Task.FromResult(new SqlScript(@$"
 exec sp_rename 
     @old_name = '{current.Schema}.{current.Table}', 
     @new_name = '{required.Schema}.{required.Table}', 
-    @object_type = 'table';");
+    @object_type = 'table';"));
         }
 
-        private Task<string> GetCreateTableScript(TableDetails requiredTable, TableName tableName)
+        private Task<SqlScript> GetCreateTableScript(TableDetails requiredTable, TableName tableName)
         {
             var columns = requiredTable.Columns.Select(CreateTableColumn);
 
-            return Task.FromResult($@"
+            return Task.FromResult(new SqlScript($@"
 CREATE TABLE [{tableName.Schema}].[{tableName.Table}] (
 {string.Join("," + Environment.NewLine, columns)}
-)");
+)"));
             //TODO: Add indexes
         }
 
