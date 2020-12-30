@@ -1,4 +1,6 @@
 ﻿using CommandLine;
+using DiffPlex;
+using DiffPlex.DiffBuilder;
 using JsonEqualityComparer;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -37,6 +39,7 @@ namespace TestFramework
             services.AddScoped(factory => factory.GetRequiredService<ScenarioDirectoryFactory>().ScenarioDirectory);
             services.AddSingleton<ExecutionContext>();
             services.AddSingleton<IJsonEqualityComparer, Comparer>();
+            services.AddSingleton<IInlineDiffBuilder>(InlineDiffBuilder.Instance);
 
             services.AddSingleton(new JsonSerializer
             {

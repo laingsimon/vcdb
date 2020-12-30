@@ -1,6 +1,11 @@
-﻿using JsonEqualityComparer;
+﻿using DiffPlex;
+using DiffPlex.Chunkers;
+using DiffPlex.DiffBuilder;
+using DiffPlex.DiffBuilder.Model;
+using JsonEqualityComparer;
 using Microsoft.Extensions.Logging;
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -16,6 +21,7 @@ namespace TestFramework
         private readonly ExecutionContext executionContext;
         private readonly IJsonEqualityComparer jsonEqualityComparer;
         private readonly Options options;
+        private readonly IInlineDiffBuilder differ;
 
         public ScenarioExecutor(
             ILogger<ScenarioExecutor> log, 
@@ -23,7 +29,8 @@ namespace TestFramework
             IJson json, 
             ExecutionContext executionContext,
             IJsonEqualityComparer jsonEqualityComparer,
-            Options options)
+            Options options,
+            IInlineDiffBuilder differ)
         {
             this.log = log;
             this.sql = sql;
@@ -31,6 +38,7 @@ namespace TestFramework
             this.executionContext = executionContext;
             this.jsonEqualityComparer = jsonEqualityComparer;
             this.options = options;
+            this.differ = differ;
         }
 
         public async Task Execute(DirectoryInfo scenario)
@@ -65,15 +73,81 @@ namespace TestFramework
         {
             return Task.Run(() =>
             {
-                var actual = result.Output ?? "";
-                using (var reader = new StreamReader(Path.Combine(scenario.FullName, "ExpectedOutput.sql")))
-                {
-                    var expected = reader.ReadToEnd();
+                var actual = result.Output?.Trim() ?? "";
 
-                    var matches = actual.Trim().Equals(expected.Trim());
-                    executionContext.ScenarioComplete(scenario, matches, new string[0]);
+                using (var expectedReader = new StreamReader(Path.Combine(scenario.FullName, "ExpectedOutput.sql")))
+                {
+                    var expectedOutput = expectedReader.ReadToEnd().Trim();
+                    var diffs = differ.BuildDiffModel(expectedOutput, actual, true, false, new LineChunker());
+
+                    var pass = !diffs.HasDifferences;
+                    var differences = FormatDiff(diffs.Lines);
+
+                    executionContext.ScenarioComplete(scenario, pass, differences);
                 }
             });
+        }
+
+        private IEnumerable<string> FormatDiff(IEnumerable<DiffPiece> lines)
+        {
+            var diffBlock = new List<DiffPiece>();
+            DiffPiece lastDiff = null;
+
+            foreach (var line in lines)
+            {
+                var captureDiff = line.Type == ChangeType.Deleted || line.Type == ChangeType.Inserted;
+                if (captureDiff && lastDiff != null)
+                {
+                    diffBlock.Add(lastDiff);
+                    lastDiff = null;
+                }
+
+                if (captureDiff)
+                {
+                    diffBlock.Add(line);
+                    continue;
+                }
+                else if (diffBlock.Any())
+                {
+                    //add the line as the last line of context
+                    diffBlock.Add(line);
+                    foreach (var diffDetail in FormatDiffBlock(diffBlock))
+                        yield return diffDetail;
+                    diffBlock = new List<DiffPiece>();
+                }
+
+                lastDiff = line;
+            }
+
+            if (diffBlock.Any())
+            {
+                foreach (var diffDetail in FormatDiffBlock(diffBlock))
+                    yield return diffDetail;
+            }
+        }
+
+        private IEnumerable<string> FormatDiffBlock(List<DiffPiece> diffBlock)
+        {
+            var startingLine = diffBlock[0].Position;
+            var endingLine = diffBlock.LastOrDefault(l => l.Position != null)?.Position;
+
+            yield return $@"Lines {startingLine}..{endingLine} (vcdb output vs ExpectedOutput.json)";
+
+            foreach (var line in diffBlock)
+            {
+                switch (line.Type)
+                {
+                    case ChangeType.Inserted:
+                        yield return $"+ {line.Text}";
+                        break;
+                    case ChangeType.Deleted:
+                        yield return $"- {line.Text}";
+                        break;
+                    default:
+                        yield return $"  {line.Text}";
+                        break;
+                }
+            }
         }
 
         private Task CompareJsonResult(ScenarioSettings settings, ExecutionResult result, DirectoryInfo scenario)
