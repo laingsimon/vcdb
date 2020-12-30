@@ -15,7 +15,11 @@ namespace vcdb
     {
         public static void Main(string[] args)
         {
-            Parser.Default.ParseArguments<Options>(args)
+            new Parser(settings =>
+            {
+                settings.CaseInsensitiveEnumValues = false;
+                settings.CaseSensitive = false;
+            }).ParseArguments<Options>(args)
                    .WithParsed(o =>
                    {
                        var outputFactory = new OutputFactory();
