@@ -18,8 +18,8 @@ namespace vcdb.SqlServer
         }
 
         public async IAsyncEnumerable<string> CreateUpgradeScripts(
-            IDictionary<string, TableDetails> current, 
-            IDictionary<string, TableDetails> required)
+            IDictionary<TableName, TableDetails> current, 
+            IDictionary<TableName, TableDetails> required)
         {
             foreach (var requiredTable in required)
             {
@@ -37,22 +37,26 @@ namespace vcdb.SqlServer
             }
         }
 
-        private async Task<string> GetAlterTableScript(TableDetails currentTable, TableDetails requiredTable, string tableName)
+        private async Task<string> GetAlterTableScript(TableDetails currentTable, TableDetails requiredTable, TableName tableName)
         {
             throw new System.NotImplementedException();
         }
 
-        private Task<string> GetRenameTableScript(string currentName, string requiredName)
+        private Task<string> GetRenameTableScript(TableName current, TableName required)
         {
-            return Task.FromResult($"exec sp_rename @old_name = '{currentName}', @new_name = '{requiredName}', @object_type = 'table';");
+            return Task.FromResult(@$"
+exec sp_rename 
+    @old_name = '{current.Schema}.{current.Table}', 
+    @new_name = '{required.Schema}.{required.Table}', 
+    @object_type = 'table';");
         }
 
-        private Task<string> GetCreateTableScript(TableDetails requiredTable, string tableName)
+        private Task<string> GetCreateTableScript(TableDetails requiredTable, TableName tableName)
         {
             var columns = requiredTable.Columns.Select(CreateTableColumn);
 
             return Task.FromResult($@"
-CREATE TABLE {tableName} (
+CREATE TABLE [{tableName.Schema}].[{tableName.Table}] (
 {string.Join("," + Environment.NewLine, columns)}
 )");
             //TODO: Add indexes
@@ -71,9 +75,9 @@ CREATE TABLE {tableName} (
             return $"  [{column.Key}] {column.Value.Type}{nullabilityClause}{defaultClause}";
         }
 
-        private KeyValuePair<string, TableDetails>? GetCurrentTable(
-            IDictionary<string, TableDetails> current,
-            KeyValuePair<string, TableDetails> requiredTable)
+        private KeyValuePair<TableName, TableDetails>? GetCurrentTable(
+            IDictionary<TableName, TableDetails> current,
+            KeyValuePair<TableName, TableDetails> requiredTable)
         {
             var tablesWithSameName = current.Where(pair => pair.Key == requiredTable.Key).ToArray();
             if (tablesWithSameName.Length == 1)

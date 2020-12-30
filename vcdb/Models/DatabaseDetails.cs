@@ -4,6 +4,6 @@ namespace vcdb.Models
 {
     public class DatabaseDetails
     {
-        public Dictionary<string, TableDetails> Tables { get; set; }
+        public Dictionary<TableName, TableDetails> Tables { get; set; }
     }
 }

@@ -18,7 +18,7 @@ namespace vcdb.SqlServer
             this.indexesRepository = indexesRepository;
         }
 
-        public async Task<Dictionary<string, TableDetails>> GetTables(DbConnection connection)
+        public async Task<Dictionary<TableName, TableDetails>> GetTables(DbConnection connection)
         {
             var tables = await connection.QueryAsync<TableIdentifier>(@"
 select TABLE_NAME, TABLE_SCHEMA
@@ -26,15 +26,19 @@ from INFORMATION_SCHEMA.TABLES
 where TABLE_TYPE = 'BASE TABLE'");
 
             return await tables.ToDictionaryAsync(
-                tableIdentifier => $"{tableIdentifier.TABLE_SCHEMA}.{tableIdentifier.TABLE_NAME}",
-                async tableIdentifier =>
-            {
-                return new TableDetails
+                tableIdentifier => new TableName
                 {
-                    Columns = await columnsRepository.GetColumns(connection, tableIdentifier),
-                    Indexes = await indexesRepository.GetIndexes(connection, tableIdentifier)
-                };
-            });
+                    Schema = tableIdentifier.TABLE_SCHEMA,
+                    Table = tableIdentifier.TABLE_NAME
+                },
+                async tableIdentifier =>
+                {
+                    return new TableDetails
+                    {
+                        Columns = await columnsRepository.GetColumns(connection, tableIdentifier),
+                        Indexes = await indexesRepository.GetIndexes(connection, tableIdentifier)
+                    };
+                });
         }
     }
 }

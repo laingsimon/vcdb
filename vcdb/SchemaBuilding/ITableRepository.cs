@@ -7,6 +7,6 @@ namespace vcdb.SchemaBuilding
 {
     public interface ITableRepository
     {
-        Task<Dictionary<string, TableDetails>> GetTables(DbConnection connection);
+        Task<Dictionary<TableName, TableDetails>> GetTables(DbConnection connection);
     }
 }
