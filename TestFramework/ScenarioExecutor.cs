@@ -51,31 +51,49 @@ namespace TestFramework
                 throw new InvalidOperationException("Process exited with null or empty content");
             }
 
-            if (settings.Mode == null || settings.Mode == vcdb.ExecutionMode.Construct)
+            if (settings.Mode == null || settings.Mode == vcdb.CommandLine.ExecutionMode.Construct)
             {
                 await CompareJsonResult(settings, result, scenario);
             }
             else
             {
-                throw new NotImplementedException();
+                await CompareSqlScriptResult(settings, result, scenario);
             }
         }
 
-        private async Task CompareJsonResult(ScenarioSettings settings, ExecutionResult result, DirectoryInfo scenario)
+        private Task CompareSqlScriptResult(ScenarioSettings settings, ExecutionResult result, DirectoryInfo scenario)
         {
-            var actual = json.ReadJsonContent(result.Output);
-            var expected = json.ReadJsonFromFile("ExpectedOutput.json");
-            var context = new ComparisonContext
+            return Task.Run(() =>
             {
-                DefaultComparisonOptions = settings.JsonComparison ?? new ComparisonOptions { PropertyNameComparer = StringComparison.OrdinalIgnoreCase }
-            };
+                var actual = result.Output ?? "";
+                using (var reader = new StreamReader(Path.Combine(scenario.FullName, "ExpectedOutput.sql")))
+                {
+                    var expected = reader.ReadToEnd();
 
-            jsonEqualityComparer.Compare(actual, expected, context);
+                    var matches = actual.Trim().Equals(expected.Trim());
+                    executionContext.ScenarioComplete(scenario, matches, new string[0]);
+                }
+            });
+        }
 
-            executionContext.ScenarioComplete(
-                scenario, 
-                !context.Differences.Any(),
-                context.Differences.Select(difference => $"- Found a difference: {difference}"));
+        private Task CompareJsonResult(ScenarioSettings settings, ExecutionResult result, DirectoryInfo scenario)
+        {
+            return Task.Run(() =>
+            {
+                var actual = json.ReadJsonContent(result.Output);
+                var expected = json.ReadJsonFromFile("ExpectedOutput.json");
+                var context = new ComparisonContext
+                {
+                    DefaultComparisonOptions = settings.JsonComparison ?? new ComparisonOptions { PropertyNameComparer = StringComparison.OrdinalIgnoreCase }
+                };
+
+                jsonEqualityComparer.Compare(actual, expected, context);
+
+                executionContext.ScenarioComplete(
+                    scenario,
+                    !context.Differences.Any(),
+                    context.Differences.Select(difference => $"- Found a difference: {difference}"));
+            });
         }
 
         private async Task<ExecutionResult> ExecuteCommandLine(ScenarioSettings settings, DirectoryInfo scenario)

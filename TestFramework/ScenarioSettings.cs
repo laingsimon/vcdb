@@ -1,6 +1,6 @@
 ﻿using JsonEqualityComparer;
 using System;
-using vcdb;
+using vcdb.CommandLine;
 
 namespace TestFramework
 {
