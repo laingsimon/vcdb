@@ -1,0 +1,7 @@
+{
+	"commandLine": "--connectionString \"{ConnectionString}\" --input Input.json --database=Create_SimpleTable_AddColumn",
+	"vcdbBuildConfiguration": "Debug",
+	"vcdbPath": null,
+	"mode": "differential",
+	"expectedExitCode": 0
+}
