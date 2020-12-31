@@ -6,6 +6,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
+using System;
 
 namespace TestFramework
 {
@@ -20,17 +21,38 @@ namespace TestFramework
             }).ParseArguments<Options>(args)
                    .WithParsed(o =>
                    {
-                       var serviceCollection = new ServiceCollection();
-                       serviceCollection
-                        .AddLogging(builder => builder.AddSimpleConsole(o => o.SingleLine = true))
-                        .Configure<LoggerFilterOptions>(opts => opts.MinLevel = o.MinLogLevel);
+                       try
+                       {
+                           var serviceCollection = new ServiceCollection();
+                           serviceCollection
+                            .AddLogging(builder => builder.AddSimpleConsole(o => o.SingleLine = true))
+                            .Configure<LoggerFilterOptions>(opts => opts.MinLevel = o.MinLogLevel);
 
-                       serviceCollection.AddSingleton(o);
-                       ConfigureServices(serviceCollection);
-                       var serviceProvider = serviceCollection.BuildServiceProvider();
-                       var executor = serviceProvider.GetRequiredService<ITestFramework>();
+                           serviceCollection.AddSingleton(o);
+                           ConfigureServices(serviceCollection);
+                           using (var serviceProvider = serviceCollection.BuildServiceProvider())
+                           {
+                               var executor = serviceProvider.GetRequiredService<ITestFramework>();
 
-                       executor.Execute().Wait();
+                               try
+                               {
+                                   executor.Execute().Wait();
+
+                                   var context = serviceProvider.GetRequiredService<ExecutionContext>();
+                                   Environment.ExitCode = context.Fail; //report the number of failures in the exit code
+                               }
+                               catch (Exception exc)
+                               {
+                                   Environment.ExitCode = -1;
+                                   Console.Error.WriteLine(exc.ToString());
+                               }
+                           }
+                       }
+                       catch (Exception exc)
+                       {
+                            Environment.ExitCode = -2;
+                            Console.Error.WriteLine(exc.ToString());
+                       }
                    });
         }
 

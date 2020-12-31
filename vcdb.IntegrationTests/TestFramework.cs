@@ -21,12 +21,12 @@ namespace vcdb.IntegrationTests
         [TestCaseSource(nameof(ScenarioNames))]
         public async Task ExecuteScenarios(string scenarioName)
         {
-            var commandLineArguments = $"--connectionString \"server=localhost;user id=sa;password=vcdb_2020\" --include \"{scenarioName}\"";
+            var commandLineArguments = $"--connectionString \"server=localhost;user id=sa;password=vcdb_2020\" --include \"^{scenarioName}$\"";
             var result = await processExecutor.ExecuteProcess(commandLineArguments);
 
             result.WriteStdOutTo(Console.Out);
             result.WriteStdErrTo(Console.Error);
-            Assert.That(result.ExitCode, Is.EqualTo(0));
+            Assert.That(result.ExitCode, Is.EqualTo(0), "Process exited with non-success code");
         }
 
         public static IEnumerable<string> ScenarioNames

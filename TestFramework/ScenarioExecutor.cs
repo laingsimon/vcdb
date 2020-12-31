@@ -24,9 +24,9 @@ namespace TestFramework
         private readonly IInlineDiffBuilder differ;
 
         public ScenarioExecutor(
-            ILogger<ScenarioExecutor> log, 
-            ISql sql, 
-            IJson json, 
+            ILogger<ScenarioExecutor> log,
+            ISql sql,
+            IJson json,
             ExecutionContext executionContext,
             IJsonEqualityComparer jsonEqualityComparer,
             Options options,
@@ -48,15 +48,21 @@ namespace TestFramework
             var settings = ReadScenarioSettings(scenario) ?? ScenarioSettings.Default;
 
             var result = await ExecuteCommandLine(settings, scenario);
-
             if (settings.ExpectedExitCode.HasValue && result.ExitCode != settings.ExpectedExitCode.Value)
             {
-                throw new InvalidOperationException($"Expected process to exit with code {settings.ExpectedExitCode}, but it exited with {result.ExitCode}");
+                executionContext.ScenarioComplete(scenario, false, new[] { $"Expected process to exit with code {settings.ExpectedExitCode}, but it exited with {result.ExitCode}" });
+                return;
+            } 
+            else if (result.ExitCode != 0)
+            {
+                executionContext.ScenarioComplete(scenario, false, new[] { $"vcdb process exited with non-success exit code: {result.ExitCode}" });
+                return;
             }
 
             if (string.IsNullOrEmpty(result.Output))
             {
-                throw new InvalidOperationException("Process exited with null or empty content");
+                executionContext.ScenarioComplete(scenario, false, new[] { "Process exited with null or empty content" });
+                return;
             }
 
             if (settings.Mode == null || settings.Mode == vcdb.CommandLine.ExecutionMode.Construct)

@@ -22,29 +22,41 @@ namespace vcdb
             }).ParseArguments<Options>(args)
                    .WithParsed(o =>
                    {
-                       var outputFactory = new OutputFactory();
-                       outputFactory.SetActualConsoleOutput(Console.Out);
-                       Console.SetOut(Console.Error); //replace the ConsoleOutput so that all <loggger> messages go to STDERR rather than STDOUT // TODO: Replace this with CONOUT$
-
-                       var serviceCollection = new ServiceCollection();
-                       serviceCollection
-                        .AddLogging(builder => builder.AddSimpleConsole(o => o.SingleLine = true))
-                        .Configure<LoggerFilterOptions>(opts => opts.MinLevel = LogLevel.Information);
-
-                       serviceCollection.AddSingleton<IOutputFactory>(outputFactory);
-                       serviceCollection.AddSingleton(o);
-                       ConfigureServices(serviceCollection, o);
-                       var serviceProvider = serviceCollection.BuildServiceProvider();
-                       var executor = serviceProvider.GetRequiredService<IExecutor>();
-
                        try
                        {
-                           executor.Execute().Wait();
+                           var outputFactory = new OutputFactory();
+                           outputFactory.SetActualConsoleOutput(Console.Out);
+                           Console.SetOut(Console.Error); //replace the ConsoleOutput so that all <loggger> messages go to STDERR rather than STDOUT // TODO: Replace this with CONOUT$
+
+                           var serviceCollection = new ServiceCollection();
+                           serviceCollection
+                            .AddLogging(builder => builder.AddSimpleConsole(o => o.SingleLine = true))
+                            .Configure<LoggerFilterOptions>(opts => opts.MinLevel = LogLevel.Information);
+
+                           serviceCollection.AddSingleton<IOutputFactory>(outputFactory);
+                           serviceCollection.AddSingleton(o);
+                           ConfigureServices(serviceCollection, o);
+                           using (var serviceProvider = serviceCollection.BuildServiceProvider())
+                           {
+                               var executor = serviceProvider.GetRequiredService<IExecutor>();
+
+                               try
+                               {
+                                   executor.Execute().Wait();
+                               }
+                               catch (Exception exc)
+                               {
+                                   var logger = serviceProvider.GetRequiredService<ILogger<object>>();
+                                   logger.LogError(exc, "Error executing vcdb process");
+                               }
+
+                               serviceProvider.GetRequiredService<ILoggerFactory>().Dispose();
+                           }
                        }
                        catch (Exception exc)
                        {
-                           var logger = serviceProvider.GetRequiredService<ILogger<object>>();
-                           logger.LogError(exc, "Error executing vcdb process");
+                           Environment.ExitCode = -1;
+                           Console.Error.WriteLine(exc.ToString());
                        }
                    });
         }
