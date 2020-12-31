@@ -2,7 +2,6 @@
 using System;
 using System.ComponentModel;
 using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Text.RegularExpressions;
 
@@ -10,13 +9,30 @@ namespace vcdb
 {
     [TypeConverter(typeof(TypeConverter))]
     [DebuggerDisplay("[{Schema}].[{Table}]")]
-    public class TableName
+    public class TableName : IEquatable<TableName>
     {
         [JsonIgnore]
         public string Table { get; set; }
 
         [JsonIgnore]
         public string Schema { get; set; }
+
+        public override int GetHashCode()
+        {
+            return $"[{Schema}].[{Table}]".GetHashCode();
+        }
+
+        public override bool Equals(object obj)
+        {
+            return Equals(obj as TableName);
+        }
+
+        public bool Equals(TableName other)
+        {
+            return other != null
+                && other.Schema == Schema
+                && other.Table == Table;
+        }
 
         public class TypeConverter : System.ComponentModel.TypeConverter
         {
