@@ -18,11 +18,13 @@ namespace TestFramework
             this.log = log;
         }
 
-        public async Task ExecuteBatchedSql(TextReader sqlContent)
+        public async Task ExecuteBatchedSql(TextReader sqlContent, string database = null)
         {
             using (var connection = new SqlConnection(this.connectionString))
             {
                 await connection.OpenAsync();
+                if (!string.IsNullOrEmpty(database))
+                    await ExecuteSql($"USE [{database}]", connection);
 
                 var sqlBatch = new StringBuilder();
                 string line;
@@ -52,11 +54,13 @@ namespace TestFramework
             await command.ExecuteNonQueryAsync();
         }
 
-        public async Task ExecuteSql(string sql)
+        public async Task ExecuteSql(string sql, string database = null)
         {
             using (var connection = new SqlConnection(this.connectionString))
             {
                 await connection.OpenAsync();
+                if (!string.IsNullOrEmpty(database))
+                    await ExecuteSql($"USE [{database}]", connection);
 
                 await ExecuteSql(sql, connection);
             }

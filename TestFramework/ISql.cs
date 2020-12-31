@@ -7,8 +7,8 @@ namespace TestFramework
     internal interface ISql
     {
         Task WaitForReady(int attempts);
-        Task ExecuteBatchedSql(TextReader sqlContent);
-        Task ExecuteSql(string sql);
+        Task ExecuteBatchedSql(TextReader sqlContent, string database = null);
+        Task ExecuteSql(string sql, string database = null);
         Task ExecuteSql(string sql, SqlConnection connection);
     }
 }

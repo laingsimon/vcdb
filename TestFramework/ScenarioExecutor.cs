@@ -6,6 +6,7 @@ using JsonEqualityComparer;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
+using System.Data.SqlClient;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -65,11 +66,32 @@ namespace TestFramework
             }
             else
             {
-                await CompareSqlScriptResult(settings, result, scenario);
+                var pass = await CompareSqlScriptResult(settings, result, scenario);
+                if (pass)
+                    await TestSqlScriptResult(settings, result, scenario);
             }
         }
 
-        private Task CompareSqlScriptResult(ScenarioSettings settings, ExecutionResult result, DirectoryInfo scenario)
+        private async Task TestSqlScriptResult(ScenarioSettings settings, ExecutionResult result, DirectoryInfo scenario)
+        {
+            try
+            {
+                log.LogInformation("Testing created sql script...");
+                await sql.ExecuteBatchedSql(new StringReader(result.Output), scenario.Name);
+
+                executionContext.ScenarioComplete(scenario, true, new string[0] { });
+            }
+            catch (SqlException exc)
+            {
+                executionContext.ScenarioComplete(scenario, false, new[] { exc.Message });
+            }
+            catch (Exception exc)
+            {
+                executionContext.ScenarioComplete(scenario, false, new[] { exc.ToString() });
+            }
+        }
+
+        private Task<bool> CompareSqlScriptResult(ScenarioSettings settings, ExecutionResult result, DirectoryInfo scenario)
         {
             return Task.Run(() =>
             {
@@ -83,7 +105,10 @@ namespace TestFramework
                     var pass = !diffs.HasDifferences;
                     var differences = FormatDiff(diffs.Lines);
 
-                    executionContext.ScenarioComplete(scenario, pass, differences);
+                    if (!pass)
+                        executionContext.ScenarioComplete(scenario, pass, differences);
+
+                    return pass;
                 }
             });
         }
@@ -154,6 +179,11 @@ namespace TestFramework
         {
             return Task.Run(() =>
             {
+                if (string.IsNullOrEmpty(result.Output))
+                {
+                    throw new InvalidOperationException("vcdb process did not yield any content");
+                }
+
                 var actual = json.ReadJsonContent(result.Output);
                 var expected = json.ReadJsonFromFile("ExpectedOutput.json");
                 var context = new ComparisonContext
@@ -174,7 +204,7 @@ namespace TestFramework
         {
             var vcdbBuildConfiguration = settings.VcDbBuildConfiguraton ?? "Debug";
             var fileName = settings.VcDbPath ?? $@"../../vcdb/bin/{vcdbBuildConfiguration}/netcoreapp3.1/vcdb.dll";
-            var commandLine = $"dotnet \"{fileName}\" --mode {settings.Mode} {settings.CommandLine.Replace("{ConnectionString}", options.ConnectionString)}";
+            var commandLine = $"dotnet \"{fileName}\" --mode {settings.Mode} --database \"{scenario.Name}\" {settings.CommandLine.Replace("{ConnectionString}", options.ConnectionString)}";
 
             var process = new Process
             {

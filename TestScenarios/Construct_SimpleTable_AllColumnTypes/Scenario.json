@@ -1,5 +1,5 @@
 {
-	"commandLine": "--connectionString \"{ConnectionString}\" --database=Construct_SimpleTable_AllColumnTypes",
+	"commandLine": "--connectionString \"{ConnectionString}\"",
 	"vcdbBuildConfiguration": "Debug",
 	"vcdbPath": null,
 	"mode": "construct",

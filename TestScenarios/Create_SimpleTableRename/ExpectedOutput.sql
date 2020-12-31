@@ -1,5 +1,5 @@
 EXEC sp_rename 
-    @old_name = 'dbo.Person', 
-    @new_name = 'dbo.People', 
-    @object_type = 'TABLE'
+    @objname = 'dbo.Person', 
+    @newname = 'dbo.People', 
+    @objtype = 'OBJECT'
 GO

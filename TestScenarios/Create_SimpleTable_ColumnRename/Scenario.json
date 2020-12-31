@@ -1,5 +1,5 @@
 {
-	"commandLine": "--connectionString \"{ConnectionString}\" --input Input.json --database=Create_SimpleTable_ColumnRename",
+	"commandLine": "--connectionString \"{ConnectionString}\" --input Input.json",
 	"vcdbBuildConfiguration": "Debug",
 	"vcdbPath": null,
 	"mode": "differential",

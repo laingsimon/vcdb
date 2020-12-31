@@ -1,5 +1,5 @@
 EXEC sp_rename 
-    @old_name = 'dbo.Person.Name', 
-    @new_name = 'FullName',
-    @object_type = 'COLUMN'
+    @objname = 'dbo.Person.Name', 
+    @newname = 'FullName',
+    @objtype = 'COLUMN'
 GO
