@@ -7,6 +7,7 @@ using System;
 using vcdb.CommandLine;
 using vcdb.Output;
 using vcdb.SchemaBuilding;
+using vcdb.Scripting;
 using vcdb.SqlServer;
 
 namespace vcdb
@@ -68,6 +69,7 @@ namespace vcdb
             services.AddSingleton<IDatabaseRepository, DatabaseRepository>();
             services.AddSingleton<IOutput, ConsoleOutput>();
             services.AddSingleton<IInput, Input>();
+            services.AddSingleton<IColumnComparer, ColumnComparer>();
             var databaseServicesInstaller = GetDatabaseServicesInstaller(options);
             databaseServicesInstaller.RegisterServices(services);
 

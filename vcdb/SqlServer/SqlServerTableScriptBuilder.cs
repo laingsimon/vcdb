@@ -12,10 +12,12 @@ namespace vcdb.SqlServer
     public class SqlServerTableScriptBuilder : ITableScriptBuilder
     {
         private readonly Options options;
+        private readonly IColumnComparer columnComparer;
 
-        public SqlServerTableScriptBuilder(Options options)
+        public SqlServerTableScriptBuilder(Options options, IColumnComparer columnComparer)
         {
             this.options = options;
+            this.columnComparer = columnComparer;
         }
 
         public async IAsyncEnumerable<SqlScript> CreateUpgradeScripts(
@@ -53,7 +55,11 @@ DROP TABLE [{table.Schema}].[{table.Table}]"));
 
         private Task<SqlScript> GetAlterTableScript(TableDetails currentTable, TableDetails requiredTable, TableName tableName)
         {
-            return Task.FromResult((SqlScript)null);
+            var differentColumns = columnComparer.GetDifferentColumns(currentTable.Columns, requiredTable.Columns).ToArray();
+            if (!differentColumns.Any())
+                return Task.FromResult((SqlScript)null);
+
+            throw new NotImplementedException();
         }
 
         private Task<SqlScript> GetRenameTableScript(TableName current, TableName required)

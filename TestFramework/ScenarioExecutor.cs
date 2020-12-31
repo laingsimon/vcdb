@@ -59,12 +59,6 @@ namespace TestFramework
                 return;
             }
 
-            if (string.IsNullOrEmpty(result.Output))
-            {
-                executionContext.ScenarioComplete(scenario, false, new[] { "Process exited with null or empty content" });
-                return;
-            }
-
             if (settings.Mode == null || settings.Mode == vcdb.CommandLine.ExecutionMode.Construct)
             {
                 await CompareJsonResult(settings, result, scenario);
