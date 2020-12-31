@@ -16,6 +16,9 @@ namespace vcdb.Output
         {
             await foreach (var item in input)
             {
+                if (item == null)
+                    continue;
+
                 var outputtable = item as IOutputable;
 
                 if (outputtable != null)

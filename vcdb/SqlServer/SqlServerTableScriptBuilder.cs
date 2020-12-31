@@ -19,37 +19,51 @@ namespace vcdb.SqlServer
         }
 
         public async IAsyncEnumerable<SqlScript> CreateUpgradeScripts(
-            IDictionary<TableName, TableDetails> current, 
-            IDictionary<TableName, TableDetails> required)
+            IDictionary<TableName, TableDetails> currentTables, 
+            IDictionary<TableName, TableDetails> requiredTables)
         {
-            foreach (var requiredTable in required)
+            var processedCurrentTables = new HashSet<TableName>();
+            foreach (var requiredTable in requiredTables)
             {
-                var currentTable = GetCurrentTable(current, requiredTable);
+                var currentTable = GetCurrentTable(currentTables, requiredTable);
                 if (currentTable == null)
                     yield return await GetCreateTableScript(requiredTable.Value, requiredTable.Key);
                 else
                 {
                     var currentTableInst = currentTable.Value;
-                    if (currentTableInst.Key != requiredTable.Key)
+                    processedCurrentTables.Add(currentTableInst.Key);
+                    if (!currentTableInst.Key.Equals(requiredTable.Key))
                         yield return await GetRenameTableScript(currentTableInst.Key, requiredTable.Key);
 
                     yield return await GetAlterTableScript(currentTableInst.Value, requiredTable.Value, requiredTable.Key);
                 }
             }
+
+            foreach (var currentTable in currentTables.Where(t => !processedCurrentTables.Contains(t.Key)))
+            {
+                yield return await GetDropTableScript(currentTable.Key);
+            }
         }
 
-        private async Task<SqlScript> GetAlterTableScript(TableDetails currentTable, TableDetails requiredTable, TableName tableName)
+        private Task<SqlScript> GetDropTableScript(TableName table)
         {
-            throw new System.NotImplementedException();
+            return Task.FromResult(new SqlScript(@$"
+DROP TABLE [{table.Schema}].[{table.Table}]"));
+        }
+
+        private Task<SqlScript> GetAlterTableScript(TableDetails currentTable, TableDetails requiredTable, TableName tableName)
+        {
+            return Task.FromResult((SqlScript)null);
         }
 
         private Task<SqlScript> GetRenameTableScript(TableName current, TableName required)
         {
             return Task.FromResult(new SqlScript(@$"
-exec sp_rename 
+EXEC sp_rename 
     @old_name = '{current.Schema}.{current.Table}', 
     @new_name = '{required.Schema}.{required.Table}', 
-    @object_type = 'table';"));
+    @object_type = 'TABLE'
+GO"));
         }
 
         private Task<SqlScript> GetCreateTableScript(TableDetails requiredTable, TableName tableName)
@@ -77,17 +91,33 @@ CREATE TABLE [{tableName.Schema}].[{tableName.Table}] (
         }
 
         private KeyValuePair<TableName, TableDetails>? GetCurrentTable(
-            IDictionary<TableName, TableDetails> current,
+            IDictionary<TableName, TableDetails> currentTables,
             KeyValuePair<TableName, TableDetails> requiredTable)
         {
-            var tablesWithSameName = current.Where(pair => pair.Key == requiredTable.Key).ToArray();
-            if (tablesWithSameName.Length == 1)
-            {
-                return tablesWithSameName[0];
-            }
+            return GetCurrentTable(currentTables, requiredTable.Key)
+                ?? GetCurrentTableForPreviousName(currentTables, requiredTable.Value.PreviousNames);
+        }
 
-            //TODO: look for tables with the name set to requiredTable.Value.PreviousNames
-            return null;
+        private KeyValuePair<TableName, TableDetails>? GetCurrentTable(
+            IDictionary<TableName, TableDetails> currentTables,
+            TableName requiredTableName)
+        {
+            var tablesWithSameName = currentTables.Where(pair => pair.Key.Equals(requiredTableName)).ToArray();
+            return tablesWithSameName.Length == 1
+                ? tablesWithSameName[0]
+                : default(KeyValuePair<TableName, TableDetails>?);
+        }
+
+        private KeyValuePair<TableName, TableDetails>? GetCurrentTableForPreviousName(
+            IDictionary<TableName, TableDetails> currentTables,
+            TableName[] previousNames)
+        {
+            if (previousNames == null)
+                return null;
+
+            return previousNames
+                .Select(previousName => GetCurrentTable(currentTables, previousName))
+                .FirstOrDefault(currentTable => currentTable != null);
         }
     }
 }
