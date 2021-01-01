@@ -2,8 +2,8 @@
   "profiles": {
     "vcdb": {
       "commandName": "Project",
-      "commandLineArgs": "--connectionString server=\"localhost;user id=sa;password=vcdb_2020\" --database Create_SimpleTable_AllColumnTypes --mode Differential --input Input.json",
-      "workingDirectory": "D:\\Simon\\Development\\vcdb\\TestScenarios\\Create_SimpleTable_AllColumnTypes"
+      "commandLineArgs": "--connectionString server=\"localhost;user id=sa;password=vcdb_2020\" --database Construct_SimpleTable_AllColumnTypes --mode Construct",
+      "workingDirectory": "..\\..\\vcdb\\TestScenarios\\"
     }
   }
 }
