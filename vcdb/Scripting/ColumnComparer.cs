@@ -7,7 +7,7 @@ namespace vcdb.Scripting
     public class ColumnComparer : IColumnComparer
     {
         public IEnumerable<ColumnDifference> GetDifferentColumns(
-            Dictionary<string, ColumnDetails> currentColumns, 
+            Dictionary<string, ColumnDetails> currentColumns,
             Dictionary<string, ColumnDetails> requiredColumns)
         {
             var processedColumns = new HashSet<ColumnDetails>();
@@ -16,20 +16,33 @@ namespace vcdb.Scripting
                 var currentColumn = GetCurrentColumn(currentColumns, requiredColumn);
 
                 if (currentColumn == null)
-                    yield return new ColumnDifference { RequiredColumn = requiredColumn };
+                {
+                    yield return new ColumnDifference
+                    {
+                        RequiredColumn = requiredColumn.AsNamedItem()
+                    };
+                }
                 else
                 {
-                    var currentColumnInst = currentColumn.Value;
-                    processedColumns.Add(currentColumnInst.Value);
+                    processedColumns.Add(currentColumn.Value);
 
-                    if (!currentColumnInst.Key.Equals(requiredColumn.Key) || !ColumnsAreIdentical(currentColumnInst.Value, requiredColumn.Value))
-                        yield return new ColumnDifference { CurrentColumn = currentColumnInst, RequiredColumn = requiredColumn };
+                    if (!currentColumn.Key.Equals(requiredColumn.Key) || !ColumnsAreIdentical(currentColumn.Value, requiredColumn.Value))
+                    {
+                        yield return new ColumnDifference
+                        {
+                            CurrentColumn = currentColumn,
+                            RequiredColumn = requiredColumn.AsNamedItem()
+                        };
+                    }
                 }
             }
 
             foreach (var currentColumn in currentColumns.Where(col => !processedColumns.Contains(col.Value)))
             {
-                yield return new ColumnDifference { CurrentColumn = currentColumn };
+                yield return new ColumnDifference
+                {
+                    CurrentColumn = currentColumn.AsNamedItem()
+                };
             }
         }
 
@@ -53,25 +66,25 @@ namespace vcdb.Scripting
             return false; //one has a value but not both
         }
 
-        private KeyValuePair<string, ColumnDetails>? GetCurrentColumn(
-            Dictionary<string, ColumnDetails> currentColumns, 
+        private NamedItem<string, ColumnDetails> GetCurrentColumn(
+            Dictionary<string, ColumnDetails> currentColumns,
             KeyValuePair<string, ColumnDetails> requiredColumn)
         {
             return GetCurrentColumn(currentColumns, requiredColumn.Key)
                 ?? GetCurrentColumnForPreviousName(currentColumns, requiredColumn.Value.PreviousNames);
         }
 
-        private KeyValuePair<string, ColumnDetails>? GetCurrentColumn(
+        private NamedItem<string, ColumnDetails> GetCurrentColumn(
             IDictionary<string, ColumnDetails> currentColumns,
             string requiredColumnName)
         {
             var tablesWithSameName = currentColumns.Where(pair => pair.Key.Equals(requiredColumnName)).ToArray();
             return tablesWithSameName.Length == 1
-                ? tablesWithSameName[0]
-                : default(KeyValuePair<string, ColumnDetails>?);
+                ? tablesWithSameName[0].AsNamedItem()
+                : NamedItem<string, ColumnDetails>.Null;
         }
 
-        private KeyValuePair<string, ColumnDetails>? GetCurrentColumnForPreviousName(
+        private NamedItem<string, ColumnDetails> GetCurrentColumnForPreviousName(
             IDictionary<string, ColumnDetails> currentColumns,
             string[] previousNames)
         {

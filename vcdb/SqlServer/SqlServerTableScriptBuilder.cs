@@ -32,12 +32,11 @@ namespace vcdb.SqlServer
                     yield return await GetCreateTableScript(requiredTable.Value, requiredTable.Key);
                 else
                 {
-                    var currentTableInst = currentTable.Value;
-                    processedCurrentTables.Add(currentTableInst.Key);
-                    if (!currentTableInst.Key.Equals(requiredTable.Key))
-                        yield return await GetRenameTableScript(currentTableInst.Key, requiredTable.Key);
+                    processedCurrentTables.Add(currentTable.Key);
+                    if (!currentTable.Key.Equals(requiredTable.Key))
+                        yield return await GetRenameTableScript(currentTable.Key, requiredTable.Key);
 
-                    var scripts = GetAlterTableScript(currentTableInst.Value, requiredTable.Value, requiredTable.Key);
+                    var scripts = GetAlterTableScript(currentTable.Value, requiredTable.Value, requiredTable.Key);
                     foreach (var script in scripts)
                         yield return script;
                 }
@@ -63,21 +62,21 @@ DROP TABLE [{table.Schema}].[{table.Table}]"));
 
             var renames = differentColumns.Where(IsRename);
             foreach (var rename in renames)
-                yield return GetRenameColumnScript(tableName, rename.CurrentColumn.Value.Key, rename.RequiredColumn.Value.Key);
+                yield return GetRenameColumnScript(tableName, rename.CurrentColumn.Key, rename.RequiredColumn.Key);
             var drops = differentColumns.Where(diff => diff.CurrentColumn != null && diff.RequiredColumn == null).ToArray();
             if (drops.Any())
                 yield return new SqlScript($@"ALTER TABLE [{tableName.Schema}].[{tableName.Table}]
-{string.Join(",", drops.Select(col => $"DROP COLUMN [{col.CurrentColumn.Value.Key}]"))}
+{string.Join(",", drops.Select(col => $"DROP COLUMN [{col.CurrentColumn.Key}]"))}
 GO");
 
             var adds = differentColumns.Where(diff => diff.CurrentColumn == null && diff.RequiredColumn != null);
             foreach (var add in adds)
-                yield return GetAddColumnScript(tableName, add.RequiredColumn.Value.Key, add.RequiredColumn.Value.Value);
+                yield return GetAddColumnScript(tableName, add.RequiredColumn.Key, add.RequiredColumn.Value);
 
             var alterations = differentColumns.Where(IsAlteration);
             foreach (var alteration in alterations)
             {
-                yield return GetAlterColumnScript(tableName, alteration.RequiredColumn.Value.Key, alteration.RequiredColumn.Value.Value);
+                yield return GetAlterColumnScript(tableName, alteration.RequiredColumn.Key, alteration.RequiredColumn.Value);
             }
         }
 
@@ -85,7 +84,7 @@ GO");
         {
             return difference.CurrentColumn != null
                 && difference.RequiredColumn != null
-                && difference.CurrentColumn.Value.Key != difference.RequiredColumn.Value.Key;
+                && difference.CurrentColumn.Key != difference.RequiredColumn.Key;
         }
 
         private bool IsAlteration(ColumnDifference difference)
@@ -94,8 +93,8 @@ GO");
                 || difference.RequiredColumn == null)
                 return false;
 
-            var currentColumn = difference.CurrentColumn.Value.Value;
-            var requiredColumn = difference.RequiredColumn.Value.Value;
+            var currentColumn = difference.CurrentColumn.Value;
+            var requiredColumn = difference.RequiredColumn.Value;
 
             return currentColumn.Nullable != requiredColumn.Nullable
                 || currentColumn.Type != requiredColumn.Type
@@ -188,7 +187,7 @@ CREATE TABLE [{tableName.Schema}].[{tableName.Table}] (
             return $"  [{column.Key}] {column.Value.Type}{nullabilityClause}{defaultClause}";
         }
 
-        private KeyValuePair<TableName, TableDetails>? GetCurrentTable(
+        private NamedItem<TableName, TableDetails> GetCurrentTable(
             IDictionary<TableName, TableDetails> currentTables,
             KeyValuePair<TableName, TableDetails> requiredTable)
         {
@@ -196,17 +195,17 @@ CREATE TABLE [{tableName.Schema}].[{tableName.Table}] (
                 ?? GetCurrentTableForPreviousName(currentTables, requiredTable.Value.PreviousNames);
         }
 
-        private KeyValuePair<TableName, TableDetails>? GetCurrentTable(
+        private NamedItem<TableName, TableDetails> GetCurrentTable(
             IDictionary<TableName, TableDetails> currentTables,
             TableName requiredTableName)
         {
             var tablesWithSameName = currentTables.Where(pair => pair.Key.Equals(requiredTableName)).ToArray();
             return tablesWithSameName.Length == 1
-                ? tablesWithSameName[0]
-                : default(KeyValuePair<TableName, TableDetails>?);
+                ? tablesWithSameName[0].AsNamedItem()
+                : NamedItem<TableName, TableDetails>.Null;
         }
 
-        private KeyValuePair<TableName, TableDetails>? GetCurrentTableForPreviousName(
+        private NamedItem<TableName, TableDetails> GetCurrentTableForPreviousName(
             IDictionary<TableName, TableDetails> currentTables,
             TableName[] previousNames)
         {

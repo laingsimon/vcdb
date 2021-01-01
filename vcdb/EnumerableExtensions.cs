@@ -27,5 +27,10 @@ namespace vcdb
                 ? dict[key]
                 : default(TValue);
         }
+
+        public static NamedItem<TKey, TValue> AsNamedItem<TKey, TValue>(this KeyValuePair<TKey, TValue> pair)
+        {
+            return new NamedItem<TKey, TValue>(pair);
+        }
     }
 }
