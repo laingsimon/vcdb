@@ -19,21 +19,28 @@ namespace vcdb.Scripting
                 {
                     yield return new ColumnDifference
                     {
-                        RequiredColumn = requiredColumn.AsNamedItem()
+                        RequiredColumn = requiredColumn.AsNamedItem(),
+                        ColumnAdded = true
                     };
                 }
                 else
                 {
                     processedColumns.Add(currentColumn.Value);
 
-                    if (!currentColumn.Key.Equals(requiredColumn.Key) || !ColumnsAreIdentical(currentColumn.Value, requiredColumn.Value))
+                    var difference = new ColumnDifference
                     {
-                        yield return new ColumnDifference
-                        {
-                            CurrentColumn = currentColumn,
-                            RequiredColumn = requiredColumn.AsNamedItem()
-                        };
-                    }
+                        CurrentColumn = currentColumn,
+                        RequiredColumn = requiredColumn.AsNamedItem(),
+                        ColumnRenamedTo = !currentColumn.Key.Equals(requiredColumn.Key)
+                            ? requiredColumn.Key
+                            : null
+                    };
+
+                    var columnDetailDifferences = ColumnsAreIdentical(currentColumn.Value, requiredColumn.Value);
+                    if (columnDetailDifferences != null)
+                        yield return difference.MergeIn(columnDetailDifferences);
+                    else if (difference.IsChanged)
+                        yield return difference;
                 }
             }
 
@@ -41,18 +48,37 @@ namespace vcdb.Scripting
             {
                 yield return new ColumnDifference
                 {
-                    CurrentColumn = currentColumn.AsNamedItem()
+                    CurrentColumn = currentColumn.AsNamedItem(),
+                    ColumnDeleted = true
                 };
             }
         }
 
-        private bool ColumnsAreIdentical(
-            ColumnDetails currentColumnInst,
+        private ColumnDifference ColumnsAreIdentical(
+            ColumnDetails currentColumn,
             ColumnDetails requiredColumn)
         {
-            return currentColumnInst.Type == requiredColumn.Type
-                && currentColumnInst.Nullable == requiredColumn.Nullable
-                && ColumnDefaultsAreIdentical(currentColumnInst.Default, requiredColumn.Default);
+            var defaultsIdentical = ColumnDefaultsAreIdentical(currentColumn.Default, requiredColumn.Default);
+
+            var difference = new ColumnDifference
+            {
+                TypeChangedTo = currentColumn.Type == requiredColumn.Type
+                    ? null
+                    : requiredColumn.Type,
+                NullabilityChangedTo = currentColumn.Nullable == requiredColumn.Nullable
+                    ? null
+                    : requiredColumn.Nullable,
+                DefaultChangedTo = defaultsIdentical
+                    ? ColumnDifference.Unchanged
+                    : requiredColumn.Default,
+                DefaultRenamedTo = currentColumn.DefaultName == requiredColumn.DefaultName
+                    ? null
+                    : requiredColumn.DefaultName
+            };
+
+            return difference.IsChanged
+                ? difference
+                : null;
         }
 
         private bool ColumnDefaultsAreIdentical(object currentDefault, object requiredDefault)
@@ -61,7 +87,16 @@ namespace vcdb.Scripting
                 return true;
 
             if (currentDefault != null && requiredDefault != null)
-                return currentDefault.Equals(requiredDefault);
+            {
+                if (requiredDefault.GetType().Equals(currentDefault.GetType()))
+                    return currentDefault.Equals(requiredDefault);
+                else if (requiredDefault is string)
+                    return requiredDefault.Equals(currentDefault.ToString());
+                else if (currentDefault is string)
+                    return currentDefault.Equals(requiredDefault.ToString());
+                else
+                    return requiredDefault.ToString().Equals(currentDefault.ToString());
+            }
 
             return false; //one has a value but not both
         }

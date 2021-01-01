@@ -5,7 +5,12 @@ CREATE TABLE dbo.Person (
 	Age			int,
 	Price		decimal(18, 2),
 	DoB			date,
-	Deleted		bit not null default(0),
+	Deleted		bit not null,
 	UniqueId	uniqueidentifier
 )
+GO
+ALTER TABLE [dbo].[Person]
+ADD CONSTRAINT [DF_PersonActiveByDefault]
+DEFAULT (0)
+FOR [Deleted]
 GO

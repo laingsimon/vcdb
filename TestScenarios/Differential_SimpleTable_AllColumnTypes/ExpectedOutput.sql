@@ -1,10 +1,16 @@
 CREATE TABLE [dbo].[Person] (
-	[Id] int identity not null,
-	[Name] nvarchar(255) not null,
+	[Id] int identity NOT NULL,
+	[Name] nvarchar(255) NOT NULL,
 	[Title] varchar(10),
 	[Age] int,
 	[Price] decimal(18, 2),
 	[DoB] date,
-	[Deleted] bit not null default(0),
+	[Deleted] bit NOT NULL,
 	[UniqueId] uniqueidentifier
 )
+GO
+ALTER TABLE [dbo].[Person]
+ADD CONSTRAINT [DF_Person_Deleted]
+DEFAULT (0)
+FOR [Deleted]
+GO

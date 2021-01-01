@@ -1,0 +1,11 @@
+{
+	"commandLine": "--connectionString \"{ConnectionString}\"",
+	"vcdbBuildConfiguration": "Debug",
+	"vcdbPath": null,
+	"mode": "construct",
+	"jsonComparison": {
+		"propertyNameComparer": "OrdinalIgnoreCase",
+		"explicit": true
+	},
+	"expectedExitCode": 0
+}

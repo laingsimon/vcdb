@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using vcdb.CommandLine;
 using vcdb.Models;
 using vcdb.Output;
 using vcdb.Scripting;
@@ -11,17 +10,15 @@ namespace vcdb.SqlServer
 {
     public class SqlServerTableScriptBuilder : ITableScriptBuilder
     {
-        private readonly Options options;
         private readonly IColumnComparer columnComparer;
 
-        public SqlServerTableScriptBuilder(Options options, IColumnComparer columnComparer)
+        public SqlServerTableScriptBuilder(IColumnComparer columnComparer)
         {
-            this.options = options;
             this.columnComparer = columnComparer;
         }
 
         public async IAsyncEnumerable<SqlScript> CreateUpgradeScripts(
-            IDictionary<TableName, TableDetails> currentTables, 
+            IDictionary<TableName, TableDetails> currentTables,
             IDictionary<TableName, TableDetails> requiredTables)
         {
             var processedCurrentTables = new HashSet<TableName>();
@@ -29,12 +26,31 @@ namespace vcdb.SqlServer
             {
                 var currentTable = GetCurrentTable(currentTables, requiredTable);
                 if (currentTable == null)
-                    yield return await GetCreateTableScript(requiredTable.Value, requiredTable.Key);
+                {
+                    foreach (var script in GetCreateTableScript(requiredTable.Value, requiredTable.Key))
+                    {
+                        yield return script;
+                    }
+                }
                 else
                 {
                     processedCurrentTables.Add(currentTable.Key);
                     if (!currentTable.Key.Equals(requiredTable.Key))
+                    {
                         yield return await GetRenameTableScript(currentTable.Key, requiredTable.Key);
+
+                        var columnsWithUnamedDefaults = currentTable.Value.Columns.Where(col => col.Value.Default != null && col.Value.DefaultName == null);
+                        foreach (var columnWhereDefaultRequiresANameChange in columnsWithUnamedDefaults)
+                        {
+                            yield return GetRenameDefaultScript(
+                                currentTable.Key,
+                                requiredTable.Key,
+                                columnWhereDefaultRequiresANameChange.AsNamedItem(),
+                                null,
+                                columnWhereDefaultRequiresANameChange.AsNamedItem(),
+                                null);
+                        }
+                    }
 
                     var scripts = GetAlterTableScript(currentTable.Value, requiredTable.Value, requiredTable.Key);
                     foreach (var script in scripts)
@@ -60,90 +76,155 @@ DROP TABLE [{table.Schema}].[{table.Table}]"));
             if (!differentColumns.Any())
                 yield break;
 
-            var renames = differentColumns.Where(IsRename);
-            foreach (var rename in renames)
+            foreach (var rename in differentColumns.Where(difference => difference.ColumnRenamedTo != null))
+            {
                 yield return GetRenameColumnScript(tableName, rename.CurrentColumn.Key, rename.RequiredColumn.Key);
-            var drops = differentColumns.Where(diff => diff.CurrentColumn != null && diff.RequiredColumn == null).ToArray();
+
+                if (rename.DefaultHasChanged && rename.RequiredColumn.Value.Default != null && rename.DefaultRenamedTo == null)
+                {
+                    //rename the default too
+                    yield return GetRenameDefaultScript(
+                        tableName,
+                        tableName,
+                        rename.CurrentColumn, 
+                        rename.CurrentColumn.Value.DefaultName,
+                        rename.RequiredColumn,
+                        rename.RequiredColumn.Value.DefaultName);
+                }
+            }
+
+            var drops = differentColumns.Where(diff => diff.ColumnDeleted).ToArray();
             if (drops.Any())
+            {
                 yield return new SqlScript($@"ALTER TABLE [{tableName.Schema}].[{tableName.Table}]
 {string.Join(",", drops.Select(col => $"DROP COLUMN [{col.CurrentColumn.Key}]"))}
 GO");
+            }
 
-            var adds = differentColumns.Where(diff => diff.CurrentColumn == null && diff.RequiredColumn != null);
-            foreach (var add in adds)
-                yield return GetAddColumnScript(tableName, add.RequiredColumn.Key, add.RequiredColumn.Value);
+            foreach (var add in differentColumns.Where(diff => diff.ColumnAdded))
+            {
+                foreach (var script in GetAddColumnScript(tableName, add.RequiredColumn.Key, add.RequiredColumn.Value))
+                    yield return script;
+            }
 
             var alterations = differentColumns.Where(IsAlteration);
             foreach (var alteration in alterations)
             {
-                yield return GetAlterColumnScript(tableName, alteration.RequiredColumn.Key, alteration.RequiredColumn.Value);
+                foreach (var script in GetAlterColumnScript(tableName, alteration))
+                {
+                    yield return script;
+                }
             }
-        }
-
-        private bool IsRename(ColumnDifference difference)
-        {
-            return difference.CurrentColumn != null
-                && difference.RequiredColumn != null
-                && difference.CurrentColumn.Key != difference.RequiredColumn.Key;
         }
 
         private bool IsAlteration(ColumnDifference difference)
         {
-            if (difference.CurrentColumn == null
-                || difference.RequiredColumn == null)
+            if (difference.ColumnAdded || difference.ColumnDeleted)
                 return false;
 
-            var currentColumn = difference.CurrentColumn.Value;
-            var requiredColumn = difference.RequiredColumn.Value;
-
-            return currentColumn.Nullable != requiredColumn.Nullable
-                || currentColumn.Type != requiredColumn.Type
-                || IsDefaultDifferent(currentColumn.Default, requiredColumn.Default);
+            return difference.DefaultHasChanged
+                || difference.DefaultRenamedTo != null
+                || difference.NullabilityChangedTo != null
+                || difference.TypeChangedTo != null;
         }
 
-        private bool IsDefaultDifferent(object currentDefault, object requiredDefault)
+        private IEnumerable<SqlScript> GetAlterColumnScript(TableName tableName, ColumnDifference alteration)
         {
-            if (currentDefault == null && requiredDefault == null)
-                return false;
+            var column = alteration.RequiredColumn.Value;
+            var columnName = alteration.RequiredColumn.Key;
 
-            if (currentDefault != null && requiredDefault != null)
-                return !currentDefault.Equals(requiredDefault);
+            if (alteration.NullabilityChangedTo != null || alteration.TypeChangedTo != null)
+            {
+                //type of nullability has changed
+                var nullabilityClause = column.Nullable == true
+                    ? ""
+                    : " NOT NULL";
 
-            return true;
+                yield return new SqlScript($@"ALTER TABLE [{tableName.Schema}].[{tableName.Table}]
+ALTER COLUMN [{columnName}] {column.Type}{nullabilityClause}
+GO");
+            }
+
+            if (alteration.DefaultRenamedTo != null)
+            {
+                yield return GetRenameDefaultScript(
+                    tableName, 
+                    tableName,
+                    alteration.CurrentColumn,
+                    alteration.CurrentColumn.Value.DefaultName,
+                    alteration.RequiredColumn,
+                    alteration.DefaultRenamedTo);
+            }
+
+            if (alteration.DefaultHasChanged)
+            {
+                if (alteration.DefaultChangedTo == null)
+                    yield return GetDropDefaultScript(tableName, columnName);
+                else
+                    yield return GetAlterDefaultScript(tableName, columnName, alteration.RequiredColumn.Value);
+            }
         }
 
-        private SqlScript GetAlterColumnScript(TableName tableName, string columnName, ColumnDetails column)
+        private SqlScript GetRenameDefaultScript(
+            TableName currentTableName,
+            TableName requiredTableName,
+            NamedItem<string, ColumnDetails> currentColumn, 
+            string currentName,
+            NamedItem<string, ColumnDetails> requiredColumn,
+            string requiredName)
+        {
+            return new SqlScript(@$"EXEC sp_rename 
+    @objname = '[{currentTableName.Schema}].[{currentName ?? GetNameForColumnDefault(currentTableName, currentColumn)}]', 
+    @newname = '[{requiredName ?? GetNameForColumnDefault(requiredTableName, requiredColumn)}]', 
+    @objtype = 'OBJECT'
+GO");
+        }
+
+        private string GetNameForColumnDefault(TableName tableName, NamedItem<string, ColumnDetails> column)
+        {
+            return $"DF_{tableName.Table}_{column.Key}";
+        }
+
+        public SqlScript GetDropDefaultScript(TableName tableName, string columnName)
+        {
+            return new SqlScript($@"ALTER TABLE [{tableName.Schema}].[{tableName.Table}]
+ALTER COLUMN [{columnName}] DROP DEFAULT
+GO");
+        }
+
+        public SqlScript GetAlterDefaultScript(TableName tableName, string columnName, ColumnDetails column)
+        {
+            //TODO: What if the default has either a) changed value (so we can't add another default)
+
+            throw new NotImplementedException();
+        }
+
+        public SqlScript GetAddDefaultScript(TableName tableName, string columnName, ColumnDetails column)
+        {
+            return new SqlScript($@"ALTER TABLE [{tableName.Schema}].[{tableName.Table}]
+ADD CONSTRAINT [{column.DefaultName ?? GetNameForColumnDefault(tableName, new NamedItem<string, ColumnDetails>(columnName, column))}]
+DEFAULT ({column.Default})
+FOR [{columnName}]
+GO");
+        }
+
+        private IEnumerable<SqlScript> GetAddColumnScript(TableName tableName, string columnName, ColumnDetails column)
         {
             var nullabilityClause = column.Nullable == true
                 ? ""
                 : " NOT NULL";
-            var defaultClause = column.Default != null
-                ? $" DEFAULT({column.Default})"
-                : "";
 
-            return new SqlScript($@"ALTER TABLE [{tableName.Schema}].[{tableName.Table}]
-ALTER COLUMN [{columnName}] {column.Type}{nullabilityClause}{defaultClause}
+            yield return new SqlScript($@"ALTER TABLE [{tableName.Schema}].[{tableName.Table}]
+ADD [{columnName}] {column.Type}{nullabilityClause}
 GO");
 
-        }
-
-        private SqlScript GetAddColumnScript(TableName tableName, string columnName, ColumnDetails column)
-        {
-            var nullabilityClause = column.Nullable == true
-                ? ""
-                : " NOT NULL";
-            var defaultClause = column.Default != null
-                ? $" DEFAULT({column.Default})"
-                : "";
-
-            return new SqlScript($@"ALTER TABLE [{tableName.Schema}].[{tableName.Table}]
-ADD [{columnName}] {column.Type}{nullabilityClause}{defaultClause}
-GO");
+            if (column.Default != null)
+                yield return GetAddDefaultScript(tableName, columnName, column);
         }
 
         private SqlScript GetRenameColumnScript(
-            TableName tableName, 
-            string currentColumnName, 
+            TableName tableName,
+            string currentColumnName,
             string requiredColumnName)
         {
             return new SqlScript(@$"EXEC sp_rename
@@ -163,14 +244,21 @@ EXEC sp_rename
 GO"));
         }
 
-        private Task<SqlScript> GetCreateTableScript(TableDetails requiredTable, TableName tableName)
+        private IEnumerable<SqlScript> GetCreateTableScript(TableDetails requiredTable, TableName tableName)
         {
             var columns = requiredTable.Columns.Select(CreateTableColumn);
-
-            return Task.FromResult(new SqlScript($@"
+            yield return new SqlScript($@"
 CREATE TABLE [{tableName.Schema}].[{tableName.Table}] (
 {string.Join("," + Environment.NewLine, columns)}
-)"));
+)
+GO");
+
+            foreach (var columnWithDefault in requiredTable.Columns
+                .Where(col => col.Value.Default != null))
+            {
+                yield return GetAddDefaultScript(tableName, columnWithDefault.Key, columnWithDefault.Value);
+            }
+
             //TODO: Add indexes
         }
 
@@ -178,13 +266,9 @@ CREATE TABLE [{tableName.Schema}].[{tableName.Table}] (
         {
             var nullabilityClause = column.Value.Nullable == true
                 ? ""
-                : " not null";
+                : " NOT NULL";
 
-            var defaultClause = column.Value.Default != null
-                ? $" default({column.Value.Default})"
-                : "";
-
-            return $"  [{column.Key}] {column.Value.Type}{nullabilityClause}{defaultClause}";
+            return $"  [{column.Key}] {column.Value.Type}{nullabilityClause}";
         }
 
         private NamedItem<TableName, TableDetails> GetCurrentTable(

@@ -13,6 +13,12 @@ namespace vcdb
         public TKey Key { get; }
         public TValue Value { get; }
 
+        public NamedItem(TKey key, TValue value)
+        {
+            Key = key;
+            Value = value;
+        }
+
         public NamedItem(KeyValuePair<TKey, TValue> pair)
         {
             Key = pair.Key;
