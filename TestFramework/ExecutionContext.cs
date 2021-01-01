@@ -19,7 +19,7 @@ namespace TestFramework
         {
             if (pass)
             {
-                log.LogInformation($"Scenario {scenario.Name} pass");
+                log.LogDebug($"Scenario {scenario.Name} pass");
                 Pass++;
                 return;
             }

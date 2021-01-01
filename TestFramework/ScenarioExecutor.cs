@@ -44,7 +44,6 @@ namespace TestFramework
 
         public async Task Execute(DirectoryInfo scenario)
         {
-            log.LogInformation($"Executing scenario: {scenario.Name}");
             await InitialiseDatabase(scenario);
             var settings = ReadScenarioSettings(scenario) ?? ScenarioSettings.Default;
 
@@ -76,7 +75,7 @@ namespace TestFramework
         {
             try
             {
-                log.LogInformation("Testing created sql script...");
+                log.LogDebug("Testing created sql script...");
                 await sql.ExecuteBatchedSql(new StringReader(result.Output), scenario.Name);
 
                 executionContext.ScenarioComplete(scenario, true, new string[0] { });
@@ -213,7 +212,8 @@ namespace TestFramework
                     FileName = Environment.GetEnvironmentVariable("comspec"),
                     Arguments = $"/c \"{commandLine}\"",
                     WorkingDirectory = scenario.FullName,
-                    RedirectStandardOutput = true
+                    RedirectStandardOutput = true,
+                    RedirectStandardError = !options.ShowVcdbProgress
                 }
             };
 

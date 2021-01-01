@@ -68,14 +68,14 @@ namespace TestFramework
 
         public async Task WaitForReady(int attempts)
         {
-            this.log.LogInformation("Waiting for SQL server to be available...");
+            log.LogDebug("Waiting for SQL server to be available...");
             var count = 0;
             while (count++ <= attempts)
             {
                 var success = await TestConnection(count == attempts);
                 if (success)
                 {
-                    this.log.LogInformation("SQL server is available");
+                    log.LogDebug("SQL server is available");
                     return;
                 }
                 await Task.Delay(TimeSpan.FromSeconds(count));

@@ -22,12 +22,12 @@ namespace vcdb.Output
         {
             var connection = new SqlConnection(options.ConnectionString);
 
-            logger.LogInformation($"Opening connection...");
+            logger.LogDebug($"Opening connection...");
 
             await connection.OpenAsync();
             if (!string.IsNullOrEmpty(options.Database))
             {
-                logger.LogInformation($"Switching to database {options.Database}...");
+                logger.LogDebug($"Switching to database {options.Database}...");
                 await connection.ExecuteAsync($"use [{options.Database}]");
             }
 

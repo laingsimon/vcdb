@@ -41,18 +41,12 @@ namespace vcdb
         {
             using (var connection = await connectionFactory.CreateConnection())
             {
-                try
-                {
-                    logger.LogInformation($"Reading database objects...");
-                    var database = await databaseRepository.GetDatabaseDetails(connection);
-                    var outputtable = await GetOutput(database);
+                logger.LogInformation($"Reading database objects...");
+                var database = await databaseRepository.GetDatabaseDetails(connection);
+                var outputtable = await GetOutput(database);
 
-                    await outputtable.WriteToOutput(output);
-                }
-                finally
-                {
-                    logger.LogInformation($"Finished");
-                }
+                logger.LogInformation($"Writing output...");
+                await outputtable.WriteToOutput(output);
             }
         }
 
@@ -73,7 +67,7 @@ namespace vcdb
         {
             var requiredDatabaseRepresentation = await input.Read<DatabaseDetails>();
             var databaseScripts = scriptBuilder.CreateUpgradeScripts(
-                currentDatabaseRepresentation, 
+                currentDatabaseRepresentation,
                 requiredDatabaseRepresentation);
             return new AsyncEnumerableOutput<SqlScript>(databaseScripts);
         }

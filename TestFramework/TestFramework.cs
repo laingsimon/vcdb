@@ -44,10 +44,14 @@ namespace TestFramework
                 return;
             }
 
-            foreach (var scenarioDirectory in scenariosDirectory
+            var scenarios = scenariosDirectory
                 .EnumerateDirectories()
                 .Where(DirectoryNotExcluded)
-                .Where(DirectoryIncluded))
+                .Where(DirectoryIncluded)
+                .ToArray();
+            var scenarioNumber = 0;
+
+            foreach (var scenarioDirectory in scenarios)
             {
                 using (var scope = serviceProvider.CreateScope())
                 using (var loggerScope = logger.BeginScope(scenarioDirectory.Name))
@@ -56,9 +60,12 @@ namespace TestFramework
                     scenarioDirectoryFactory.ScenarioDirectory = scenarioDirectory;
 
                     var scenarioExecutor = scope.ServiceProvider.GetRequiredService<IScenarioExecutor>();
+                    var log = scope.ServiceProvider.GetRequiredService<ILogger<TestFramework>>();
 
                     try
                     {
+                        log.LogInformation($"Executing: {scenarioDirectory.Name} [{++scenarioNumber}/{scenarios.Length}]");
+
                         await scenarioExecutor.Execute(scenarioDirectory);
                     }
                     catch (Exception exc)
