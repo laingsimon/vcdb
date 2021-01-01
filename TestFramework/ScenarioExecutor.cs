@@ -250,10 +250,17 @@ namespace TestFramework
 
         private async Task InitialiseDatabase(DirectoryInfo scenario)
         {
+            await sql.ExecuteBatchedSql(new StringReader($@"
+DROP DATABASE IF EXISTS [{scenario.Name}]
+GO
+
+CREATE DATABASE [{scenario.Name}]
+"));
+
             var databaseInitialisationFile = scenario.GetFiles("Database.sql").SingleOrDefault();
             if (databaseInitialisationFile != null)
             {
-                await sql.ExecuteBatchedSql(databaseInitialisationFile.OpenText());
+                await sql.ExecuteBatchedSql(databaseInitialisationFile.OpenText(), scenario.Name);
             }
         }
     }

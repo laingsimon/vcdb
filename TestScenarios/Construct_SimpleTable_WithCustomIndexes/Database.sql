@@ -1,12 +1,3 @@
-DROP DATABASE IF EXISTS [Construct_SimpleTable_WithCustomIndexes]
-GO
-
-CREATE DATABASE [Construct_SimpleTable_WithCustomIndexes]
-GO
-
-USE [Construct_SimpleTable_WithCustomIndexes]
-GO
-
 CREATE TABLE dbo.Person (
 	Id 			int	identity,
 	Name 		nvarchar(255) not null,
