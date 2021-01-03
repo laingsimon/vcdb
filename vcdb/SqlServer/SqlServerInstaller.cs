@@ -13,6 +13,7 @@ namespace vcdb.SqlServer
             services.AddSingleton<IIndexesRepository, SqlServerIndexesRepository>();
             services.AddSingleton<IDatabaseScriptBuilder, SqlServerDatabaseScriptBuilder>();
             services.AddSingleton<ITableScriptBuilder, SqlServerTableScriptBuilder>();
+            services.AddSingleton<ISqlObjectNameHelper, SqlObjectNameHelper>();
         }
     }
 }

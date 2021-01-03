@@ -1,9 +1,7 @@
 ﻿using Dapper;
-using System;
 using System.Collections.Generic;
 using System.Data.Common;
 using System.Linq;
-using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using vcdb.Models;
 using vcdb.SchemaBuilding;
@@ -12,6 +10,13 @@ namespace vcdb.SqlServer
 {
     public class SqlServerColumnsRepository : IColumnsRepository
     {
+        private readonly ISqlObjectNameHelper sqlObjectNameHelper;
+
+        public SqlServerColumnsRepository(ISqlObjectNameHelper sqlObjectNameHelper)
+        {
+            this.sqlObjectNameHelper = sqlObjectNameHelper;
+        }
+
         public async Task<Dictionary<string, ColumnDetails>> GetColumns(DbConnection connection, TableIdentifier tableIdentifier)
         {
             var tableColumns = await connection.QueryAsync<SpColumnsOutput>(@"
@@ -23,7 +28,7 @@ table_owner = tableIdentifier.TABLE_SCHEMA
 });
 
             var columnDefaults = (await connection.QueryAsync<ColumnDefaultDetails>(@"
-select def.name as DEFAULT_NAME, col.name as COLUMN_NAME
+select def.name as DEFAULT_NAME, col.name as COLUMN_NAME, def.OBJECT_ID
 from sys.default_constraints def
 inner join sys.columns col
 on col.column_id = def.parent_column_id
@@ -36,32 +41,35 @@ new
 {
     table_name = tableIdentifier.TABLE_NAME,
     table_owner = tableIdentifier.TABLE_SCHEMA
-})).ToDictionary(col => col.COLUMN_NAME, col => col.DEFAULT_NAME);
+})).ToDictionary(col => col.COLUMN_NAME, col => col);
 
             return tableColumns.ToDictionary(
                         column => column.COLUMN_NAME,
                         column =>
                         {
+                            var columnDefault = columnDefaults.ItemOrDefault(column.COLUMN_NAME);
+
                             return new ColumnDetails
                             {
                                 Type = GetDataType(column),
                                 Nullable = column.NULLABLE,
                                 Default = column.COLUMN_DEF?.Trim('(', ')'),
-                                DefaultName = CheckForInBuiltDefaultName(columnDefaults.ItemOrDefault(column.COLUMN_NAME))
+                                DefaultName = columnDefault == null || IsAutomaticConstraintName(columnDefault, tableIdentifier)
+                                    ? null
+                                    : columnDefault.DEFAULT_NAME
                             };
                         });
         }
 
-        private string CheckForInBuiltDefaultName(string defaultName)
+        private bool IsAutomaticConstraintName(ColumnDefaultDetails columnDefault, TableIdentifier tableIdentifier)
         {
-            //example sql server provided name for a default: DF__Person__Deleted__35BCFE0A
+            var automaticConstraintName = sqlObjectNameHelper.GetAutomaticConstraintName(
+                "DF",
+                tableIdentifier.TABLE_NAME,
+                columnDefault.COLUMN_NAME,
+                columnDefault.OBJECT_ID);
 
-            if (string.IsNullOrEmpty(defaultName))
-                return null;
-
-            return Regex.IsMatch(defaultName, $@"^DF__.+?__.+?__[A-F0-9]+$")
-                ? null
-                : defaultName;
+            return columnDefault.DEFAULT_NAME == automaticConstraintName;
         }
 
         private string GetDataType(SpColumnsOutput column)
