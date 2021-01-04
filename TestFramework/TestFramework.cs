@@ -14,29 +14,49 @@ namespace TestFramework
         private readonly ILogger<TestFramework> logger;
         private readonly ISql sql;
         private readonly ExecutionContext executionContext;
+        private readonly IDocker docker;
         private readonly IServiceProvider serviceProvider;
 
         public TestFramework(
-            Options options, 
-            ILogger<TestFramework> logger, 
-            IServiceProvider serviceProvider, 
+            Options options,
+            ILogger<TestFramework> logger,
+            IServiceProvider serviceProvider,
             ISql sql,
-            ExecutionContext executionContext)
+            ExecutionContext executionContext,
+            IDocker docker)
         {
             this.options = options;
             this.logger = logger;
             this.serviceProvider = serviceProvider;
             this.sql = sql;
             this.executionContext = executionContext;
+            this.docker = docker;
         }
 
         public async Task Execute()
         {
-            await sql.WaitForReady(attempts: 10);
+            if (!docker.IsInstalled())
+            {
+                logger.LogError("Docker is not installed");
+                return;
+            }
+
+            if (!await docker.IsDockerHostRunning())
+            {
+                await docker.StartDockerHost();
+            }
 
             var scenariosDirectory = string.IsNullOrEmpty(options.ScenariosPath)
                 ? new DirectoryInfo(Directory.GetCurrentDirectory())
                 : new DirectoryInfo(options.ScenariosPath);
+
+            if (!await docker.IsContainerRunning("testframework_sqlserver_1"))
+            {
+                var frameworkDirectory = Path.GetFullPath(Path.Combine(scenariosDirectory.FullName, "..\\TestFramework"));
+                await docker.StartDockerCompose(frameworkDirectory);
+            }
+
+            await sql.WaitForReady(attempts: 10);
 
             if (!scenariosDirectory.Exists)
             {

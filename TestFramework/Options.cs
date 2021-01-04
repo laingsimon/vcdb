@@ -22,5 +22,8 @@ namespace TestFramework
 
         [Option("showVcdbProgress", Default = false, HelpText = "Show STDERR output from vcdb")]
         public bool ShowVcdbProgress { get; set; }
+
+        [Option("dockerDesktopPath", Required = false, HelpText = "A path override to the location of the docker desktop executable")]
+        public string DockerDesktopPath { get; set; }
     }
 }

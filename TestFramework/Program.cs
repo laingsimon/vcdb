@@ -66,6 +66,7 @@ namespace TestFramework
             services.AddSingleton<ExecutionContext>();
             services.AddSingleton<IJsonEqualityComparer, Comparer>();
             services.AddSingleton<IInlineDiffBuilder>(InlineDiffBuilder.Instance);
+            services.AddSingleton<IDocker, Docker>();
 
             services.AddSingleton(new JsonSerializer
             {
