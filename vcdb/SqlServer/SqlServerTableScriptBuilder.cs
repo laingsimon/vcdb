@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using vcdb.CommandLine;
 using vcdb.Models;
 using vcdb.Output;
 using vcdb.Scripting;
@@ -10,107 +11,143 @@ namespace vcdb.SqlServer
 {
     public class SqlServerTableScriptBuilder : ITableScriptBuilder
     {
-        private readonly IColumnComparer columnComparer;
+        private readonly ITableComparer tableComparer;
+        private readonly Options options;
+        private readonly ISqlObjectNameHelper objectNameHelper;
 
-        public SqlServerTableScriptBuilder(IColumnComparer columnComparer)
+        public SqlServerTableScriptBuilder(ITableComparer tableComparer, Options options, ISqlObjectNameHelper objectNameHelper)
         {
-            this.columnComparer = columnComparer;
+            this.tableComparer = tableComparer;
+            this.options = options;
+            this.objectNameHelper = objectNameHelper;
         }
 
         public async IAsyncEnumerable<SqlScript> CreateUpgradeScripts(
             IDictionary<TableName, TableDetails> currentTables,
             IDictionary<TableName, TableDetails> requiredTables)
         {
-            var processedCurrentTables = new HashSet<TableName>();
-            foreach (var requiredTable in requiredTables)
+            var tableDifferences = tableComparer.GetDifferentTables(currentTables, requiredTables);
+
+            foreach (var tableDifference in tableDifferences)
             {
-                var currentTable = GetCurrentTable(currentTables, requiredTable);
-                if (currentTable == null)
+                var requiredTable = tableDifference.RequiredTable;
+                var currentTable = tableDifference.CurrentTable;
+
+                if (tableDifference.TableAdded)
                 {
                     foreach (var script in GetCreateTableScript(requiredTable.Value, requiredTable.Key))
                     {
                         yield return script;
                     }
+                    continue;
                 }
-                else
+
+                if (tableDifference.TableDeleted)
                 {
-                    processedCurrentTables.Add(currentTable.Key);
-                    if (!currentTable.Key.Equals(requiredTable.Key))
-                    {
-                        yield return await GetRenameTableScript(currentTable.Key, requiredTable.Key);
+                    yield return GetDropTableScript(currentTable.Key);
+                    continue;
+                }
 
-                        var columnsWithUnamedDefaults = currentTable.Value.Columns.Where(col => col.Value.Default != null && col.Value.DefaultName == null);
-                        foreach (var columnWhereDefaultRequiresANameChange in columnsWithUnamedDefaults)
-                        {
-                            yield return GetRenameDefaultScript(
-                                currentTable.Key,
-                                requiredTable.Key,
-                                columnWhereDefaultRequiresANameChange.AsNamedItem(),
-                                null,
-                                columnWhereDefaultRequiresANameChange.AsNamedItem(),
-                                null);
-                        }
-                    }
-
-                    var scripts = GetAlterTableScript(currentTable.Value, requiredTable.Value, requiredTable.Key);
-                    foreach (var script in scripts)
+                if (tableDifference.TableRenamedTo != null)
+                {
+                    foreach (var script in GetRenameTableScript(currentTable.Key, requiredTable.Key))
                         yield return script;
+
+                    if (!options.IgnoreUnnamedDefaults)
+                    {
+                        var defaultConstraintRenames = GetRenameUnnamedDefaultsIfNoColumnsAreRenamed(tableDifference);
+                        foreach (var defaultConstraintRename in defaultConstraintRenames)
+                            yield return defaultConstraintRename;
+                    }
+                }
+
+                foreach (var script in GetAlterTableScript(currentTable.Key, requiredTable.Key, tableDifference.ColumnDifferences))
+                {
+                    yield return script;
                 }
             }
+        }
 
-            foreach (var currentTable in currentTables.Where(t => !processedCurrentTables.Contains(t.Key)))
+        private IEnumerable<SqlScript> GetRenameUnnamedDefaultsIfNoColumnsAreRenamed(TableDifference tableDifference)
+        {
+            var requiredTable = tableDifference.RequiredTable;
+            var columnsWithDefaultsButNoExplicitName = requiredTable.Value.Columns.Where(col =>
             {
-                yield return await GetDropTableScript(currentTable.Key);
+                return col.Value.Default != null && col.Value.DefaultName == null;
+            });
+            
+            foreach (var requiredColumnWithUnnamedDefault in columnsWithDefaultsButNoExplicitName)
+            {
+                var columnDifference = tableDifference.ColumnDifferences.SingleOrDefault(cd => cd.RequiredColumn.Key == requiredColumnWithUnnamedDefault.Key);
+
+                if (columnDifference != null)
+                {
+                    continue;
+                }
+
+                var currentColumn = new NamedItem<string, ColumnDetails>(
+                    requiredColumnWithUnnamedDefault.Key,
+                    tableDifference.CurrentTable.Value.Columns[requiredColumnWithUnnamedDefault.Key]);
+
+                //The column hasn't changed (name) so the required and current column details are the same
+                yield return GetRenameDefaultScript(
+                    tableDifference.CurrentTable.Key,
+                    tableDifference.RequiredTable.Key,
+                    currentColumn,
+                    currentColumn.Value.DefaultName,
+                    currentColumn,
+                    null);
             }
         }
 
-        private Task<SqlScript> GetDropTableScript(TableName table)
+        private SqlScript GetDropTableScript(TableName table)
         {
-            return Task.FromResult(new SqlScript(@$"
-DROP TABLE [{table.Schema}].[{table.Table}]"));
+            return new SqlScript(@$"
+DROP TABLE [{table.Schema}].[{table.Table}]");
         }
 
-        private IEnumerable<SqlScript> GetAlterTableScript(TableDetails currentTable, TableDetails requiredTable, TableName tableName)
+        private IEnumerable<SqlScript> GetAlterTableScript(TableName currentTableName, TableName requiredTableName, IReadOnlyCollection<ColumnDifference> differentColumns)
         {
-            var differentColumns = columnComparer.GetDifferentColumns(currentTable.Columns, requiredTable.Columns).ToArray();
-            if (!differentColumns.Any())
-                yield break;
-
             foreach (var rename in differentColumns.Where(difference => difference.ColumnRenamedTo != null))
             {
-                yield return GetRenameColumnScript(tableName, rename.CurrentColumn.Key, rename.RequiredColumn.Key);
+                var requiredColumn = rename.RequiredColumn;
+                var currentColumn = rename.CurrentColumn;
+                yield return GetRenameColumnScript(requiredTableName, currentColumn.Key, requiredColumn.Key);
 
-                if (rename.DefaultHasChanged && rename.RequiredColumn.Value.Default != null && rename.DefaultRenamedTo == null)
+                if (!rename.DefaultHasChanged && requiredColumn.Value.Default != null && rename.DefaultRenamedTo == null && currentColumn.Value.DefaultName == null)
                 {
-                    //rename the default too
-                    yield return GetRenameDefaultScript(
-                        tableName,
-                        tableName,
-                        rename.CurrentColumn, 
-                        rename.CurrentColumn.Value.DefaultName,
-                        rename.RequiredColumn,
-                        rename.RequiredColumn.Value.DefaultName);
+                    if (!options.IgnoreUnnamedDefaults)
+                    {
+                        //rename the default too
+                        yield return GetRenameDefaultScript(
+                            currentTableName,
+                            requiredTableName,
+                            currentColumn,
+                            currentColumn.Value.DefaultName,
+                            requiredColumn,
+                            requiredColumn.Value.DefaultName);
+                    }
                 }
             }
 
             var drops = differentColumns.Where(diff => diff.ColumnDeleted).ToArray();
             if (drops.Any())
             {
-                yield return new SqlScript($@"ALTER TABLE [{tableName.Schema}].[{tableName.Table}]
+                yield return new SqlScript($@"ALTER TABLE [{requiredTableName.Schema}].[{requiredTableName.Table}]
 {string.Join(",", drops.Select(col => $"DROP COLUMN [{col.CurrentColumn.Key}]"))}
 GO");
             }
 
             foreach (var add in differentColumns.Where(diff => diff.ColumnAdded))
             {
-                foreach (var script in GetAddColumnScript(tableName, add.RequiredColumn.Key, add.RequiredColumn.Value))
+                foreach (var script in GetAddColumnScript(requiredTableName, add.RequiredColumn.Key, add.RequiredColumn.Value))
                     yield return script;
             }
 
             var alterations = differentColumns.Where(IsAlteration);
             foreach (var alteration in alterations)
             {
-                foreach (var script in GetAlterColumnScript(tableName, alteration))
+                foreach (var script in GetAlterColumnScript(requiredTableName, alteration))
                 {
                     yield return script;
                 }
@@ -119,13 +156,7 @@ GO");
 
         private bool IsAlteration(ColumnDifference difference)
         {
-            if (difference.ColumnAdded || difference.ColumnDeleted)
-                return false;
-
-            return difference.DefaultHasChanged
-                || difference.DefaultRenamedTo != null
-                || difference.NullabilityChangedTo != null
-                || difference.TypeChangedTo != null;
+            return !difference.ColumnAdded && !difference.ColumnDeleted && difference.IsChanged;
         }
 
         private IEnumerable<SqlScript> GetAlterColumnScript(TableName tableName, ColumnDifference alteration)
@@ -161,28 +192,16 @@ GO");
                 if (alteration.DefaultChangedTo == null)
                     yield return GetDropDefaultScript(tableName, columnName);
                 else
-                    yield return GetAlterDefaultScript(tableName, columnName, alteration.RequiredColumn.Value);
+                {
+                    foreach (var script in GetAlterDefaultScript(tableName, columnName, alteration.RequiredColumn.Value))
+                        yield return script;
+                }
             }
-        }
-
-        private SqlScript GetRenameDefaultScript(
-            TableName currentTableName,
-            TableName requiredTableName,
-            NamedItem<string, ColumnDetails> currentColumn, 
-            string currentName,
-            NamedItem<string, ColumnDetails> requiredColumn,
-            string requiredName)
-        {
-            return new SqlScript(@$"EXEC sp_rename 
-    @objname = '[{currentTableName.Schema}].[{currentName ?? GetNameForColumnDefault(currentTableName, currentColumn)}]', 
-    @newname = '[{requiredName ?? GetNameForColumnDefault(requiredTableName, requiredColumn)}]', 
-    @objtype = 'OBJECT'
-GO");
         }
 
         private string GetNameForColumnDefault(TableName tableName, NamedItem<string, ColumnDetails> column)
         {
-            return $"DF_{tableName.Table}_{column.Key}";
+            return objectNameHelper.GetAutomaticConstraintName("DF", tableName.Table, column.Key, column.Value.DefaultObjectId ?? 0);
         }
 
         public SqlScript GetDropDefaultScript(TableName tableName, string columnName)
@@ -192,20 +211,42 @@ ALTER COLUMN [{columnName}] DROP DEFAULT
 GO");
         }
 
-        public SqlScript GetAlterDefaultScript(TableName tableName, string columnName, ColumnDetails column)
+        public IEnumerable<SqlScript> GetAlterDefaultScript(TableName tableName, string columnName, ColumnDetails column)
         {
-            //TODO: What if the default has either a) changed value (so we can't add another default)
-
-            throw new NotImplementedException();
+            yield return GetDropDefaultScript(tableName, columnName);
+            foreach (var script in GetAddDefaultScript(tableName, columnName, column))
+                yield return script;
         }
 
-        public SqlScript GetAddDefaultScript(TableName tableName, string columnName, ColumnDetails column)
+        public IEnumerable<SqlScript> GetAddDefaultScript(TableName tableName, string columnName, ColumnDetails column)
         {
-            return new SqlScript($@"ALTER TABLE [{tableName.Schema}].[{tableName.Table}]
-ADD CONSTRAINT [{column.DefaultName ?? GetNameForColumnDefault(tableName, new NamedItem<string, ColumnDetails>(columnName, column))}]
+            var unnamedDefaultConstraint = GetNameForColumnDefault(tableName, new NamedItem<string, ColumnDetails>(columnName, column));
+            yield return new SqlScript($@"ALTER TABLE [{tableName.Schema}].[{tableName.Table}]
+ADD CONSTRAINT [{column.DefaultName ?? unnamedDefaultConstraint}]
 DEFAULT ({column.Default})
 FOR [{columnName}]
 GO");
+
+            if (column.DefaultName == null)
+            {
+                yield return new SqlScript(@$"DECLARE @newName VARCHAR(1024)
+SELECT @newName = 'DF__{tableName.Table}__{columnName}__' + FORMAT(def.OBJECT_ID, 'X')
+FROM sys.default_constraints def
+INNER JOIN sys.columns col
+ON col.column_id = def.parent_column_id
+AND col.object_id = def.parent_object_id
+INNER JOIN sys.tables tab
+ON tab.object_id = col.object_id
+WHERE tab.name = '{tableName.Table}'
+AND SCHEMA_NAME(tab.schema_id) = '{tableName.Schema}'
+AND def.name = '{unnamedDefaultConstraint}'
+
+EXEC sp_rename 
+    @objname = '{unnamedDefaultConstraint}', 
+    @newname = @newName, 
+    @objtype = 'OBJECT'
+GO");
+            }
         }
 
         private IEnumerable<SqlScript> GetAddColumnScript(TableName tableName, string columnName, ColumnDetails column)
@@ -219,7 +260,10 @@ ADD [{columnName}] {column.Type}{nullabilityClause}
 GO");
 
             if (column.Default != null)
-                yield return GetAddDefaultScript(tableName, columnName, column);
+            {
+                foreach (var script in GetAddDefaultScript(tableName, columnName, column))
+                    yield return script;
+            }
         }
 
         private SqlScript GetRenameColumnScript(
@@ -234,14 +278,45 @@ GO");
 GO");
         }
 
-        private Task<SqlScript> GetRenameTableScript(TableName current, TableName required)
+        private IEnumerable<SqlScript> GetRenameTableScript(TableName current, TableName required)
         {
-            return Task.FromResult(new SqlScript(@$"
+            yield return new SqlScript(@$"
 EXEC sp_rename 
     @objname = '{current.Schema}.{current.Table}', 
-    @newname = '{required.Schema}.{required.Table}', 
+    @newname = '{required.Table}', 
     @objtype = 'OBJECT'
-GO"));
+GO");
+
+            if (current.Schema != required.Schema)
+            {
+                throw new NotImplementedException($"Yield script to move table between schemas: {current.Schema} -> {required.Schema}");
+            }
+        }
+
+        private SqlScript GetRenameDefaultScript(
+            TableName currentTableName,
+            TableName requiredTableName,
+            NamedItem<string, ColumnDetails> currentColumn,
+            string currentConstraintName,
+            NamedItem<string, ColumnDetails> requiredColumn,
+            string requiredConstraintName)
+        {
+            var currentAutomaticConstraintName = objectNameHelper.GetAutomaticConstraintName(
+                "DF",
+                currentTableName.Table,
+                currentColumn.Key,
+                currentColumn.Value.DefaultObjectId ?? 0);
+            var requiredAutomaticConstraintName = objectNameHelper.GetAutomaticConstraintName(
+                "DF",
+                requiredTableName.Table,
+                requiredColumn.Key,
+                currentColumn.Value.DefaultObjectId ?? 0);
+
+            return new SqlScript(@$"EXEC sp_rename 
+    @objname = '[{currentTableName.Schema}].[{currentConstraintName ?? currentAutomaticConstraintName}]', 
+    @newname = '[{requiredConstraintName ?? requiredAutomaticConstraintName}]', 
+    @objtype = 'OBJECT'
+GO");
         }
 
         private IEnumerable<SqlScript> GetCreateTableScript(TableDetails requiredTable, TableName tableName)
@@ -256,7 +331,8 @@ GO");
             foreach (var columnWithDefault in requiredTable.Columns
                 .Where(col => col.Value.Default != null))
             {
-                yield return GetAddDefaultScript(tableName, columnWithDefault.Key, columnWithDefault.Value);
+                foreach (var script in GetAddDefaultScript(tableName, columnWithDefault.Key, columnWithDefault.Value))
+                    yield return script;
             }
 
             //TODO: Add indexes
@@ -269,36 +345,6 @@ GO");
                 : " NOT NULL";
 
             return $"  [{column.Key}] {column.Value.Type}{nullabilityClause}";
-        }
-
-        private NamedItem<TableName, TableDetails> GetCurrentTable(
-            IDictionary<TableName, TableDetails> currentTables,
-            KeyValuePair<TableName, TableDetails> requiredTable)
-        {
-            return GetCurrentTable(currentTables, requiredTable.Key)
-                ?? GetCurrentTableForPreviousName(currentTables, requiredTable.Value.PreviousNames);
-        }
-
-        private NamedItem<TableName, TableDetails> GetCurrentTable(
-            IDictionary<TableName, TableDetails> currentTables,
-            TableName requiredTableName)
-        {
-            var tablesWithSameName = currentTables.Where(pair => pair.Key.Equals(requiredTableName)).ToArray();
-            return tablesWithSameName.Length == 1
-                ? tablesWithSameName[0].AsNamedItem()
-                : NamedItem<TableName, TableDetails>.Null;
-        }
-
-        private NamedItem<TableName, TableDetails> GetCurrentTableForPreviousName(
-            IDictionary<TableName, TableDetails> currentTables,
-            TableName[] previousNames)
-        {
-            if (previousNames == null)
-                return null;
-
-            return previousNames
-                .Select(previousName => GetCurrentTable(currentTables, previousName))
-                .FirstOrDefault(currentTable => currentTable != null);
         }
     }
 }

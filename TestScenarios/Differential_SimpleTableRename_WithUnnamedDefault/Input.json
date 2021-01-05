@@ -1,0 +1,16 @@
+{
+  "tables": {
+	"dbo.People": {
+		"columns": {
+			"Id": { "type": "int identity", "nullable": false },
+			"Name": { 
+                "type": "nvarchar(255)", 
+                "nullable": false,
+				"default": "unknown"
+            },
+		},
+        "previousNames": [ "dbo.Person" ],
+		"indexes": { }
+	}
+  }
+}

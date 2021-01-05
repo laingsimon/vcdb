@@ -88,6 +88,11 @@ namespace vcdb.Scripting
 
             if (currentDefault != null && requiredDefault != null)
             {
+                if (requiredDefault is string requiredDefaultString && currentDefault is string currentDefaultString)
+                {
+                    return requiredDefaultString.Equals(currentDefaultString.Trim('\''));
+                }
+
                 if (requiredDefault.GetType().Equals(currentDefault.GetType()))
                     return currentDefault.Equals(requiredDefault);
                 else if (requiredDefault is string)

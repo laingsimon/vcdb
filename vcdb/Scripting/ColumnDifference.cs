@@ -1,5 +1,4 @@
-﻿using System;
-using vcdb.Models;
+﻿using vcdb.Models;
 
 namespace vcdb.Scripting
 {

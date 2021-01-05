@@ -1,4 +1,6 @@
-﻿namespace vcdb.Models
+﻿using Newtonsoft.Json;
+
+namespace vcdb.Models
 {
     public class ColumnDetails
     {
@@ -21,6 +23,12 @@
         /// A optional name for the default to add to the table
         /// </summary>
         public string DefaultName { get; set; }
+
+        /// <summary>
+        /// For internal use only, the id of the default constraint - if present
+        /// </summary>
+        [JsonIgnore]
+        internal int? DefaultObjectId { get; set; }
 
         /// <summary>
         /// Any previous names for the column, to indicate whether a column might need to change name

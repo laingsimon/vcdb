@@ -56,7 +56,8 @@ new
                                 Default = column.COLUMN_DEF?.Trim('(', ')'),
                                 DefaultName = columnDefault == null || IsAutomaticConstraintName(columnDefault, tableIdentifier)
                                     ? null
-                                    : columnDefault.DEFAULT_NAME
+                                    : columnDefault.DEFAULT_NAME,
+                                DefaultObjectId = columnDefault?.OBJECT_ID
                             };
                         });
         }
