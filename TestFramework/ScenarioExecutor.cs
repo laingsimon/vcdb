@@ -50,11 +50,13 @@ namespace TestFramework
             var result = await ExecuteCommandLine(settings, scenario);
             if (settings.ExpectedExitCode.HasValue && result.ExitCode != settings.ExpectedExitCode.Value)
             {
+                PrintReproductionStatement(scenario, result);
                 executionContext.ScenarioComplete(scenario, false, new[] { $"Expected process to exit with code {settings.ExpectedExitCode}, but it exited with {result.ExitCode}" });
                 return;
             } 
             else if (result.ExitCode != 0)
             {
+                PrintReproductionStatement(scenario, result);
                 executionContext.ScenarioComplete(scenario, false, new[] { $"vcdb process exited with non-success exit code: {result.ExitCode}" });
                 return;
             }
@@ -68,7 +70,14 @@ namespace TestFramework
                 var pass = await CompareSqlScriptResult(settings, result, scenario);
                 if (pass)
                     await TestSqlScriptResult(settings, result, scenario);
+                else
+                    PrintReproductionStatement(scenario, result);
             }
+        }
+
+        private void PrintReproductionStatement(DirectoryInfo scenario, ExecutionResult result)
+        {
+            log.LogInformation($"Execute vcdb with the following commandline to debug this scenario:\r\n{scenario.FullName}> {result.CommandLine}");
         }
 
         private async Task TestSqlScriptResult(ScenarioSettings settings, ExecutionResult result, DirectoryInfo scenario)
@@ -82,10 +91,12 @@ namespace TestFramework
             }
             catch (SqlException exc)
             {
+                PrintReproductionStatement(scenario, result);
                 executionContext.ScenarioComplete(scenario, false, new[] { exc.Message });
             }
             catch (Exception exc)
             {
+                PrintReproductionStatement(scenario, result);
                 executionContext.ScenarioComplete(scenario, false, new[] { exc.ToString() });
             }
         }
@@ -233,7 +244,8 @@ namespace TestFramework
                     ErrorOutput = process.StartInfo.RedirectStandardError 
                         ? await process.StandardError.ReadToEndAsync()
                         : null,
-                    ExitCode = process.ExitCode
+                    ExitCode = process.ExitCode,
+                    CommandLine = commandLine
                 };
             }
             catch (Exception exc)
