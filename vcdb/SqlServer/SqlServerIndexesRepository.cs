@@ -29,7 +29,7 @@ and schema_name(t.schema_id) = @schemaName";
                     tableName = tableIdentifier.TABLE_NAME, 
                     schemaName = tableIdentifier.TABLE_SCHEMA });
 
-            var columnsInEachIndex = indexesAndColumns.GroupBy(indexColumn => indexColumn.index_name).ToArray();
+            var columnsInEachIndex = indexesAndColumns.GroupBy(indexColumn => indexColumn.index_name);
 
             return columnsInEachIndex.ToDictionary(
                 group => group.Key,
@@ -51,7 +51,8 @@ and schema_name(t.schema_id) = @schemaName";
                             {
                                 Descending = col.is_descending_key
                             }),
-                        Clustered = indexDetails.type_desc == "CLUSTERED"
+                        Clustered = indexDetails.type_desc == "CLUSTERED",
+                        Unique = indexDetails.is_unique
                     };
                 });
         }

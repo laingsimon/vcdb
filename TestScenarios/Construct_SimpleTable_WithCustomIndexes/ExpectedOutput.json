@@ -12,14 +12,16 @@
 					"id": { "descending": false }
 				},
 				"includedColumns": {},
-				"clustered": true
+				"clustered": true,
+				"unique": true
 			},
 			"IX_Person_Name": { 
 				"columns": { 
 					"name": { "descending": false } 
 				},
 				"includedColumns": {},
-				"clustered": false
+				"clustered": false,
+				"unique": true
 			},
 			"IX_Person_Name_Age": { 
 				"columns": { 
@@ -27,7 +29,8 @@
 					"Age": { "descending": true } 
 				},
 				"includedColumns": {},
-				"clustered": false 
+				"clustered": false,
+				"unique": false
 			},
 			"IX_Person_Name_IncAge": { 
 				"columns": { 
@@ -36,7 +39,8 @@
 				"includedColumns": {
 					"Age": { "descending": false } 
 				},
-				"clustered": false 
+				"clustered": false,
+				"unique": false
 			}
 		}
 	}
