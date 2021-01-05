@@ -6,7 +6,7 @@ namespace vcdb.Scripting
 {
     public interface ITableScriptBuilder
     {
-        IAsyncEnumerable<SqlScript> CreateUpgradeScripts(
+        IEnumerable<SqlScript> CreateUpgradeScripts(
             IDictionary<TableName, TableDetails> current,
             IDictionary<TableName, TableDetails> required);
     }

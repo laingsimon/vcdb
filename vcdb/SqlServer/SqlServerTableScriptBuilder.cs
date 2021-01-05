@@ -22,7 +22,7 @@ namespace vcdb.SqlServer
             this.objectNameHelper = objectNameHelper;
         }
 
-        public async IAsyncEnumerable<SqlScript> CreateUpgradeScripts(
+        public IEnumerable<SqlScript> CreateUpgradeScripts(
             IDictionary<TableName, TableDetails> currentTables,
             IDictionary<TableName, TableDetails> requiredTables)
         {
@@ -280,16 +280,21 @@ GO");
 
         private IEnumerable<SqlScript> GetRenameTableScript(TableName current, TableName required)
         {
-            yield return new SqlScript(@$"
+            if (current.Table != required.Table)
+            {
+                yield return new SqlScript(@$"
 EXEC sp_rename 
     @objname = '{current.Schema}.{current.Table}', 
     @newname = '{required.Table}', 
     @objtype = 'OBJECT'
 GO");
+            }
 
             if (current.Schema != required.Schema)
             {
-                throw new NotImplementedException($"Yield script to move table between schemas: {current.Schema} -> {required.Schema}");
+                yield return new SqlScript(@$"ALTER SCHEMA [{required.Schema}]
+TRANSFER [{current.Schema}].[{required.Table}]
+GO");
             }
         }
 

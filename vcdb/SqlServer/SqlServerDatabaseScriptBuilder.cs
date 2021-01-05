@@ -19,12 +19,12 @@ namespace vcdb.SqlServer
             this.tableScriptBuilder = tableScriptBuilder;
         }
 
-        public async IAsyncEnumerable<SqlScript> CreateUpgradeScripts(DatabaseDetails current, DatabaseDetails required)
+        public IEnumerable<SqlScript> CreateUpgradeScripts(DatabaseDetails current, DatabaseDetails required)
         {
             var tableScripts = tableScriptBuilder.CreateUpgradeScripts(current.Tables, required.Tables);
-            await foreach (var script in tableScripts)
+            foreach (var script in tableScripts)
             {
-                yield return script; //TODO: Create ConcatAsync() extension method
+                yield return script;
             }
         }
     }
