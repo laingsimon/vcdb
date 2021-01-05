@@ -8,7 +8,7 @@ using System.Text.RegularExpressions;
 namespace vcdb
 {
     [TypeConverter(typeof(TypeConverter))]
-    [DebuggerDisplay("[{Schema}].[{Table}]")]
+    [DebuggerDisplay("[{Schema,nq}].[{Table,nq}]")]
     public class TableName : IEquatable<TableName>
     {
         [JsonIgnore]

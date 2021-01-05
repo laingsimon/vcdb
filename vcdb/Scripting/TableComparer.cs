@@ -88,7 +88,7 @@ namespace vcdb.Scripting
 
             return previousNames
                 .Select(previousName => GetCurrentTable(currentTables, previousName))
-                .FirstOrDefault(currentTable => currentTable != null);
+                .FirstOrDefault(current => current != null);
         }
     }
 }

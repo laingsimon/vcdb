@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 using vcdb.CommandLine;
 using vcdb.Models;
 using vcdb.Output;
@@ -11,23 +10,17 @@ namespace vcdb.SqlServer
 {
     public class SqlServerTableScriptBuilder : ITableScriptBuilder
     {
-        private readonly ITableComparer tableComparer;
         private readonly Options options;
         private readonly ISqlObjectNameHelper objectNameHelper;
 
-        public SqlServerTableScriptBuilder(ITableComparer tableComparer, Options options, ISqlObjectNameHelper objectNameHelper)
+        public SqlServerTableScriptBuilder(Options options, ISqlObjectNameHelper objectNameHelper)
         {
-            this.tableComparer = tableComparer;
             this.options = options;
             this.objectNameHelper = objectNameHelper;
         }
 
-        public IEnumerable<SqlScript> CreateUpgradeScripts(
-            IDictionary<TableName, TableDetails> currentTables,
-            IDictionary<TableName, TableDetails> requiredTables)
+        public IEnumerable<SqlScript> CreateUpgradeScripts(IReadOnlyCollection<TableDifference> tableDifferences)
         {
-            var tableDifferences = tableComparer.GetDifferentTables(currentTables, requiredTables);
-
             foreach (var tableDifference in tableDifferences)
             {
                 var requiredTable = tableDifference.RequiredTable;

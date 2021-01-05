@@ -6,7 +6,7 @@ namespace vcdb.Scripting
     public interface IColumnComparer
     {
         IEnumerable<ColumnDifference> GetDifferentColumns(
-            Dictionary<string, ColumnDetails> currentColumns, 
-            Dictionary<string, ColumnDetails> requiredColumns);
+            IDictionary<string, ColumnDetails> currentColumns, 
+            IDictionary<string, ColumnDetails> requiredColumns);
     }
 }

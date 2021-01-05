@@ -8,5 +8,8 @@
         "previousNames": [ "dbo.Person" ],
 		"indexes": { }
 	}
+  },
+  "schemas": {
+	"NewSchema": {}
   }
 }

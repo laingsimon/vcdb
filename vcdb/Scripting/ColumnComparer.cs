@@ -7,8 +7,8 @@ namespace vcdb.Scripting
     public class ColumnComparer : IColumnComparer
     {
         public IEnumerable<ColumnDifference> GetDifferentColumns(
-            Dictionary<string, ColumnDetails> currentColumns,
-            Dictionary<string, ColumnDetails> requiredColumns)
+            IDictionary<string, ColumnDetails> currentColumns,
+            IDictionary<string, ColumnDetails> requiredColumns)
         {
             var processedColumns = new HashSet<ColumnDetails>();
             foreach (var requiredColumn in requiredColumns)
@@ -107,7 +107,7 @@ namespace vcdb.Scripting
         }
 
         private NamedItem<string, ColumnDetails> GetCurrentColumn(
-            Dictionary<string, ColumnDetails> currentColumns,
+            IDictionary<string, ColumnDetails> currentColumns,
             KeyValuePair<string, ColumnDetails> requiredColumn)
         {
             return GetCurrentColumn(currentColumns, requiredColumn.Key)
@@ -133,7 +133,7 @@ namespace vcdb.Scripting
 
             return previousNames
                 .Select(previousName => GetCurrentColumn(currentColumns, previousName))
-                .FirstOrDefault(currentTable => currentTable != null);
+                .FirstOrDefault(current => current != null);
         }
     }
 }
