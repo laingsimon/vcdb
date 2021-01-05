@@ -180,7 +180,7 @@ namespace TestFramework
             {
                 if (string.IsNullOrEmpty(result.Output))
                 {
-                    throw new InvalidOperationException("vcdb process did not yield any content");
+                    throw new InvalidOperationException($"vcdb process did not yield any standard output\r\n{result.ErrorOutput}");
                 }
 
                 var actual = json.ReadJsonContent(result.Output);
@@ -230,6 +230,9 @@ namespace TestFramework
                 return new ExecutionResult
                 {
                     Output = output,
+                    ErrorOutput = process.StartInfo.RedirectStandardError 
+                        ? await process.StandardError.ReadToEndAsync()
+                        : null,
                     ExitCode = process.ExitCode
                 };
             }
