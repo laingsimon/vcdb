@@ -14,6 +14,8 @@ namespace vcdb.Scripting
         public bool TableDeleted { get; set; }
 
         public IReadOnlyCollection<ColumnDifference> ColumnDifferences { get; set; }
+        public IReadOnlyCollection<IndexDifference> IndexDifferences { get; set; }
+
         public bool IsChanged
         {
             get
@@ -21,7 +23,8 @@ namespace vcdb.Scripting
                 return TableAdded
                     || TableDeleted
                     || TableRenamedTo != null
-                    || ColumnDifferences?.Any() == true;
+                    || ColumnDifferences?.Any() == true
+                    || IndexDifferences?.Any() == true;
             }
         }
     }

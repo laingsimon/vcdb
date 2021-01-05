@@ -2,7 +2,7 @@
 
 namespace vcdb.Models
 {
-    public class ColumnDetails
+    public class ColumnDetails : INamedItem<string>
     {
         /// <summary>
         /// The data type of the column

@@ -7,10 +7,14 @@ namespace vcdb.Scripting
     public class TableComparer : ITableComparer
     {
         private readonly IColumnComparer columnComparer;
+        private readonly IIndexComparer indexComparer;
+        private readonly INamedItemFinder namedItemFinder;
 
-        public TableComparer(IColumnComparer columnComparer)
+        public TableComparer(IColumnComparer columnComparer, IIndexComparer indexComparer, INamedItemFinder namedItemFinder)
         {
             this.columnComparer = columnComparer;
+            this.indexComparer = indexComparer;
+            this.namedItemFinder = namedItemFinder;
         }
 
         public IEnumerable<TableDifference> GetDifferentTables(
@@ -20,7 +24,7 @@ namespace vcdb.Scripting
             var processedTables = new HashSet<TableDetails>();
             foreach (var requiredTable in requiredTables)
             {
-                var currentTable = GetCurrentTable(currentTables, requiredTable);
+                var currentTable = namedItemFinder.GetCurrentItem(currentTables, requiredTable);
 
                 if (currentTable == null)
                 {
@@ -41,7 +45,8 @@ namespace vcdb.Scripting
                         TableRenamedTo = !currentTable.Key.Equals(requiredTable.Key)
                             ? requiredTable.Key
                             : null,
-                        ColumnDifferences = columnComparer.GetDifferentColumns(currentTable.Value.Columns, requiredTable.Value.Columns).ToArray()
+                        ColumnDifferences = columnComparer.GetDifferentColumns(currentTable.Value.Columns, requiredTable.Value.Columns).ToArray(),
+                        IndexDifferences = indexComparer.GetIndexDifferences(currentTable.Value.Indexes, requiredTable.Value.Indexes, requiredTable.Value.Columns).ToArray()
                     };
 
                     if (difference.IsChanged)
@@ -59,36 +64,6 @@ namespace vcdb.Scripting
                     TableDeleted = true
                 };
             }
-        }
-
-        private NamedItem<TableName, TableDetails> GetCurrentTable(
-            IDictionary<TableName, TableDetails> currentTables,
-            KeyValuePair<TableName, TableDetails> requiredTable)
-        {
-            return GetCurrentTable(currentTables, requiredTable.Key)
-                ?? GetCurrentTableForPreviousName(currentTables, requiredTable.Value.PreviousNames);
-        }
-
-        private NamedItem<TableName, TableDetails> GetCurrentTable(
-            IDictionary<TableName, TableDetails> currentTables,
-            TableName requiredTableName)
-        {
-            var tablesWithSameName = currentTables.Where(pair => pair.Key.Equals(requiredTableName)).ToArray();
-            return tablesWithSameName.Length == 1
-                ? tablesWithSameName[0].AsNamedItem()
-                : NamedItem<TableName, TableDetails>.Null;
-        }
-
-        private NamedItem<TableName, TableDetails> GetCurrentTableForPreviousName(
-            IDictionary<TableName, TableDetails> currentTables,
-            TableName[] previousNames)
-        {
-            if (previousNames == null)
-                return null;
-
-            return previousNames
-                .Select(previousName => GetCurrentTable(currentTables, previousName))
-                .FirstOrDefault(current => current != null);
         }
     }
 }

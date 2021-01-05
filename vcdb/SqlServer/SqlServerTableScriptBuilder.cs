@@ -54,7 +54,7 @@ namespace vcdb.SqlServer
                     }
                 }
 
-                foreach (var script in GetAlterTableScript(currentTable.Key, requiredTable.Key, tableDifference.ColumnDifferences))
+                foreach (var script in GetAlterTableScript(currentTable.Key, requiredTable.Key, tableDifference))
                 {
                     yield return script;
                 }
@@ -99,8 +99,9 @@ namespace vcdb.SqlServer
 DROP TABLE [{table.Schema}].[{table.Table}]");
         }
 
-        private IEnumerable<SqlScript> GetAlterTableScript(TableName currentTableName, TableName requiredTableName, IReadOnlyCollection<ColumnDifference> differentColumns)
+        private IEnumerable<SqlScript> GetAlterTableScript(TableName currentTableName, TableName requiredTableName, TableDifference tableDifference)
         {
+            var differentColumns = tableDifference.ColumnDifferences;
             foreach (var rename in differentColumns.Where(difference => difference.ColumnRenamedTo != null))
             {
                 var requiredColumn = rename.RequiredColumn;
@@ -145,6 +146,8 @@ GO");
                     yield return script;
                 }
             }
+
+            //TODO: Yield index changes
         }
 
         private bool IsAlteration(ColumnDifference difference)

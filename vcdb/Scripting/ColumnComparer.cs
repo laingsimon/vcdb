@@ -6,6 +6,13 @@ namespace vcdb.Scripting
 {
     public class ColumnComparer : IColumnComparer
     {
+        private readonly INamedItemFinder namedItemFinder;
+
+        public ColumnComparer(INamedItemFinder namedItemFinder)
+        {
+            this.namedItemFinder = namedItemFinder;
+        }
+
         public IEnumerable<ColumnDifference> GetDifferentColumns(
             IDictionary<string, ColumnDetails> currentColumns,
             IDictionary<string, ColumnDetails> requiredColumns)
@@ -13,7 +20,7 @@ namespace vcdb.Scripting
             var processedColumns = new HashSet<ColumnDetails>();
             foreach (var requiredColumn in requiredColumns)
             {
-                var currentColumn = GetCurrentColumn(currentColumns, requiredColumn);
+                var currentColumn = namedItemFinder.GetCurrentItem(currentColumns, requiredColumn);
 
                 if (currentColumn == null)
                 {
@@ -104,36 +111,6 @@ namespace vcdb.Scripting
             }
 
             return false; //one has a value but not both
-        }
-
-        private NamedItem<string, ColumnDetails> GetCurrentColumn(
-            IDictionary<string, ColumnDetails> currentColumns,
-            KeyValuePair<string, ColumnDetails> requiredColumn)
-        {
-            return GetCurrentColumn(currentColumns, requiredColumn.Key)
-                ?? GetCurrentColumnForPreviousName(currentColumns, requiredColumn.Value.PreviousNames);
-        }
-
-        private NamedItem<string, ColumnDetails> GetCurrentColumn(
-            IDictionary<string, ColumnDetails> currentColumns,
-            string requiredColumnName)
-        {
-            var tablesWithSameName = currentColumns.Where(pair => pair.Key.Equals(requiredColumnName)).ToArray();
-            return tablesWithSameName.Length == 1
-                ? tablesWithSameName[0].AsNamedItem()
-                : NamedItem<string, ColumnDetails>.Null;
-        }
-
-        private NamedItem<string, ColumnDetails> GetCurrentColumnForPreviousName(
-            IDictionary<string, ColumnDetails> currentColumns,
-            string[] previousNames)
-        {
-            if (previousNames == null)
-                return null;
-
-            return previousNames
-                .Select(previousName => GetCurrentColumn(currentColumns, previousName))
-                .FirstOrDefault(current => current != null);
         }
     }
 }

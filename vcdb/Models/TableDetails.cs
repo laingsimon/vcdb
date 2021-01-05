@@ -2,7 +2,7 @@
 
 namespace vcdb.Models
 {
-    public class TableDetails
+    public class TableDetails : INamedItem<TableName>
     {
         public Dictionary<string, ColumnDetails> Columns { get; set; }
         public Dictionary<string, IndexDetails> Indexes { get; set; }

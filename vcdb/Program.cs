@@ -71,8 +71,10 @@ namespace vcdb
             services.AddSingleton<IInput, Input>();
             services.AddSingleton<IColumnComparer, ColumnComparer>();
             services.AddSingleton<ITableComparer, TableComparer>();
+            services.AddSingleton<IIndexComparer, IndexComparer>();
             services.AddSingleton<IDatabaseComparer, DatabaseComparer>();
             services.AddSingleton<ISchemaComparer, SchemaComparer>();
+            services.AddSingleton<INamedItemFinder, NamedItemFinder>();
             var databaseServicesInstaller = GetDatabaseServicesInstaller(options);
             databaseServicesInstaller.RegisterServices(services);
 
