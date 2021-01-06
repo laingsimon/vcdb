@@ -1,5 +1,4 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
 using System;
 using System.IO;
 using System.Linq;
@@ -11,7 +10,7 @@ namespace TestFramework
     internal class TestFramework : ITestFramework
     {
         private readonly Options options;
-        private readonly ILogger<TestFramework> logger;
+        private readonly ILogger logger;
         private readonly ISql sql;
         private readonly ExecutionContext executionContext;
         private readonly IDocker docker;
@@ -19,7 +18,7 @@ namespace TestFramework
 
         public TestFramework(
             Options options,
-            ILogger<TestFramework> logger,
+            ILogger logger,
             IServiceProvider serviceProvider,
             ISql sql,
             ExecutionContext executionContext,
@@ -69,34 +68,55 @@ namespace TestFramework
                 .Where(DirectoryNotExcluded)
                 .Where(DirectoryIncluded)
                 .ToArray();
-            var scenarioNumber = 0;
 
-            foreach (var scenarioDirectory in scenarios)
+            logger.LogInformation($"Executing {scenarios.Length} scenario/s...");
+
+            var tasks = scenarios.Select(scenarioDirectory => ExecuteScenario(scenarioDirectory)).ToArray();
+            await Task.WhenAll(tasks);
+
+            executionContext.Finished();
+        }
+
+        private async Task ExecuteScenario(DirectoryInfo scenarioDirectory)
+        {
+            using (var scope = serviceProvider.CreateScope())
             {
-                using (var scope = serviceProvider.CreateScope())
-                using (var loggerScope = logger.BeginScope(scenarioDirectory.Name))
+                var scenarioDirectoryFactory = scope.ServiceProvider.GetRequiredService<ScenarioDirectoryFactory>();
+                scenarioDirectoryFactory.ScenarioDirectory = scenarioDirectory;
+
+                var scenarioExecutor = scope.ServiceProvider.GetRequiredService<IScenarioExecutor>();
+
+                var logMessage = $" - {scenarioDirectory.Name}...";
+                OutputDetail messageDetail;
+
+                using (logger.GetWriteLock())
                 {
-                    var scenarioDirectoryFactory = scope.ServiceProvider.GetRequiredService<ScenarioDirectoryFactory>();
-                    scenarioDirectoryFactory.ScenarioDirectory = scenarioDirectory;
+                    messageDetail = logger.LogLine(logMessage);
+                }
+                var success = false;
 
-                    var scenarioExecutor = scope.ServiceProvider.GetRequiredService<IScenarioExecutor>();
-                    var log = scope.ServiceProvider.GetRequiredService<ILogger<TestFramework>>();
-
-                    try
+                try
+                {
+                    success = await scenarioExecutor.Execute(scenarioDirectory);
+                }
+                catch (Exception exc)
+                {
+                    executionContext.ScenarioComplete(scenarioDirectory, false, new[] { exc.Message });
+                    logger.LogError(exc.Message);
+                }
+                finally
+                {
+                    if (!Console.IsOutputRedirected)
                     {
-                        log.LogInformation($"Executing: {scenarioDirectory.Name} [{++scenarioNumber}/{scenarios.Length}]");
-
-                        await scenarioExecutor.Execute(scenarioDirectory);
-                    }
-                    catch (Exception exc)
-                    {
-                        executionContext.ScenarioComplete(scenarioDirectory, false, new[] { exc.Message });
-                        logger.LogError(exc.Message);
+                        using (logger.GetWriteLock())
+                        using (new ResetCursorPosition(messageDetail?.EndingConsoleLeft - 3, messageDetail?.EndingConsoleTop - 1))
+                        using (new ResetConsoleColor(foreground: success ? ConsoleColor.DarkGreen : ConsoleColor.Red))
+                        {
+                            Console.Write($" done");
+                        }
                     }
                 }
             }
-
-            executionContext.Finished();
         }
 
         private bool DirectoryNotExcluded(DirectoryInfo scenarioDirectory)

@@ -1,9 +1,7 @@
 ﻿using CommandLine;
-using DiffPlex;
 using DiffPlex.DiffBuilder;
 using JsonEqualityComparer;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 using System;
@@ -24,10 +22,6 @@ namespace TestFramework
                        try
                        {
                            var serviceCollection = new ServiceCollection();
-                           serviceCollection
-                            .AddLogging(builder => builder.AddSimpleConsole(o => o.SingleLine = true))
-                            .Configure<LoggerFilterOptions>(opts => opts.MinLevel = o.MinLogLevel);
-
                            serviceCollection.AddSingleton(o);
                            ConfigureServices(serviceCollection);
                            using (var serviceProvider = serviceCollection.BuildServiceProvider())
@@ -67,6 +61,7 @@ namespace TestFramework
             services.AddSingleton<IJsonEqualityComparer, Comparer>();
             services.AddSingleton<IInlineDiffBuilder>(InlineDiffBuilder.Instance);
             services.AddSingleton<IDocker, Docker>();
+            services.AddSingleton<ILogger, ConsoleLogger>();
 
             services.AddSingleton(new JsonSerializer
             {

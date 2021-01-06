@@ -1,5 +1,4 @@
-﻿using Microsoft.Extensions.Logging;
-using System;
+﻿using System;
 using System.Data.SqlClient;
 using System.IO;
 using System.Text;
@@ -10,9 +9,9 @@ namespace TestFramework
     internal class Sql : ISql
     {
         private readonly string connectionString;
-        private readonly ILogger<Sql> log;
+        private readonly ILogger log;
 
-        public Sql(Options options, ILogger<Sql> log)
+        public Sql(Options options, ILogger log)
         {
             this.connectionString = options.ConnectionString;
             this.log = log;

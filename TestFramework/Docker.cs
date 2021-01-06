@@ -1,5 +1,4 @@
-﻿using Microsoft.Extensions.Logging;
-using System;
+﻿using System;
 using System.Diagnostics;
 using System.IO;
 using System.Text;
@@ -13,9 +12,9 @@ namespace TestFramework
     {
         private const string DockerDesktopPath = "C:\\Program Files\\Docker\\Docker\\Docker Desktop.exe";
         private readonly Options options;
-        private readonly ILogger<Docker> logger;
+        private readonly ILogger logger;
 
-        public Docker(Options options, ILogger<Docker> logger)
+        public Docker(Options options, ILogger logger)
         {
             this.options = options;
             this.logger = logger;
@@ -52,7 +51,7 @@ namespace TestFramework
                 return false;
             }
 
-            logger.LogTrace(process.StandardOutput.ReadToEnd());
+            logger.LogDebug(process.StandardOutput.ReadToEnd());
             return true;
         }
 

@@ -1,9 +1,7 @@
-﻿using DiffPlex;
-using DiffPlex.Chunkers;
+﻿using DiffPlex.Chunkers;
 using DiffPlex.DiffBuilder;
 using DiffPlex.DiffBuilder.Model;
 using JsonEqualityComparer;
-using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Data.SqlClient;
@@ -16,7 +14,7 @@ namespace TestFramework
 {
     internal class ScenarioExecutor : IScenarioExecutor
     {
-        private readonly ILogger<ScenarioExecutor> log;
+        private readonly ILogger log;
         private readonly ISql sql;
         private readonly IJson json;
         private readonly ExecutionContext executionContext;
@@ -25,7 +23,7 @@ namespace TestFramework
         private readonly IInlineDiffBuilder differ;
 
         public ScenarioExecutor(
-            ILogger<ScenarioExecutor> log,
+            ILogger log,
             ISql sql,
             IJson json,
             ExecutionContext executionContext,
@@ -42,7 +40,7 @@ namespace TestFramework
             this.differ = differ;
         }
 
-        public async Task Execute(DirectoryInfo scenario)
+        public async Task<bool> Execute(DirectoryInfo scenario)
         {
             await InitialiseDatabase(scenario);
             var settings = ReadScenarioSettings(scenario) ?? ScenarioSettings.Default;
@@ -52,26 +50,29 @@ namespace TestFramework
             {
                 PrintReproductionStatement(scenario, result);
                 executionContext.ScenarioComplete(scenario, false, new[] { $"Expected process to exit with code {settings.ExpectedExitCode}, but it exited with {result.ExitCode}" });
-                return;
+                return false;
             } 
             else if (result.ExitCode != 0)
             {
                 PrintReproductionStatement(scenario, result);
                 executionContext.ScenarioComplete(scenario, false, new[] { $"vcdb process exited with non-success exit code: {result.ExitCode}" });
-                return;
+                return false;
             }
 
             if (settings.Mode == null || settings.Mode == vcdb.CommandLine.ExecutionMode.Construct)
             {
-                await CompareJsonResult(settings, result, scenario);
+                return await CompareJsonResult(settings, result, scenario);
             }
             else
             {
                 var pass = await CompareSqlScriptResult(settings, result, scenario);
                 if (pass)
-                    await TestSqlScriptResult(settings, result, scenario);
+                    return await TestSqlScriptResult(settings, result, scenario);
                 else
+                {
                     PrintReproductionStatement(scenario, result);
+                    return false;
+                }
             }
         }
 
@@ -80,7 +81,7 @@ namespace TestFramework
             log.LogInformation($"Execute vcdb with the following commandline to debug this scenario:\r\n{scenario.FullName}> {result.CommandLine}");
         }
 
-        private async Task TestSqlScriptResult(ScenarioSettings settings, ExecutionResult result, DirectoryInfo scenario)
+        private async Task<bool> TestSqlScriptResult(ScenarioSettings settings, ExecutionResult result, DirectoryInfo scenario)
         {
             try
             {
@@ -88,16 +89,19 @@ namespace TestFramework
                 await sql.ExecuteBatchedSql(new StringReader(result.Output), scenario.Name);
 
                 executionContext.ScenarioComplete(scenario, true, new string[0] { });
+                return true;
             }
             catch (SqlException exc)
             {
                 PrintReproductionStatement(scenario, result);
                 executionContext.ScenarioComplete(scenario, false, new[] { exc.Message });
+                return false;
             }
             catch (Exception exc)
             {
                 PrintReproductionStatement(scenario, result);
                 executionContext.ScenarioComplete(scenario, false, new[] { exc.ToString() });
+                return false;
             }
         }
 
@@ -185,7 +189,7 @@ namespace TestFramework
             }
         }
 
-        private Task CompareJsonResult(ScenarioSettings settings, ExecutionResult result, DirectoryInfo scenario)
+        private Task<bool> CompareJsonResult(ScenarioSettings settings, ExecutionResult result, DirectoryInfo scenario)
         {
             return Task.Run(() =>
             {
@@ -207,6 +211,7 @@ namespace TestFramework
                     scenario,
                     !context.Differences.Any(),
                     context.Differences.Select(difference => $"- Found a difference: {difference}"));
+                return !context.Differences.Any();
             });
         }
 

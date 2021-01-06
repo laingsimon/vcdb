@@ -1,4 +1,4 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 
@@ -6,11 +6,11 @@ namespace TestFramework
 {
     public class ExecutionContext
     {
-        private readonly ILogger<ExecutionContext> log;
+        private readonly ILogger log;
         public int Pass { get; private set; }
         public int Fail { get; private set; }
 
-        public ExecutionContext(ILogger<ExecutionContext> log)
+        public ExecutionContext(ILogger log)
         {
             this.log = log;
         }
@@ -35,7 +35,28 @@ namespace TestFramework
         {
             var total = (double)Pass + Fail;
             var passPercentage = (Pass / total) * 100;
-            log.LogInformation($"Finished: Pass: {Pass} ({passPercentage:n0}%), Fail: {Fail}");
+            if (Console.IsOutputRedirected)
+            {
+                log.LogInformation($"Finished: Pass: {Pass} ({passPercentage:n0}%), Fail: {Fail} ({100 - passPercentage:n0}%)");
+            }
+            else
+            {
+                using (log.GetWriteLock())
+                {
+                    Console.Write("Finished: ");
+                    using (new ResetConsoleColor(foreground: ConsoleColor.DarkGreen))
+                    {
+                        Console.Write($"Pass: {Pass} ({passPercentage:n0}%)");
+                    }
+
+                    Console.Write(", ");
+
+                    using (new ResetConsoleColor(foreground: ConsoleColor.Red))
+                    {
+                        Console.Write($"Fail: {Fail} ({100 - passPercentage:n0}%)");
+                    }
+                }
+            }
         }
     }
 }
