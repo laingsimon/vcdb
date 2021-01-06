@@ -9,7 +9,7 @@ namespace vcdb.Scripting
         public IReadOnlyCollection<TableDifference> TableDifferences { get; set; }
         public IReadOnlyCollection<SchemaDifference> SchemaDifferences { get; set; }
 
-        public string DescriptionChangedTo { get; set; }
+        public string DescriptionChangedTo { get; set; } = UnchangedDescription;
 
         public bool DescriptionHasChanged
         {

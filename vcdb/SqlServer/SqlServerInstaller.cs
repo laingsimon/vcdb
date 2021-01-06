@@ -10,6 +10,7 @@ namespace vcdb.SqlServer
     {
         public void RegisterServices(IServiceCollection services)
         {
+            services.AddSingleton<IDescriptionRepository, SqlServerDescriptionRepository>();
             services.AddSingleton<IDatabaseRepository, SqlServerDatabaseRepository>();
             services.AddSingleton<ITableRepository, SqlServerTableRepository>();
             services.AddSingleton<IColumnsRepository, SqlServerColumnsRepository>();

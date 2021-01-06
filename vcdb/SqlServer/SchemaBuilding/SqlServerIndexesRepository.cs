@@ -10,7 +10,14 @@ namespace vcdb.SqlServer.SchemaBuilding
 {
     public class SqlServerIndexesRepository : IIndexesRepository
     {
-        public async Task<Dictionary<string, IndexDetails>> GetIndexes(DbConnection connection, TableIdentifier tableIdentifier)
+        private readonly IDescriptionRepository descriptionRepository;
+
+        public SqlServerIndexesRepository(IDescriptionRepository descriptionRepository)
+        {
+            this.descriptionRepository = descriptionRepository;
+        }
+
+        public async Task<Dictionary<string, IndexDetails>> GetIndexes(DbConnection connection, TableName tableName)
         {
             var sql = @"select ix.name as index_name, ix.type_desc, ix.is_unique, ixc.is_descending_key, ixc.is_included_column, col.name as column_name
 from sys.indexes ix
@@ -27,11 +34,12 @@ and schema_name(t.schema_id) = @schemaName";
                 sql,
                 new
                 {
-                    tableName = tableIdentifier.TABLE_NAME,
-                    schemaName = tableIdentifier.TABLE_SCHEMA
+                    tableName = tableName.Table,
+                    schemaName = tableName.Schema
                 });
 
             var columnsInEachIndex = indexesAndColumns.GroupBy(indexColumn => indexColumn.index_name);
+            var indexDescriptions = await descriptionRepository.GetIndexDescriptions(connection, tableName);
 
             return columnsInEachIndex.ToDictionary(
                 group => group.Key,
@@ -49,7 +57,8 @@ and schema_name(t.schema_id) = @schemaName";
                             }),
                         Including = group.Where(c => c.is_included_column).Select(c => c.column_name).ToHashSet(),
                         Clustered = indexDetails.type_desc == "CLUSTERED",
-                        Unique = indexDetails.is_unique
+                        Unique = indexDetails.is_unique,
+                        Description = indexDescriptions.ItemOrDefault(group.Key)
                     };
                 });
         }

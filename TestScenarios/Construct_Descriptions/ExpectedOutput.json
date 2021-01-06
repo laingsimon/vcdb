@@ -1,0 +1,29 @@
+{
+  "tables": {
+	"[dbo].[Person]": {
+		"columns": {
+			"Id": { 
+				"type": "int",
+				"description": "column description",
+				"nullable": true 
+			}
+		},
+		"indexes": { 
+			"IX_Person_Id": {
+				"columns": { "Id": { "descending": false } },
+				"including": [],
+				"description": "index description",
+				"clustered": false,
+				"unique": false
+			}
+		},
+		"description": "table description"
+	}
+  },
+  "schemas": {
+	"MySchema": {
+		"description": "schema description"
+	}
+  },
+  "description": "database description"
+}

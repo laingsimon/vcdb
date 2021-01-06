@@ -17,7 +17,7 @@ namespace vcdb.Scripting
         public bool? UniqueChangedTo { get; set; }
         public IReadOnlyCollection<IndexColumnDetailsDifference> ChangedIncludedColumns { get; set; }
         public IReadOnlyCollection<IndexColumnDetailsDifference> ChangedColumns { get; set; }
-        public string DescriptionChangedTo { get; set; }
+        public string DescriptionChangedTo { get; set; } = UnchangedDescription;
 
         public bool IsChanged
         {

@@ -14,7 +14,7 @@ namespace vcdb.Scripting
         public TableName TableRenamedTo { get; set; }
         public bool TableAdded { get; set; }
         public bool TableDeleted { get; set; }
-        public string DescriptionChangedTo { get; set; }
+        public string DescriptionChangedTo { get; set; } = UnchangedDescription;
 
         public IReadOnlyCollection<ColumnDifference> ColumnDifferences { get; set; }
         public IReadOnlyCollection<IndexDifference> IndexDifferences { get; set; }

@@ -26,17 +26,23 @@ namespace vcdb.SqlServer.SchemaBuilding
             "db_denydatareader",
             "db_denydatawriter"
         };
+        private readonly IDescriptionRepository descriptionRepository;
+
+        public SqlServerSchemaRepository(IDescriptionRepository descriptionRepository)
+        {
+            this.descriptionRepository = descriptionRepository;
+        }
 
         public async Task<Dictionary<string, SchemaDetails>> GetSchemas(DbConnection connection)
         {
             var schemas = await connection.QueryAsync<SqlServerSchemata>(@"
 select *from INFORMATION_SCHEMA.SCHEMATA");
 
-            return schemas.Where(schema => !BuiltInSchemas.Contains(schema.SCHEMA_NAME)).ToDictionary(
+            return await schemas.Where(schema => !BuiltInSchemas.Contains(schema.SCHEMA_NAME)).ToDictionaryAsync(
                 schema => schema.SCHEMA_NAME,
-                schema => new SchemaDetails
+                async schema => new SchemaDetails
                 {
-
+                    Description = await descriptionRepository.GetSchemaDescription(connection, schema.SCHEMA_NAME)
                 });
         }
     }

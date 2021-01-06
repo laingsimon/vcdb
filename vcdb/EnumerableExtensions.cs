@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 
 namespace vcdb
@@ -26,7 +25,7 @@ namespace vcdb
         {
             return dict.ContainsKey(key)
                 ? dict[key]
-                : default(TValue);
+                : default;
         }
 
         public static NamedItem<TKey, TValue> AsNamedItem<TKey, TValue>(this KeyValuePair<TKey, TValue> pair)

@@ -17,7 +17,7 @@ namespace vcdb.Scripting
         public bool ColumnAdded { get; set; }
         public bool ColumnDeleted { get; set; }
         public string DefaultRenamedTo { get; set; }
-        public string DescriptionChangedTo { get; set; }
+        public string DescriptionChangedTo { get; set; } = UnchangedDescription;
 
         public bool IsChanged
         {

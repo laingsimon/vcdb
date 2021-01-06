@@ -11,8 +11,8 @@ namespace vcdb.Scripting
         public bool SchemaAdded { get; set; }
         public bool SchemaDeleted { get; set; }
         public string SchemaRenamedTo { get; set; }
-        public string DescriptionChangedTo { get; set; }
-        
+        public string DescriptionChangedTo { get; set; } = UnchangedDescription;
+
         public bool DescriptionHasChanged
         {
             get

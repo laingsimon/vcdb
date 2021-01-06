@@ -11,32 +11,34 @@ namespace vcdb.SqlServer.SchemaBuilding
     {
         private readonly IColumnsRepository columnsRepository;
         private readonly IIndexesRepository indexesRepository;
+        private readonly IDescriptionRepository descriptionRepository;
 
-        public SqlServerTableRepository(IColumnsRepository columnsRepository, IIndexesRepository indexesRepository)
+        public SqlServerTableRepository(
+            IColumnsRepository columnsRepository,
+            IIndexesRepository indexesRepository,
+            IDescriptionRepository descriptionRepository)
         {
             this.columnsRepository = columnsRepository;
             this.indexesRepository = indexesRepository;
+            this.descriptionRepository = descriptionRepository;
         }
 
         public async Task<Dictionary<TableName, TableDetails>> GetTables(DbConnection connection)
         {
-            var tables = await connection.QueryAsync<TableIdentifier>(@"
-select TABLE_NAME, TABLE_SCHEMA
+            var tables = await connection.QueryAsync<TableName>(@"
+select TABLE_NAME as [Table], TABLE_SCHEMA as [Schema]
 from INFORMATION_SCHEMA.TABLES
 where TABLE_TYPE = 'BASE TABLE'");
 
             return await tables.ToDictionaryAsync(
-                tableIdentifier => new TableName
-                {
-                    Schema = tableIdentifier.TABLE_SCHEMA,
-                    Table = tableIdentifier.TABLE_NAME
-                },
-                async tableIdentifier =>
+                tableName => tableName,
+                async tableName =>
                 {
                     return new TableDetails
                     {
-                        Columns = await columnsRepository.GetColumns(connection, tableIdentifier),
-                        Indexes = await indexesRepository.GetIndexes(connection, tableIdentifier)
+                        Columns = await columnsRepository.GetColumns(connection, tableName),
+                        Indexes = await indexesRepository.GetIndexes(connection, tableName),
+                        Description = await descriptionRepository.GetTableDescription(connection, tableName)
                     };
                 });
         }

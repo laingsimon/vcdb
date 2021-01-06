@@ -11,20 +11,22 @@ namespace vcdb.SqlServer.SchemaBuilding
     public class SqlServerColumnsRepository : IColumnsRepository
     {
         private readonly ISqlObjectNameHelper sqlObjectNameHelper;
+        private readonly IDescriptionRepository descriptionRepository;
 
-        public SqlServerColumnsRepository(ISqlObjectNameHelper sqlObjectNameHelper)
+        public SqlServerColumnsRepository(ISqlObjectNameHelper sqlObjectNameHelper, IDescriptionRepository descriptionRepository)
         {
             this.sqlObjectNameHelper = sqlObjectNameHelper;
+            this.descriptionRepository = descriptionRepository;
         }
 
-        public async Task<Dictionary<string, ColumnDetails>> GetColumns(DbConnection connection, TableIdentifier tableIdentifier)
+        public async Task<Dictionary<string, ColumnDetails>> GetColumns(DbConnection connection, TableName tableName)
         {
             var tableColumns = await connection.QueryAsync<SpColumnsOutput>(@"
 sp_columns @table_name = @table_name, @table_owner = @table_owner",
 new
 {
-    table_name = tableIdentifier.TABLE_NAME,
-    table_owner = tableIdentifier.TABLE_SCHEMA
+    table_name = tableName.Table,
+    table_owner = tableName.Schema
 });
 
             var columnDefaults = (await connection.QueryAsync<ColumnDefaultDetails>(@"
@@ -39,9 +41,11 @@ where tab.name = @table_name
 and SCHEMA_NAME(tab.schema_id) = @table_owner",
 new
 {
-    table_name = tableIdentifier.TABLE_NAME,
-    table_owner = tableIdentifier.TABLE_SCHEMA
+    table_name = tableName.Table,
+    table_owner = tableName.Schema
 })).ToDictionary(col => col.COLUMN_NAME, col => col);
+
+            var columnDescriptions = await descriptionRepository.GetColumnDescriptions(connection, tableName);
 
             return tableColumns.ToDictionary(
                         column => column.COLUMN_NAME,
@@ -54,19 +58,20 @@ new
                                 Type = GetDataType(column),
                                 Nullable = column.NULLABLE,
                                 Default = column.COLUMN_DEF?.Trim('(', ')'),
-                                DefaultName = columnDefault == null || IsAutomaticConstraintName(columnDefault, tableIdentifier)
+                                DefaultName = columnDefault == null || IsAutomaticConstraintName(columnDefault, tableName)
                                     ? null
                                     : columnDefault.DEFAULT_NAME,
-                                DefaultObjectId = columnDefault?.OBJECT_ID
+                                DefaultObjectId = columnDefault?.OBJECT_ID,
+                                Description = columnDescriptions.ItemOrDefault(column.COLUMN_NAME)
                             };
                         });
         }
 
-        private bool IsAutomaticConstraintName(ColumnDefaultDetails columnDefault, TableIdentifier tableIdentifier)
+        private bool IsAutomaticConstraintName(ColumnDefaultDetails columnDefault, TableName tableName)
         {
             var automaticConstraintName = sqlObjectNameHelper.GetAutomaticConstraintName(
                 "DF",
-                tableIdentifier.TABLE_NAME,
+                tableName.Table,
                 columnDefault.COLUMN_NAME,
                 columnDefault.OBJECT_ID);
 
