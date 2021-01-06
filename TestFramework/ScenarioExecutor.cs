@@ -219,6 +219,9 @@ namespace TestFramework
                     scenario,
                     !context.Differences.Any(),
                     context.Differences.Select(difference => $"- Found a difference: {difference}"));
+
+                if (context.Differences.Any())
+                    PrintReproductionStatement(scenario, result);
                 return !context.Differences.Any();
             });
         }
