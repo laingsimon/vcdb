@@ -10,6 +10,7 @@ namespace vcdb.IntegrationTests
     [TestFixture]
     public class TestFramework
     {
+        private const string ConnectionString = "server=localhost;user id=sa;password=vcdb_2020";
         private ProcessExecutor processExecutor;
 
         public TestFramework()
@@ -20,12 +21,24 @@ namespace vcdb.IntegrationTests
         [TestCaseSource(nameof(ScenarioNames))]
         public async Task ExecuteScenarios(string scenarioName)
         {
-            var commandLineArguments = $"--connectionString \"server=localhost;user id=sa;password=vcdb_2020\" --include \"^{scenarioName}$\"";
+            var commandLineArguments = $"--connectionString \"{ConnectionString}\" --include \"^{scenarioName}$\"";
             var result = await processExecutor.ExecuteProcess(commandLineArguments);
 
             result.WriteStdOutTo(Console.Out);
             result.WriteStdErrTo(Console.Error);
-            Assert.That(result.ExitCode, Is.EqualTo(0), "Process exited with non-success code");
+            Assert.That(result.ExitCode, Is.EqualTo(0), $"{string.Join("\r\n", result.StdOut)}\r\nProcess exited with non-success code");
+        }
+
+        [Explicit]
+        [Test]
+        public async Task ExecuteAllAtOnce()
+        {
+            var commandLineArguments = $"--connectionString \"{ConnectionString}\"";
+            var result = await processExecutor.ExecuteProcess(commandLineArguments);
+
+            result.WriteStdOutTo(Console.Out);
+            result.WriteStdErrTo(Console.Error);
+            Assert.That(result.ExitCode, Is.EqualTo(0), $"{string.Join("\r\n", result.StdOut)}\r\nProcess exited with non-success code");
         }
 
         public static IEnumerable<string> ScenarioNames

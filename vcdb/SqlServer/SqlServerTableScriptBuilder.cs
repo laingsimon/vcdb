@@ -96,7 +96,7 @@ namespace vcdb.SqlServer
         private SqlScript GetDropTableScript(TableName table)
         {
             return new SqlScript(@$"
-DROP TABLE [{table.Schema}].[{table.Table}]");
+DROP TABLE {table.SqlSafeName()}");
         }
 
         private IEnumerable<SqlScript> GetAlterTableScript(TableName currentTableName, TableName requiredTableName, TableDifference tableDifference)
@@ -127,8 +127,8 @@ DROP TABLE [{table.Schema}].[{table.Table}]");
             var drops = differentColumns.Where(diff => diff.ColumnDeleted).ToArray();
             if (drops.Any())
             {
-                yield return new SqlScript($@"ALTER TABLE [{requiredTableName.Schema}].[{requiredTableName.Table}]
-{string.Join(",", drops.Select(col => $"DROP COLUMN [{col.CurrentColumn.Key}]"))}
+                yield return new SqlScript($@"ALTER TABLE {requiredTableName.SqlSafeName()}
+{string.Join(",", drops.Select(col => $"DROP COLUMN {col.CurrentColumn.SqlSafeName()}"))}
 GO");
             }
 
@@ -147,7 +147,8 @@ GO");
                 }
             }
 
-            //TODO: Yield index changes
+            foreach (var script in GetAlterIndexScripts(requiredTableName, tableDifference.IndexDifferences))
+                yield return script;
         }
 
         private bool IsAlteration(ColumnDifference difference)
@@ -167,8 +168,8 @@ GO");
                     ? ""
                     : " NOT NULL";
 
-                yield return new SqlScript($@"ALTER TABLE [{tableName.Schema}].[{tableName.Table}]
-ALTER COLUMN [{columnName}] {column.Type}{nullabilityClause}
+                yield return new SqlScript($@"ALTER TABLE {tableName.SqlSafeName()}
+ALTER COLUMN {columnName.SqlSafeName()} {column.Type}{nullabilityClause}
 GO");
             }
 
@@ -202,8 +203,8 @@ GO");
 
         public SqlScript GetDropDefaultScript(TableName tableName, string columnName)
         {
-            return new SqlScript($@"ALTER TABLE [{tableName.Schema}].[{tableName.Table}]
-ALTER COLUMN [{columnName}] DROP DEFAULT
+            return new SqlScript($@"ALTER TABLE {tableName.SqlSafeName()}
+ALTER COLUMN {columnName.SqlSafeName()} DROP DEFAULT
 GO");
         }
 
@@ -217,10 +218,10 @@ GO");
         public IEnumerable<SqlScript> GetAddDefaultScript(TableName tableName, string columnName, ColumnDetails column)
         {
             var unnamedDefaultConstraint = GetNameForColumnDefault(tableName, new NamedItem<string, ColumnDetails>(columnName, column));
-            yield return new SqlScript($@"ALTER TABLE [{tableName.Schema}].[{tableName.Table}]
-ADD CONSTRAINT [{column.DefaultName ?? unnamedDefaultConstraint}]
+            yield return new SqlScript($@"ALTER TABLE {tableName.SqlSafeName()}
+ADD CONSTRAINT {(column.DefaultName ?? unnamedDefaultConstraint).SqlSafeName()}
 DEFAULT ({column.Default})
-FOR [{columnName}]
+FOR {columnName.SqlSafeName()}
 GO");
 
             if (column.DefaultName == null)
@@ -251,8 +252,8 @@ GO");
                 ? ""
                 : " NOT NULL";
 
-            yield return new SqlScript($@"ALTER TABLE [{tableName.Schema}].[{tableName.Table}]
-ADD [{columnName}] {column.Type}{nullabilityClause}
+            yield return new SqlScript($@"ALTER TABLE {tableName.SqlSafeName()}
+ADD {columnName.SqlSafeName()} {column.Type}{nullabilityClause}
 GO");
 
             if (column.Default != null)
@@ -288,8 +289,14 @@ GO");
 
             if (current.Schema != required.Schema)
             {
-                yield return new SqlScript(@$"ALTER SCHEMA [{required.Schema}]
-TRANSFER [{current.Schema}].[{required.Table}]
+                var fromTableName = new TableName
+                {
+                    Schema = current.Schema,
+                    Table = required.Table
+                };
+
+                yield return new SqlScript(@$"ALTER SCHEMA {required.Schema.SqlSafeName()}
+TRANSFER {fromTableName.SqlSafeName()}
 GO");
             }
         }
@@ -314,9 +321,18 @@ GO");
                 currentColumn.Value.DefaultObjectId ?? 0);
 
             return new SqlScript(@$"EXEC sp_rename 
-    @objname = '[{currentTableName.Schema}].[{currentConstraintName ?? currentAutomaticConstraintName}]', 
-    @newname = '[{requiredConstraintName ?? requiredAutomaticConstraintName}]', 
+    @objname = '{currentTableName.Schema.SqlSafeName()}.{(currentConstraintName ?? currentAutomaticConstraintName).SqlSafeName()}', 
+    @newname = '{(requiredConstraintName ?? requiredAutomaticConstraintName).SqlSafeName()}', 
     @objtype = 'OBJECT'
+GO");
+        }
+
+        private SqlScript GetRenameIndexScript(TableName tableName, string currentName, string requiredName)
+        {
+            return new SqlScript(@$"EXEC sp_rename
+    @objname = '{tableName.Schema}.{tableName.Table}.{currentName}',
+    @newname = '{requiredName}',
+    @objtype = 'INDEX'
 GO");
         }
 
@@ -324,7 +340,7 @@ GO");
         {
             var columns = requiredTable.Columns.Select(CreateTableColumn);
             yield return new SqlScript($@"
-CREATE TABLE [{tableName.Schema}].[{tableName.Table}] (
+CREATE TABLE {tableName.SqlSafeName()} (
 {string.Join("," + Environment.NewLine, columns)}
 )
 GO");
@@ -336,7 +352,71 @@ GO");
                     yield return script;
             }
 
-            //TODO: Add indexes
+            foreach (var index in requiredTable.Indexes)
+            {
+                yield return GetAddIndexScript(tableName, index.Key, index.Value);
+            }
+        }
+
+        private SqlScript GetAddIndexScript(TableName tableName, string indexName, IndexDetails index)
+        {
+            var uniqueClause = index.Unique
+                ? "UNIQUE "
+                : "";
+            var clusteredClause = index.Clustered
+                ? "CLUSTERED "
+                : "";
+
+            static string IndexColumnSpec(KeyValuePair<string, IndexColumnDetails> col)
+            {
+                var descendingClause = col.Value.Descending
+                    ? " DESC"
+                    : "";
+                return $"{col.SqlSafeName()}{descendingClause}";
+            }
+
+            var columns = string.Join(", ", index.Columns.Select(IndexColumnSpec));
+            var includeClause = index.Including?.Any() == true
+                ? $"\r\nINCLUDE ({string.Join(", ", index.Including.Select(col => col.SqlSafeName()))})"
+                : "";
+
+            return new SqlScript($@"CREATE {uniqueClause}{clusteredClause}INDEX {indexName.SqlSafeName()}
+ON {tableName.SqlSafeName()} ({columns}){includeClause}
+GO");
+        }
+
+        private IEnumerable<SqlScript> GetAlterIndexScripts(TableName requiredTableName, IReadOnlyCollection<IndexDifference> indexDifferences)
+        {
+            foreach (var indexDifference in indexDifferences)
+            {
+                if (indexDifference.IndexAdded)
+                {
+                    yield return GetAddIndexScript(requiredTableName, indexDifference.RequiredIndex.Key, indexDifference.RequiredIndex.Value);
+                    continue;
+                }
+
+                if (indexDifference.IndexDeleted)
+                {
+                    yield return GetDropIndexScript(requiredTableName, indexDifference.CurrentIndex.Key);
+                    continue;
+                }
+
+                if (indexDifference.ClusteredChangedTo != null || indexDifference.ChangedColumns.Any() || indexDifference.ChangedIncludedColumns.Any() || indexDifference.UniqueChangedTo != null)
+                {
+                    //Indexes cannot be altered, they have to be dropped and re-created
+                    yield return GetDropIndexScript(requiredTableName, indexDifference.CurrentIndex.Key);
+                    yield return GetAddIndexScript(requiredTableName, indexDifference.RequiredIndex.Key, indexDifference.RequiredIndex.Value);
+                } else if (indexDifference.IndexRenamedTo != null)
+                {
+                    yield return GetRenameIndexScript(requiredTableName, indexDifference.CurrentIndex.Key, indexDifference.IndexRenamedTo);
+                }
+            }
+        }
+
+        private SqlScript GetDropIndexScript(TableName requiredTableName, string indexName)
+        {
+            return new SqlScript($@"DROP INDEX {indexName.SqlSafeName()} ON {requiredTableName.SqlSafeName()}
+GO");
         }
 
         private string CreateTableColumn(KeyValuePair<string, ColumnDetails> column)
@@ -345,7 +425,7 @@ GO");
                 ? ""
                 : " NOT NULL";
 
-            return $"  [{column.Key}] {column.Value.Type}{nullabilityClause}";
+            return $"  {column.SqlSafeName()} {column.Value.Type}{nullabilityClause}";
         }
     }
 }

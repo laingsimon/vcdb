@@ -1,0 +1,24 @@
+{
+  "tables": {
+	"dbo.Person": {
+		"columns": {
+			"Id": { "type": "int identity", "nullable": false },
+			"Name": { "type": "nvarchar(255)", "nullable": false },
+			"Age": { "type": "int", "nullable": true }
+		},
+		"indexes": {
+			"IX_Person_Id": {
+				"columns": {
+					"Id": { "descending": false }
+				}
+			},
+			"IX_Person_Name": {
+				"previousNames": [ "IX_Person_NameAndAge" ],
+				"columns": {
+					"Name": { "descending": false }
+				}
+			}
+		}
+	}
+  }
+}

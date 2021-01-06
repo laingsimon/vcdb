@@ -43,7 +43,7 @@ namespace vcdb.Scripting
                             ? requiredIndex.Key
                             : null,
                         ChangedColumns = GetChangedColumns(currentIndex.Value.Columns, requiredIndex.Value.Columns, requiredTableColumns).ToArray(),
-                        ChangedIncludedColumns = GetChangedColumns(currentIndex.Value.IncludedColumns, requiredIndex.Value.IncludedColumns, requiredTableColumns).ToArray(),
+                        ChangedIncludedColumns = GetChangedColumns(currentIndex.Value.Including, requiredIndex.Value.Including, requiredTableColumns).ToArray(),
                         ClusteredChangedTo = requiredIndex.Value.Clustered != currentIndex.Value.Clustered 
                             ? requiredIndex.Value.Clustered
                             : default(bool?),
@@ -72,7 +72,31 @@ namespace vcdb.Scripting
             IDictionary<string, IndexColumnDetails> requiredColumns,
             IDictionary<string, ColumnDetails> requiredTableColumns)
         {
-            var removedColumns = currentColumns.Where(col => !requiredColumns.ContainsKey(col.Key));
+            var requiredColumnToCurrentColumnMap = requiredColumns.ToDictionary(
+                requiredColumn => requiredColumn.Key,
+                requiredColumn => {
+                    var columnAlreadyIncludedWithSameName = currentColumns.GetNamedItem(requiredColumn.Key);
+                    var columnAlreadyIncludedWithPreviousName = namedItemFinder.GetCurrentItem(
+                        currentColumns,
+                        requiredColumn.Key,
+                        requiredTableColumns.ItemOrDefault(requiredColumn.Key)?.PreviousNames);
+
+                    return columnAlreadyIncludedWithSameName ?? columnAlreadyIncludedWithPreviousName;
+                });
+
+            foreach (var addedColumnMap in requiredColumnToCurrentColumnMap.Where(map => map.Value == null))
+            {
+                yield return new IndexColumnDetailsDifference
+                {
+                    CurrentColumn = addedColumnMap.Value,
+                    ColumnAdded = true
+                };
+            }
+
+            var removedColumns = currentColumns
+                .Where(currentColumn => !requiredColumnToCurrentColumnMap.Values
+                    .Where(mappedCurrentColumn => mappedCurrentColumn != null)
+                    .Any(mappedCurrentColumn => mappedCurrentColumn.Key == currentColumn.Key));
             foreach (var removedColumn in removedColumns)
             {
                 yield return new IndexColumnDetailsDifference
@@ -81,28 +105,15 @@ namespace vcdb.Scripting
                     ColumnRemoved = true
                 };
             }
-
-            var addedColumns = requiredColumns.Where(col => !currentColumns.ContainsKey(col.Key));
-
-            foreach (var addedColumn in addedColumns)
+            
+            foreach (var columnMapping in requiredColumnToCurrentColumnMap.Where(columnMapping => columnMapping.Value != null))
             {
-                yield return new IndexColumnDetailsDifference
-                {
-                    CurrentColumn = addedColumn.AsNamedItem(),
-                    ColumnAdded = true
-                };
-            }
-
-            foreach (var requiredColumn in requiredColumns)
-            {
-                var currentColumn = namedItemFinder.GetCurrentItem(
-                    currentColumns,
-                    requiredColumn.Key,
-                    requiredTableColumns[requiredColumn.Key].PreviousNames);
+                var currentColumn = columnMapping.Value;
+                var requiredColumn = requiredColumns.GetNamedItem(columnMapping.Key);
 
                 var difference = new IndexColumnDetailsDifference
                 {
-                    RequiredColumn = requiredColumn.AsNamedItem(),
+                    RequiredColumn = requiredColumn,
                     CurrentColumn = currentColumn,
                     DescendingChangedTo = requiredColumn.Value.Descending != currentColumn.Value.Descending
                         ? requiredColumn.Value.Descending
@@ -111,6 +122,48 @@ namespace vcdb.Scripting
 
                 if (difference.IsChanged)
                     yield return difference;
+            }
+        }
+
+        private IEnumerable<IndexColumnDetailsDifference> GetChangedColumns(
+            IReadOnlyCollection<string> currentColumns,
+            IReadOnlyCollection<string> requiredColumns,
+            IDictionary<string, ColumnDetails> requiredTableColumns)
+        {
+            var currentColumnProxy = currentColumns.ToDictionary(columnName => columnName);
+
+            var requiredColumnToCurrentColumnMap = (requiredColumns ?? new string[0]).ToDictionary(
+                requiredColumn => requiredColumn,
+                requiredColumn => {
+                    var columnAlreadyIncludedWithSameName = currentColumns.SingleOrDefault(col => col == requiredColumn);
+                    var columnAlreadyIncludedWithPreviousName = namedItemFinder.GetCurrentItem(
+                        currentColumnProxy,
+                        requiredColumn,
+                        requiredTableColumns.ItemOrDefault(requiredColumn)?.PreviousNames);
+
+                    return columnAlreadyIncludedWithSameName ?? columnAlreadyIncludedWithPreviousName?.Key;
+                });
+
+            foreach (var addedColumn in requiredColumnToCurrentColumnMap.Where(map => map.Value == null))
+            {
+                yield return new IndexColumnDetailsDifference
+                {
+                    CurrentColumn = new NamedItem<string, IndexColumnDetails>(addedColumn.Key, null),
+                    ColumnAdded = true
+                };
+            }
+
+            var removedColumns = currentColumns
+                .Where(currentColumn => !requiredColumnToCurrentColumnMap.Values
+                    .Where(mappedCurrentColumn => mappedCurrentColumn != null)
+                    .Any(mappedCurrentColumn => mappedCurrentColumn == currentColumn));
+            foreach (var removedColumn in removedColumns)
+            {
+                yield return new IndexColumnDetailsDifference
+                {
+                    CurrentColumn = new NamedItem<string, IndexColumnDetails>(removedColumn, null),
+                    ColumnRemoved = true
+                };
             }
         }
     }

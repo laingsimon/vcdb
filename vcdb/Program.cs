@@ -49,6 +49,13 @@ namespace vcdb
                                {
                                    var logger = serviceProvider.GetRequiredService<ILogger<object>>();
                                    logger.LogError(exc, "Error executing vcdb process");
+
+                                   if (Console.IsOutputRedirected)
+                                   {
+                                       Console.Out.WriteLine($"Error executing vcdb process: {exc.Message}");
+                                   }
+
+                                   Environment.ExitCode = -2;
                                }
 
                                serviceProvider.GetRequiredService<ILoggerFactory>().Dispose();

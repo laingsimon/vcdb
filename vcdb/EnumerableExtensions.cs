@@ -33,5 +33,12 @@ namespace vcdb
         {
             return new NamedItem<TKey, TValue>(pair);
         }
+
+        public static NamedItem<TKey, TValue> GetNamedItem<TKey, TValue>(this IDictionary<TKey, TValue> dict, TKey key)
+        {
+            return dict.ContainsKey(key)
+                ? new NamedItem<TKey, TValue>(key, dict[key])
+                : null;
+        }
     }
 }

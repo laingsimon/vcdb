@@ -45,12 +45,7 @@ and schema_name(t.schema_id) = @schemaName";
                             {
                                 Descending = col.is_descending_key
                             }),
-                        IncludedColumns = group.Where(c => c.is_included_column).ToDictionary(
-                            col => col.column_name,
-                            col => new IndexColumnDetails
-                            {
-                                Descending = col.is_descending_key
-                            }),
+                        Including = group.Where(c => c.is_included_column).Select(c => c.column_name).ToHashSet(),
                         Clustered = indexDetails.type_desc == "CLUSTERED",
                         Unique = indexDetails.is_unique
                     };

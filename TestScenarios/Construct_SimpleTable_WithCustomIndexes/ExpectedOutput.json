@@ -11,7 +11,7 @@
 				"columns": {
 					"id": { "descending": false }
 				},
-				"includedColumns": {},
+				"including": [],
 				"clustered": true,
 				"unique": true
 			},
@@ -19,7 +19,7 @@
 				"columns": { 
 					"name": { "descending": false } 
 				},
-				"includedColumns": {},
+				"including": [],
 				"clustered": false,
 				"unique": true
 			},
@@ -28,7 +28,7 @@
 					"Name": { "descending": false }, 
 					"Age": { "descending": true } 
 				},
-				"includedColumns": {},
+				"including": [],
 				"clustered": false,
 				"unique": false
 			},
@@ -36,9 +36,7 @@
 				"columns": { 
 					"Name": { "descending": false }
 				},
-				"includedColumns": {
-					"Age": { "descending": false } 
-				},
+				"including": [ "Age" ],
 				"clustered": false,
 				"unique": false
 			}
