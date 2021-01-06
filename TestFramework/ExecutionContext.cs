@@ -7,12 +7,15 @@ namespace TestFramework
     public class ExecutionContext
     {
         private readonly ILogger log;
+        private readonly Options options;
+
         public int Pass { get; private set; }
         public int Fail { get; private set; }
 
-        public ExecutionContext(ILogger log)
+        public ExecutionContext(ILogger log, Options options)
         {
             this.log = log;
+            this.options = options;
         }
 
         public void ScenarioComplete(DirectoryInfo scenario, bool pass, IEnumerable<string> differences)
@@ -35,7 +38,7 @@ namespace TestFramework
         {
             var total = (double)Pass + Fail;
             var passPercentage = (Pass / total) * 100;
-            if (Console.IsOutputRedirected)
+            if (Console.IsOutputRedirected || options.Porcelain)
             {
                 log.LogInformation($"Finished: Pass: {Pass} ({passPercentage:n0}%), Fail: {Fail} ({100 - passPercentage:n0}%)");
             }

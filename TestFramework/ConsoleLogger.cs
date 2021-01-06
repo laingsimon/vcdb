@@ -7,10 +7,12 @@ namespace TestFramework
     public class ConsoleLogger : ILogger
     {
         private readonly int minLogLevel;
+        private readonly bool porcelain;
 
         public ConsoleLogger(Options options)
         {
             minLogLevel = (int)options.MinLogLevel;
+            porcelain = options.Porcelain;
         }
 
         public OutputDetail LogInformation(string message)
@@ -66,7 +68,7 @@ namespace TestFramework
 
             using (GetWriteLock())
             {
-                using (new ResetConsoleColor(foreground: foregroundColor))
+                using (ResetConsoleColour(foreground: foregroundColor))
                 {
                     output.Write(prefix + ": ");
                 }
@@ -80,31 +82,33 @@ namespace TestFramework
             }
         }
 
-        private int? GetConsoleTop(TextWriter output)
+        private IDisposable ResetConsoleColour(ConsoleColor? foreground = null, ConsoleColor? background = null)
         {
-            if (ReferenceEquals(output, Console.Out) && !Console.IsOutputRedirected)
-            {
-                return Console.CursorTop;
-            }
+            if (porcelain)
+                return new NoOp();
 
-            if (ReferenceEquals(output, Console.Error) && !Console.IsErrorRedirected)
-            {
-                return Console.CursorTop;
-            }
-
-            return null;
+            return new ResetConsoleColor(foreground, background);
         }
 
-        private int? GetConsoleLeft(TextWriter output)
+        private class NoOp : IDisposable
         {
+            public void Dispose()
+            { }
+        }
+
+        private int? GetConsoleTop(TextWriter output)
+        {
+            if (porcelain)
+                return null;
+
             if (ReferenceEquals(output, Console.Out) && !Console.IsOutputRedirected)
             {
-                return Console.CursorLeft;
+                return Console.CursorTop;
             }
 
             if (ReferenceEquals(output, Console.Error) && !Console.IsErrorRedirected)
             {
-                return Console.CursorLeft;
+                return Console.CursorTop;
             }
 
             return null;

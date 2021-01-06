@@ -24,5 +24,8 @@ namespace TestFramework
 
         [Option("dockerDesktopPath", Required = false, HelpText = "A path override to the location of the docker desktop executable")]
         public string DockerDesktopPath { get; set; }
+
+        [Option("porcelain", Default = false, HelpText = "Ensure information is output in simple format (no colours or inline-updates)")]
+        public bool Porcelain { get; set; }
     }
 }

@@ -106,7 +106,7 @@ namespace TestFramework
                 }
                 finally
                 {
-                    if (!Console.IsOutputRedirected)
+                    if (!Console.IsOutputRedirected && !options.Porcelain)
                     {
                         using (logger.GetWriteLock())
                         using (new ResetCursorPosition(messageDetail?.EndingConsoleLeft - 3, messageDetail?.EndingConsoleTop - 1))
