@@ -3,7 +3,7 @@ using vcdb.Models;
 using vcdb.Output;
 using vcdb.Scripting;
 
-namespace vcdb.SqlServer
+namespace vcdb.SqlServer.Scripting
 {
     public class SqlServerSchemaScriptBuilder : ISchemaScriptBuilder
     {

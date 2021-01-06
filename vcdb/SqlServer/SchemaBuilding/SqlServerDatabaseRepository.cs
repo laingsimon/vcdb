@@ -1,15 +1,16 @@
 ﻿using System.Data.Common;
 using System.Threading.Tasks;
 using vcdb.Models;
+using vcdb.SchemaBuilding;
 
-namespace vcdb.SchemaBuilding
+namespace vcdb.SqlServer.SchemaBuilding
 {
-    public class DatabaseRepository : IDatabaseRepository
+    public class SqlServerDatabaseRepository : IDatabaseRepository
     {
         private readonly ITableRepository tableRepository;
         private readonly ISchemaRepository schemaRepository;
 
-        public DatabaseRepository(ITableRepository tableRepository, ISchemaRepository schemaRepository)
+        public SqlServerDatabaseRepository(ITableRepository tableRepository, ISchemaRepository schemaRepository)
         {
             this.tableRepository = tableRepository;
             this.schemaRepository = schemaRepository;

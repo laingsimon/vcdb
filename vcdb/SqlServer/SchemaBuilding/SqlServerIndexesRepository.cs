@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using vcdb.Models;
 using vcdb.SchemaBuilding;
 
-namespace vcdb.SqlServer
+namespace vcdb.SqlServer.SchemaBuilding
 {
     public class SqlServerIndexesRepository : IIndexesRepository
     {
@@ -24,10 +24,12 @@ where t.name = @tableName
 and schema_name(t.schema_id) = @schemaName";
 
             var indexesAndColumns = await connection.QueryAsync<SqlIndexDetails>(
-                sql, 
-                new { 
-                    tableName = tableIdentifier.TABLE_NAME, 
-                    schemaName = tableIdentifier.TABLE_SCHEMA });
+                sql,
+                new
+                {
+                    tableName = tableIdentifier.TABLE_NAME,
+                    schemaName = tableIdentifier.TABLE_SCHEMA
+                });
 
             var columnsInEachIndex = indexesAndColumns.GroupBy(indexColumn => indexColumn.index_name);
 
@@ -40,7 +42,7 @@ and schema_name(t.schema_id) = @schemaName";
                     return new IndexDetails
                     {
                         Columns = group.Where(c => !c.is_included_column).ToDictionary(
-                            col => col.column_name, 
+                            col => col.column_name,
                             col => new IndexColumnDetails
                             {
                                 Descending = col.is_descending_key

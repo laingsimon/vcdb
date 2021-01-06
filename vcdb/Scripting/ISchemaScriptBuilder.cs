@@ -1,8 +1,7 @@
 ﻿using System.Collections.Generic;
 using vcdb.Output;
-using vcdb.Scripting;
 
-namespace vcdb.SqlServer
+namespace vcdb.Scripting
 {
     public interface ISchemaScriptBuilder
     {

@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using vcdb.Models;
 using vcdb.SchemaBuilding;
 
-namespace vcdb.SqlServer
+namespace vcdb.SqlServer.SchemaBuilding
 {
     public class SqlServerColumnsRepository : IColumnsRepository
     {
@@ -23,8 +23,8 @@ namespace vcdb.SqlServer
 sp_columns @table_name = @table_name, @table_owner = @table_owner",
 new
 {
-table_name = tableIdentifier.TABLE_NAME,
-table_owner = tableIdentifier.TABLE_SCHEMA
+    table_name = tableIdentifier.TABLE_NAME,
+    table_owner = tableIdentifier.TABLE_SCHEMA
 });
 
             var columnDefaults = (await connection.QueryAsync<ColumnDefaultDetails>(@"

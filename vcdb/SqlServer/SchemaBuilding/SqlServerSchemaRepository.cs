@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using vcdb.Models;
 using vcdb.SchemaBuilding;
 
-namespace vcdb.SqlServer
+namespace vcdb.SqlServer.SchemaBuilding
 {
     public class SqlServerSchemaRepository : ISchemaRepository
     {
@@ -34,9 +34,9 @@ select *from INFORMATION_SCHEMA.SCHEMATA");
 
             return schemas.Where(schema => !BuiltInSchemas.Contains(schema.SCHEMA_NAME)).ToDictionary(
                 schema => schema.SCHEMA_NAME,
-                schema => new SchemaDetails 
+                schema => new SchemaDetails
                 {
-                    
+
                 });
         }
     }

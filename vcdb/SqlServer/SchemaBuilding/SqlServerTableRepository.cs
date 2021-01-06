@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 using vcdb.Models;
 using vcdb.SchemaBuilding;
 
-namespace vcdb.SqlServer
+namespace vcdb.SqlServer.SchemaBuilding
 {
     public class SqlServerTableRepository : ITableRepository
     {

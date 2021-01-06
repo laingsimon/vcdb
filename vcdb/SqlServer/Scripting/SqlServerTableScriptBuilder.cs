@@ -6,7 +6,7 @@ using vcdb.Models;
 using vcdb.Output;
 using vcdb.Scripting;
 
-namespace vcdb.SqlServer
+namespace vcdb.SqlServer.Scripting
 {
     public class SqlServerTableScriptBuilder : ITableScriptBuilder
     {
@@ -68,7 +68,7 @@ namespace vcdb.SqlServer
             {
                 return col.Value.Default != null && col.Value.DefaultName == null;
             });
-            
+
             foreach (var requiredColumnWithUnnamedDefault in columnsWithDefaultsButNoExplicitName)
             {
                 var columnDifference = tableDifference.ColumnDifferences.SingleOrDefault(cd => cd.RequiredColumn.Key == requiredColumnWithUnnamedDefault.Key);
@@ -177,7 +177,7 @@ GO");
             if (alteration.DefaultRenamedTo != null)
             {
                 yield return GetRenameDefaultScript(
-                    tableName, 
+                    tableName,
                     tableName,
                     alteration.CurrentColumn,
                     alteration.CurrentColumn.Value.DefaultName,
@@ -405,7 +405,8 @@ GO");
                     //Indexes cannot be altered, they have to be dropped and re-created
                     yield return GetDropIndexScript(requiredTableName, indexDifference.CurrentIndex.Key);
                     yield return GetAddIndexScript(requiredTableName, indexDifference.RequiredIndex.Key, indexDifference.RequiredIndex.Value);
-                } else if (indexDifference.IndexRenamedTo != null)
+                }
+                else if (indexDifference.IndexRenamedTo != null)
                 {
                     yield return GetRenameIndexScript(requiredTableName, indexDifference.CurrentIndex.Key, indexDifference.IndexRenamedTo);
                 }

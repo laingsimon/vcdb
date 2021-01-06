@@ -6,7 +6,6 @@ using Newtonsoft.Json.Converters;
 using System;
 using vcdb.CommandLine;
 using vcdb.Output;
-using vcdb.SchemaBuilding;
 using vcdb.Scripting;
 using vcdb.SqlServer;
 
@@ -73,7 +72,6 @@ namespace vcdb
         {
             services.AddSingleton<IExecutor, Executor>();
             services.AddSingleton<IConnectionFactory, ConnectionFactory>();
-            services.AddSingleton<IDatabaseRepository, DatabaseRepository>();
             services.AddSingleton<IOutput, ConsoleOutput>();
             services.AddSingleton<IInput, Input>();
             services.AddSingleton<IColumnComparer, ColumnComparer>();

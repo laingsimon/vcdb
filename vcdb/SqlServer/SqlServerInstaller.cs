@@ -1,6 +1,8 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using vcdb.SchemaBuilding;
 using vcdb.Scripting;
+using vcdb.SqlServer.SchemaBuilding;
+using vcdb.SqlServer.Scripting;
 
 namespace vcdb.SqlServer
 {
@@ -8,6 +10,7 @@ namespace vcdb.SqlServer
     {
         public void RegisterServices(IServiceCollection services)
         {
+            services.AddSingleton<IDatabaseRepository, SqlServerDatabaseRepository>();
             services.AddSingleton<ITableRepository, SqlServerTableRepository>();
             services.AddSingleton<IColumnsRepository, SqlServerColumnsRepository>();
             services.AddSingleton<IIndexesRepository, SqlServerIndexesRepository>();

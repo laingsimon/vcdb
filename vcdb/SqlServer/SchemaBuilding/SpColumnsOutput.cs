@@ -1,4 +1,4 @@
-﻿namespace vcdb.SqlServer
+﻿namespace vcdb.SqlServer.SchemaBuilding
 {
     public class SpColumnsOutput
     {
