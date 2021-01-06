@@ -46,7 +46,10 @@ namespace vcdb.Scripting
                             ? requiredTable.Key
                             : null,
                         ColumnDifferences = columnComparer.GetDifferentColumns(currentTable.Value.Columns, requiredTable.Value.Columns).ToArray(),
-                        IndexDifferences = indexComparer.GetIndexDifferences(currentTable.Value.Indexes, requiredTable.Value.Indexes, requiredTable.Value.Columns).ToArray()
+                        IndexDifferences = indexComparer.GetIndexDifferences(currentTable.Value.Indexes, requiredTable.Value.Indexes, requiredTable.Value.Columns).ToArray(),
+                        DescriptionChangedTo = currentTable.Value.Description != requiredTable.Value.Description
+                            ? requiredTable.Value.Description
+                            : TableDifference.UnchangedDescription
                     };
 
                     if (difference.IsChanged)

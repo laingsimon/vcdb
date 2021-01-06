@@ -34,7 +34,10 @@ namespace vcdb.Scripting
                         CurrentSchema = currentSchema,
                         SchemaRenamedTo = requiredSchema.Key != currentSchema.Key
                             ? requiredSchema.Key
-                            : null
+                            : null,
+                        DescriptionChangedTo = currentSchema.Value.Description != requiredSchema.Value.Description
+                            ? requiredSchema.Value.Description
+                            : SchemaDifference.UnchangedDescription
                     };
 
                     if (differences.IsChanged)

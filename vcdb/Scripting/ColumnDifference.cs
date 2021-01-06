@@ -4,7 +4,8 @@ namespace vcdb.Scripting
 {
     public class ColumnDifference
     {
-        public static readonly object Unchanged = new object();
+        public static readonly object UnchangedDefault = new object();
+        public const string UnchangedDescription = "\0";
 
         public NamedItem<string, ColumnDetails> CurrentColumn { get; set; }
         public NamedItem<string, ColumnDetails> RequiredColumn { get; set; }
@@ -12,10 +13,11 @@ namespace vcdb.Scripting
         public string ColumnRenamedTo { get; set; }
         public string TypeChangedTo { get; set; }
         public bool? NullabilityChangedTo { get; set; }
-        public object DefaultChangedTo { get; set; } = Unchanged;
+        public object DefaultChangedTo { get; set; } = UnchangedDefault;
         public bool ColumnAdded { get; set; }
         public bool ColumnDeleted { get; set; }
         public string DefaultRenamedTo { get; set; }
+        public string DescriptionChangedTo { get; set; }
 
         public bool IsChanged
         {
@@ -27,7 +29,8 @@ namespace vcdb.Scripting
                     || DefaultHasChanged
                     || ColumnAdded
                     || ColumnDeleted
-                    || DefaultRenamedTo != null;
+                    || DefaultRenamedTo != null
+                    || DescriptionHasChanged;
             }
         }
 
@@ -35,7 +38,15 @@ namespace vcdb.Scripting
         {
             get
             {
-                return !ReferenceEquals(DefaultChangedTo, Unchanged);
+                return !ReferenceEquals(DefaultChangedTo, UnchangedDefault);
+            }
+        }
+
+        public bool DescriptionHasChanged
+        {
+            get
+            {
+                return DescriptionChangedTo != UnchangedDescription;
             }
         }
 
@@ -50,16 +61,24 @@ namespace vcdb.Scripting
                 ColumnDeleted = ColumnDeleted || other.ColumnDeleted,
                 TypeChangedTo = TypeChangedTo ?? other.TypeChangedTo,
                 NullabilityChangedTo = NullabilityChangedTo ?? other.NullabilityChangedTo,
-                DefaultChangedTo = GetDefaultsChangedTo() ?? other.GetDefaultsChangedTo() ?? Unchanged,
-                DefaultRenamedTo = DefaultRenamedTo ?? other.DefaultRenamedTo
+                DefaultChangedTo = GetDefaultChangedTo() ?? other.GetDefaultChangedTo() ?? UnchangedDefault,
+                DefaultRenamedTo = DefaultRenamedTo ?? other.DefaultRenamedTo,
+                DescriptionChangedTo = GetDescriptionChangedTo() ?? other.GetDescriptionChangedTo() ?? UnchangedDescription
             };
         }
 
-        private object GetDefaultsChangedTo()
+        private object GetDefaultChangedTo()
         {
-            return DefaultChangedTo == Unchanged
-                ? null
-                : DefaultChangedTo;
+            return DefaultHasChanged
+                ? DefaultChangedTo
+                : null;
+        }
+
+        private string GetDescriptionChangedTo()
+        {
+            return DescriptionHasChanged
+                ? DescriptionChangedTo
+                : null;
         }
     }
 }

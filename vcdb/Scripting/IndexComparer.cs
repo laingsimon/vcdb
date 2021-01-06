@@ -49,7 +49,10 @@ namespace vcdb.Scripting
                             : default(bool?),
                         UniqueChangedTo = requiredIndex.Value.Unique != currentIndex.Value.Unique
                             ? requiredIndex.Value.Unique
-                            : default(bool?)
+                            : default(bool?),
+                        DescriptionChangedTo = currentIndex.Value.Description != requiredIndex.Value.Description
+                            ? requiredIndex.Value.Description
+                            : IndexDifference.UnchangedDescription
                     };
 
                     if (difference.IsChanged)

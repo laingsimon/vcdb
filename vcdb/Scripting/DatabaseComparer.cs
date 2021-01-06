@@ -19,7 +19,10 @@ namespace vcdb.Scripting
             return new DatabaseDifference
             {
                 TableDifferences = tableComparer.GetDifferentTables(currentDatabase.Tables, requiredDatabase.Tables).ToArray(),
-                SchemaDifferences = schemaComparer.GetSchemaDifferences(currentDatabase.Schemas, requiredDatabase.Schemas).ToArray()
+                SchemaDifferences = schemaComparer.GetSchemaDifferences(currentDatabase.Schemas, requiredDatabase.Schemas).ToArray(),
+                DescriptionChangedTo = currentDatabase.Description != requiredDatabase.Description
+                    ? requiredDatabase.Description
+                    : DatabaseDifference.UnchangedDescription
             };
         }
     }

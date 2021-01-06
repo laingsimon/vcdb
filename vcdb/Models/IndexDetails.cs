@@ -10,5 +10,10 @@ namespace vcdb.Models
         public bool Unique { get; set; }
 
         public string[] PreviousNames { get; set; }
+
+        /// <summary>
+        /// A description for the index
+        /// </summary>
+        public string Description { get; set; }
     }
 }

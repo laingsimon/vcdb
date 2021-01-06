@@ -76,11 +76,14 @@ namespace vcdb.Scripting
                     ? null
                     : requiredColumn.Nullable,
                 DefaultChangedTo = defaultsIdentical
-                    ? ColumnDifference.Unchanged
+                    ? ColumnDifference.UnchangedDefault
                     : requiredColumn.Default,
                 DefaultRenamedTo = currentColumn.DefaultName == requiredColumn.DefaultName
                     ? null
-                    : requiredColumn.DefaultName
+                    : requiredColumn.DefaultName,
+                DescriptionChangedTo = currentColumn.Description != requiredColumn.Description
+                    ? requiredColumn.Description
+                    : ColumnDifference.UnchangedDescription
             };
 
             return difference.IsChanged

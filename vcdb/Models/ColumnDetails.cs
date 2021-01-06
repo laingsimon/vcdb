@@ -34,5 +34,10 @@ namespace vcdb.Models
         /// Any previous names for the column, to indicate whether a column might need to change name
         /// </summary>
         public string[] PreviousNames { get; set; }
+
+        /// <summary>
+        /// A description for the column
+        /// </summary>
+        public string Description { get; set; }
     }
 }
