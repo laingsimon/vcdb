@@ -27,5 +27,8 @@ namespace TestFramework
 
         [Option("porcelain", Default = false, HelpText = "Ensure information is output in simple format (no colours or inline-updates)")]
         public bool Porcelain { get; set; }
+
+        [Option("keepDatabases", Default = false, HelpText = "Don't drop databases on success")]
+        public bool KeepDatabases { get; set; }
     }
 }

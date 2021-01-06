@@ -67,7 +67,15 @@ namespace TestFramework
             {
                 var pass = await CompareSqlScriptResult(settings, result, scenario);
                 if (pass)
-                    return await TestSqlScriptResult(settings, result, scenario);
+                {
+                    if (await TestSqlScriptResult(settings, result, scenario))
+                    {
+                        await DropDatabase(scenario);
+                        return true;
+                    }
+
+                    return false;
+                }
                 else
                 {
                     PrintReproductionStatement(scenario, result);
@@ -274,13 +282,29 @@ namespace TestFramework
 DROP DATABASE IF EXISTS [{scenario.Name}]
 GO
 
-CREATE DATABASE [{scenario.Name}]
-"));
+CREATE DATABASE [{scenario.Name}]"));
 
             var databaseInitialisationFile = scenario.GetFiles("Database.sql").SingleOrDefault();
             if (databaseInitialisationFile != null)
             {
                 await sql.ExecuteBatchedSql(databaseInitialisationFile.OpenText(), scenario.Name);
+            }
+        }
+
+        private async Task DropDatabase(DirectoryInfo scenario)
+        {
+            if (options.KeepDatabases)
+                return;
+
+            try
+            {
+                await sql.ExecuteBatchedSql(new StringReader($@"
+DROP DATABASE IF EXISTS [{scenario.Name}]
+GO"), "master");
+            }
+            catch (Exception exc)
+            {
+                log.LogDebug(exc.Message);
             }
         }
     }

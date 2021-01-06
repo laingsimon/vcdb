@@ -102,7 +102,6 @@ namespace TestFramework
                 catch (Exception exc)
                 {
                     executionContext.ScenarioComplete(scenarioDirectory, false, new[] { exc.Message });
-                    logger.LogError(exc.Message);
                 }
                 finally
                 {
