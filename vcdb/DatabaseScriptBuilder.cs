@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using vcdb.CommandLine;
 using vcdb.Models;
 using vcdb.Output;
@@ -28,14 +29,19 @@ namespace vcdb.SqlServer
         public IEnumerable<SqlScript> CreateUpgradeScripts(DatabaseDetails current, DatabaseDetails required)
         {
             var databaseDifferences = databaseComparer.GetDatabaseDifferences(current, required);
-            foreach (var script in tableScriptBuilder.CreateUpgradeScripts(databaseDifferences.TableDifferences))
+            foreach (var creationScript in schemaScriptBuilder.CreateUpgradeScripts(databaseDifferences.SchemaDifferences, true))
             {
-                yield return script;
+                yield return creationScript;
             }
 
-            foreach (var script in schemaScriptBuilder.CreateUpgradeScripts(databaseDifferences.SchemaDifferences))
+            foreach (var upgradeScript in tableScriptBuilder.CreateUpgradeScripts(databaseDifferences.TableDifferences))
             {
-                yield return script;
+                yield return upgradeScript;
+            }
+
+            foreach (var upgradeScript in schemaScriptBuilder.CreateUpgradeScripts(databaseDifferences.SchemaDifferences, false))
+            {
+                yield return upgradeScript;
             }
         }
     }

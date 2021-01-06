@@ -96,7 +96,8 @@ namespace vcdb.SqlServer
         private SqlScript GetDropTableScript(TableName table)
         {
             return new SqlScript(@$"
-DROP TABLE {table.SqlSafeName()}");
+DROP TABLE {table.SqlSafeName()}
+GO");
         }
 
         private IEnumerable<SqlScript> GetAlterTableScript(TableName currentTableName, TableName requiredTableName, TableDifference tableDifference)
@@ -279,8 +280,7 @@ GO");
         {
             if (current.Table != required.Table)
             {
-                yield return new SqlScript(@$"
-EXEC sp_rename 
+                yield return new SqlScript(@$"EXEC sp_rename 
     @objname = '{current.Schema}.{current.Table}', 
     @newname = '{required.Table}', 
     @objtype = 'OBJECT'
@@ -339,8 +339,7 @@ GO");
         private IEnumerable<SqlScript> GetCreateTableScript(TableDetails requiredTable, TableName tableName)
         {
             var columns = requiredTable.Columns.Select(CreateTableColumn);
-            yield return new SqlScript($@"
-CREATE TABLE {tableName.SqlSafeName()} (
+            yield return new SqlScript($@"CREATE TABLE {tableName.SqlSafeName()} (
 {string.Join("," + Environment.NewLine, columns)}
 )
 GO");

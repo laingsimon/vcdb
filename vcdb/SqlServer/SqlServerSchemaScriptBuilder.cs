@@ -7,17 +7,17 @@ namespace vcdb.SqlServer
 {
     public class SqlServerSchemaScriptBuilder : ISchemaScriptBuilder
     {
-        public IEnumerable<SqlScript> CreateUpgradeScripts(IReadOnlyCollection<SchemaDifference> schemaDifferences)
+        public IEnumerable<SqlScript> CreateUpgradeScripts(IReadOnlyCollection<SchemaDifference> schemaDifferences, bool beforeTableRenamesAndTransfers)
         {
             foreach (var difference in schemaDifferences)
             {
-                if (difference.SchemaAdded)
+                if (difference.SchemaAdded && beforeTableRenamesAndTransfers)
                 {
                     yield return GetCreateSchemaScript(difference.RequiredSchema);
                     continue;
                 }
 
-                if (difference.SchemaDeleted)
+                if (difference.SchemaDeleted && !beforeTableRenamesAndTransfers)
                 {
                     yield return GetDropSchemaScript(difference.CurrentSchema);
                     continue;
@@ -25,15 +25,19 @@ namespace vcdb.SqlServer
 
                 if (difference.SchemaRenamedTo != null)
                 {
-                    yield return GetRenameSchemaScript(difference);
+                    yield return GetRenameSchemaScript(difference, beforeTableRenamesAndTransfers);
                 }
             }
         }
 
-        private SqlScript GetRenameSchemaScript(SchemaDifference difference)
+        private SqlScript GetRenameSchemaScript(SchemaDifference difference, bool beforeTableRenamesAndTransfers)
         {
-            return new SqlScript($@"??RENAME SCHEMA??
-GO");
+            if (beforeTableRenamesAndTransfers)
+            {
+                return GetCreateSchemaScript(difference.RequiredSchema);
+            }
+
+            return GetDropSchemaScript(difference.CurrentSchema);
         }
 
         private SqlScript GetDropSchemaScript(NamedItem<string, SchemaDetails> currentSchema)

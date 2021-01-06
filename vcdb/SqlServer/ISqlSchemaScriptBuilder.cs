@@ -6,6 +6,6 @@ namespace vcdb.SqlServer
 {
     public interface ISchemaScriptBuilder
     {
-        IEnumerable<SqlScript> CreateUpgradeScripts(IReadOnlyCollection<SchemaDifference> schemaDifferences);
+        IEnumerable<SqlScript> CreateUpgradeScripts(IReadOnlyCollection<SchemaDifference> schemaDifferences, bool beforeTableRenamesAndTransfers);
     }
 }
