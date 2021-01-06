@@ -73,7 +73,7 @@ namespace vcdb.SqlServer.Scripting
             {
                 var columnDifference = tableDifference.ColumnDifferences.SingleOrDefault(cd => cd.RequiredColumn.Key == requiredColumnWithUnnamedDefault.Key);
 
-                if (columnDifference != null)
+                if (columnDifference != null && IsOnlyADescriptionChange(columnDifference))
                 {
                     continue;
                 }
@@ -91,6 +91,18 @@ namespace vcdb.SqlServer.Scripting
                     currentColumn,
                     null);
             }
+        }
+
+        private bool IsOnlyADescriptionChange(ColumnDifference columnDifference)
+        {
+            return columnDifference.DescriptionHasChanged
+                    && columnDifference.ColumnRenamedTo == null
+                    && columnDifference.TypeChangedTo == null
+                    && columnDifference.NullabilityChangedTo == null
+                    && columnDifference.DefaultHasChanged
+                    && !columnDifference.ColumnAdded
+                    && !columnDifference.ColumnDeleted
+                    && columnDifference.DefaultRenamedTo == null;
         }
 
         private SqlScript GetDropTableScript(TableName table)
