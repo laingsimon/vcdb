@@ -12,11 +12,13 @@ namespace vcdb.SqlServer.Scripting
     {
         private readonly Options options;
         private readonly ISqlObjectNameHelper objectNameHelper;
+        private readonly IDescriptionScriptBuilder descriptionScriptBuilder;
 
-        public SqlServerTableScriptBuilder(Options options, ISqlObjectNameHelper objectNameHelper)
+        public SqlServerTableScriptBuilder(Options options, ISqlObjectNameHelper objectNameHelper, IDescriptionScriptBuilder descriptionScriptBuilder)
         {
             this.options = options;
             this.objectNameHelper = objectNameHelper;
+            this.descriptionScriptBuilder = descriptionScriptBuilder;
         }
 
         public IEnumerable<SqlScript> CreateUpgradeScripts(IReadOnlyCollection<TableDifference> tableDifferences)
@@ -58,6 +60,14 @@ namespace vcdb.SqlServer.Scripting
                 {
                     yield return script;
                 }
+
+                if (tableDifference.DescriptionHasChanged)
+                {
+                    yield return descriptionScriptBuilder.ChangeTableDescription(
+                        tableDifference.RequiredTable.Key,
+                        tableDifference.CurrentTable.Value.Description,
+                        tableDifference.DescriptionChangedTo);
+                }
             }
         }
 
@@ -73,7 +83,7 @@ namespace vcdb.SqlServer.Scripting
             {
                 var columnDifference = tableDifference.ColumnDifferences.SingleOrDefault(cd => cd.RequiredColumn.Key == requiredColumnWithUnnamedDefault.Key);
 
-                if (columnDifference != null && IsOnlyADescriptionChange(columnDifference))
+                if (columnDifference != null)
                 {
                     continue;
                 }
@@ -88,21 +98,9 @@ namespace vcdb.SqlServer.Scripting
                     tableDifference.RequiredTable.Key,
                     currentColumn,
                     currentColumn.Value.DefaultName,
-                    currentColumn,
+                    requiredColumnWithUnnamedDefault.AsNamedItem(),
                     null);
             }
-        }
-
-        private bool IsOnlyADescriptionChange(ColumnDifference columnDifference)
-        {
-            return columnDifference.DescriptionHasChanged
-                    && columnDifference.ColumnRenamedTo == null
-                    && columnDifference.TypeChangedTo == null
-                    && columnDifference.NullabilityChangedTo == null
-                    && columnDifference.DefaultHasChanged
-                    && !columnDifference.ColumnAdded
-                    && !columnDifference.ColumnDeleted
-                    && columnDifference.DefaultRenamedTo == null;
         }
 
         private SqlScript GetDropTableScript(TableName table)
@@ -123,6 +121,9 @@ GO");
 
                 if (!rename.DefaultHasChanged && requiredColumn.Value.Default != null && rename.DefaultRenamedTo == null && currentColumn.Value.DefaultName == null)
                 {
+                    //the column has a default and continues to have a default. The default constraint does not have a user-provided name currently or as part of the upgrade
+                    //as the column has changed name, the (automatically generated) name of the default should also change (to keep it consistent)
+
                     if (!options.IgnoreUnnamedDefaults)
                     {
                         //rename the default too
@@ -149,6 +150,15 @@ GO");
             {
                 foreach (var script in GetAddColumnScript(requiredTableName, add.RequiredColumn.Key, add.RequiredColumn.Value))
                     yield return script;
+
+                if (add.DescriptionHasChanged)
+                {
+                    yield return descriptionScriptBuilder.ChangeColumnDescription(
+                        requiredTableName,
+                        add.RequiredColumn.Key,
+                        null,
+                        add.DescriptionChangedTo);
+                }
             }
 
             var alterations = differentColumns.Where(IsAlteration);
@@ -206,6 +216,15 @@ GO");
                     foreach (var script in GetAlterDefaultScript(tableName, columnName, alteration.RequiredColumn.Value))
                         yield return script;
                 }
+            }
+
+            if (alteration.DescriptionHasChanged)
+            {
+                yield return descriptionScriptBuilder.ChangeColumnDescription(
+                    tableName, 
+                    columnName, 
+                    alteration.CurrentColumn.Value.Description, 
+                    alteration.DescriptionChangedTo);
             }
         }
 
@@ -365,11 +384,31 @@ GO");
 
             foreach (var index in requiredTable.Indexes)
             {
-                yield return GetAddIndexScript(tableName, index.Key, index.Value);
+                foreach (var script in GetAddIndexScript(tableName, index.Key, index.Value))
+                {
+                    yield return script;
+                }
+            }
+
+            if (requiredTable.Description != null)
+            {
+                yield return descriptionScriptBuilder.ChangeTableDescription(
+                    tableName,
+                    null,
+                    requiredTable.Description);
+            }
+
+            foreach (var column in requiredTable.Columns.Where(column => column.Value.Description != null))
+            {
+                yield return descriptionScriptBuilder.ChangeColumnDescription(
+                    tableName, 
+                    column.Key, 
+                    null, 
+                    column.Value.Description);
             }
         }
 
-        private SqlScript GetAddIndexScript(TableName tableName, string indexName, IndexDetails index)
+        private IEnumerable<SqlScript> GetAddIndexScript(TableName tableName, string indexName, IndexDetails index)
         {
             var uniqueClause = index.Unique
                 ? "UNIQUE "
@@ -391,9 +430,18 @@ GO");
                 ? $"\r\nINCLUDE ({string.Join(", ", index.Including.Select(col => col.SqlSafeName()))})"
                 : "";
 
-            return new SqlScript($@"CREATE {uniqueClause}{clusteredClause}INDEX {indexName.SqlSafeName()}
+            yield return new SqlScript($@"CREATE {uniqueClause}{clusteredClause}INDEX {indexName.SqlSafeName()}
 ON {tableName.SqlSafeName()} ({columns}){includeClause}
 GO");
+
+            if (index.Description != null)
+            {
+                yield return descriptionScriptBuilder.ChangeIndexDescription(
+                    tableName,
+                    indexName,
+                    null,
+                    index.Description);
+            }
         }
 
         private IEnumerable<SqlScript> GetAlterIndexScripts(TableName requiredTableName, IReadOnlyCollection<IndexDifference> indexDifferences)
@@ -402,7 +450,10 @@ GO");
             {
                 if (indexDifference.IndexAdded)
                 {
-                    yield return GetAddIndexScript(requiredTableName, indexDifference.RequiredIndex.Key, indexDifference.RequiredIndex.Value);
+                    foreach (var script in GetAddIndexScript(requiredTableName, indexDifference.RequiredIndex.Key, indexDifference.RequiredIndex.Value))
+                    {
+                        yield return script;
+                    }
                     continue;
                 }
 
@@ -416,11 +467,23 @@ GO");
                 {
                     //Indexes cannot be altered, they have to be dropped and re-created
                     yield return GetDropIndexScript(requiredTableName, indexDifference.CurrentIndex.Key);
-                    yield return GetAddIndexScript(requiredTableName, indexDifference.RequiredIndex.Key, indexDifference.RequiredIndex.Value);
+                    foreach (var script in GetAddIndexScript(requiredTableName, indexDifference.RequiredIndex.Key, indexDifference.RequiredIndex.Value))
+                    {
+                        yield return script;
+                    }
                 }
                 else if (indexDifference.IndexRenamedTo != null)
                 {
                     yield return GetRenameIndexScript(requiredTableName, indexDifference.CurrentIndex.Key, indexDifference.IndexRenamedTo);
+                }
+
+                if (indexDifference.DescriptionHasChanged)
+                {
+                    yield return descriptionScriptBuilder.ChangeIndexDescription(
+                        requiredTableName,
+                        indexDifference.RequiredIndex.Key,
+                        indexDifference.CurrentIndex.Value.Description,
+                        indexDifference.DescriptionChangedTo);
                 }
             }
         }

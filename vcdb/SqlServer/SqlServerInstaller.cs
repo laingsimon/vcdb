@@ -16,10 +16,11 @@ namespace vcdb.SqlServer
             services.AddSingleton<IColumnsRepository, SqlServerColumnsRepository>();
             services.AddSingleton<IIndexesRepository, SqlServerIndexesRepository>();
             services.AddSingleton<ISchemaRepository, SqlServerSchemaRepository>();
-            services.AddSingleton<IDatabaseScriptBuilder, DatabaseScriptBuilder>();
+            services.AddSingleton<IDatabaseScriptBuilder, SqlServerDatabaseScriptBuilder>();
             services.AddSingleton<ITableScriptBuilder, SqlServerTableScriptBuilder>();
             services.AddSingleton<ISqlObjectNameHelper, SqlObjectNameHelper>();
-            services.AddSingleton<ISchemaScriptBuilder, SqlServerSchemaScriptBuilder>();
+            services.AddSingleton<ISqlServerSchemaScriptBuilder, SqlServerSchemaScriptBuilder>();
+            services.AddSingleton<IDescriptionScriptBuilder, SqlServerDescriptionScriptBuilder>();
         }
     }
 }

@@ -1,34 +1,39 @@
 ﻿using System.Collections.Generic;
-using System.Linq;
 using vcdb.CommandLine;
 using vcdb.Models;
 using vcdb.Output;
 using vcdb.Scripting;
 
-namespace vcdb.SqlServer
+namespace vcdb.SqlServer.Scripting
 {
-    public class DatabaseScriptBuilder : IDatabaseScriptBuilder
+    public class SqlServerDatabaseScriptBuilder : IDatabaseScriptBuilder
     {
         private readonly Options options;
         private readonly ITableScriptBuilder tableScriptBuilder;
-        private readonly ISchemaScriptBuilder schemaScriptBuilder;
+        private readonly ISqlServerSchemaScriptBuilder schemaScriptBuilder;
         private readonly IDatabaseComparer databaseComparer;
+        private readonly IDescriptionScriptBuilder descriptionScriptBuilder;
 
-        public DatabaseScriptBuilder(
+        public SqlServerDatabaseScriptBuilder(
             Options options,
             ITableScriptBuilder tableScriptBuilder,
-            ISchemaScriptBuilder schemaScriptBuilder,
-            IDatabaseComparer databaseComparer)
+            ISqlServerSchemaScriptBuilder schemaScriptBuilder,
+            IDatabaseComparer databaseComparer,
+            IDescriptionScriptBuilder descriptionScriptBuilder)
         {
             this.options = options;
             this.tableScriptBuilder = tableScriptBuilder;
             this.schemaScriptBuilder = schemaScriptBuilder;
             this.databaseComparer = databaseComparer;
+            this.descriptionScriptBuilder = descriptionScriptBuilder;
         }
 
         public IEnumerable<SqlScript> CreateUpgradeScripts(DatabaseDetails current, DatabaseDetails required)
         {
             var databaseDifferences = databaseComparer.GetDatabaseDifferences(current, required);
+            if (databaseDifferences.DescriptionHasChanged)
+                yield return descriptionScriptBuilder.ChangeDatabaseDescription(current.Description, databaseDifferences.DescriptionChangedTo);
+
             foreach (var creationScript in schemaScriptBuilder.CreateUpgradeScripts(databaseDifferences.SchemaDifferences, true))
             {
                 yield return creationScript;

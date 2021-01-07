@@ -1,0 +1,58 @@
+{
+  "tables": { 
+	"[ChangeDescriptionSchema].[ChangeDescriptionTable]":{
+		"description": "updated table description",
+		"columns": {
+			"Id": {
+				"type": "int",
+				"description": "updated column description"
+			}
+		},
+		"indexes": {
+			"IX_ChangeDescriptionTable_ChangeDescriptionIndex": {
+				"columns": {
+					"Id": {}
+				},
+				"description": "updated index description"
+			}
+		}
+	},
+	"[AddDescriptionSchema].[AddDescriptionTable]":{
+		"description": "new table description",
+		"columns": {
+			"Id": {
+				"type": "int",
+				"description": "new column description"
+			}
+		},
+		"indexes": {
+			"IX_AddDescriptionTable_AddDescriptionIndex": {
+				"columns": {
+					"Id": {}
+				},
+				"description": "new index description"
+			}
+		}
+	},
+	"[DropDescriptionSchema].[DropDescriptionTable]":{
+		"columns": {
+			"Id": {
+				"type": "int"
+			}
+		},
+		"indexes": {
+			"IX_DropDescriptionTable_DropDescriptionIndex": {
+				"columns": {
+					"Id": {}
+				}
+			}
+		}
+	}
+  },
+  "schemas": {
+	"ChangeDescriptionSchema": { "description": "updated schema description" },
+	"AddDescriptionSchema": { "description": "new schema description" },
+	"DropDescriptionSchema": {}
+  },
+  "description": "updated database description"
+}
