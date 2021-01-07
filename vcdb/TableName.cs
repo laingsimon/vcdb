@@ -44,7 +44,7 @@ namespace vcdb
             public override object ConvertFrom(ITypeDescriptorContext context, CultureInfo culture, object originalValue)
             {
                 var value = (string)originalValue;
-                var match = Regex.Match(value, @"^\[?(?<schema>.+?)\]?\.\[?(?<table>.+)\]?$");
+                var match = Regex.Match(value, @"^\[?(?<schema>.+?)\]?\.\[?(?<table>.+?)\]?$");
                 if (!match.Success)
                     throw new FormatException($"TableName `{value}` is not a valid table name");
 
