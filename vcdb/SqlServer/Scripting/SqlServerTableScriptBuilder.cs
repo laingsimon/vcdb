@@ -311,23 +311,12 @@ GO");
         {
             if (current.Table != required.Table)
             {
+                //NOTE: Required.Schema is used here as the table will have been moved between schemas before any table changes are executed
+
                 yield return new SqlScript(@$"EXEC sp_rename 
-    @objname = '{current.Schema}.{current.Table}', 
+    @objname = '{required.Schema}.{current.Table}', 
     @newname = '{required.Table}', 
     @objtype = 'OBJECT'
-GO");
-            }
-
-            if (current.Schema != required.Schema)
-            {
-                var fromTableName = new TableName
-                {
-                    Schema = current.Schema,
-                    Table = required.Table
-                };
-
-                yield return new SqlScript(@$"ALTER SCHEMA {required.Schema.SqlSafeName()}
-TRANSFER {fromTableName.SqlSafeName()}
 GO");
             }
         }

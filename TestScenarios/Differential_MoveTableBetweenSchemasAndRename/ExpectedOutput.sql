@@ -1,8 +1,8 @@
+ALTER SCHEMA [NewSchema]
+TRANSFER [dbo].[Person]
+GO
 EXEC sp_rename
-    @objname = 'dbo.Person',
+    @objname = 'NewSchema.Person',
     @newname = 'People',
     @objtype = 'OBJECT'
-GO
-ALTER SCHEMA [NewSchema]
-TRANSFER [dbo].[People]
 GO

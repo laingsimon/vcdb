@@ -53,6 +53,10 @@ GO
 
 exec sp_addextendedproperty 
 		@name = N'MS_Description', @value = 'to drop description',
+		@level0type = N'SCHEMA', @level0name = 'DropDescriptionSchema'
+GO
+exec sp_addextendedproperty 
+		@name = N'MS_Description', @value = 'to drop description',
 		@level0type = N'SCHEMA', @level0name = 'DropDescriptionSchema', 
 		@level1type = N'TABLE',  @level1name = 'DropDescriptionTable'
 GO

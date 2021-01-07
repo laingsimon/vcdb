@@ -19,7 +19,7 @@ namespace vcdb.SqlServer
             services.AddSingleton<IDatabaseScriptBuilder, SqlServerDatabaseScriptBuilder>();
             services.AddSingleton<ITableScriptBuilder, SqlServerTableScriptBuilder>();
             services.AddSingleton<ISqlObjectNameHelper, SqlObjectNameHelper>();
-            services.AddSingleton<ISqlServerSchemaScriptBuilder, SqlServerSchemaScriptBuilder>();
+            services.AddSingleton<ISchemaScriptBuilder, SqlServerSchemaScriptBuilder>();
             services.AddSingleton<IDescriptionScriptBuilder, SqlServerDescriptionScriptBuilder>();
         }
     }

@@ -5,6 +5,24 @@ EXEC sp_updateextendedproperty
 @level2type = null, @level2name = null
 GO
 EXEC sp_updateextendedproperty 
+@name = N'MS_Description', @value = 'updated schema description',
+@level0type = N'SCHEMA', @level0name = N'ChangeDescriptionSchema', 
+@level1type = null,  @level1name = null,
+@level2type = null, @level2name = null
+GO
+EXEC sp_addextendedproperty 
+@name = N'MS_Description', @value = 'new schema description',
+@level0type = N'SCHEMA', @level0name = N'AddDescriptionSchema', 
+@level1type = null,  @level1name = null,
+@level2type = null, @level2name = null
+GO
+EXEC sp_dropextendedproperty 
+@name = N'MS_Description',
+@level0type = N'SCHEMA', @level0name = N'DropDescriptionSchema', 
+@level1type = null,  @level1name = null,
+@level2type = null, @level2name = null
+GO
+EXEC sp_updateextendedproperty 
 @name = N'MS_Description', @value = 'updated column description',
 @level0type = N'SCHEMA', @level0name = N'ChangeDescriptionSchema', 
 @level1type = N'TABLE',  @level1name = N'ChangeDescriptionTable',
@@ -50,17 +68,5 @@ EXEC sp_dropextendedproperty
 @name = N'MS_Description',
 @level0type = N'SCHEMA', @level0name = N'DropDescriptionSchema', 
 @level1type = N'TABLE',  @level1name = N'DropDescriptionTable',
-@level2type = null, @level2name = null
-GO
-EXEC sp_updateextendedproperty 
-@name = N'MS_Description', @value = 'updated schema description',
-@level0type = N'SCHEMA', @level0name = N'ChangeDescriptionSchema', 
-@level1type = null,  @level1name = null,
-@level2type = null, @level2name = null
-GO
-EXEC sp_addextendedproperty 
-@name = N'MS_Description', @value = 'new schema description',
-@level0type = N'SCHEMA', @level0name = N'AddDescriptionSchema', 
-@level1type = null,  @level1name = null,
 @level2type = null, @level2name = null
 GO

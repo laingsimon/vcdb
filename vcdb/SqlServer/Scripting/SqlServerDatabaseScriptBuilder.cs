@@ -10,14 +10,14 @@ namespace vcdb.SqlServer.Scripting
     {
         private readonly Options options;
         private readonly ITableScriptBuilder tableScriptBuilder;
-        private readonly ISqlServerSchemaScriptBuilder schemaScriptBuilder;
+        private readonly ISchemaScriptBuilder schemaScriptBuilder;
         private readonly IDatabaseComparer databaseComparer;
         private readonly IDescriptionScriptBuilder descriptionScriptBuilder;
 
         public SqlServerDatabaseScriptBuilder(
             Options options,
             ITableScriptBuilder tableScriptBuilder,
-            ISqlServerSchemaScriptBuilder schemaScriptBuilder,
+            ISchemaScriptBuilder schemaScriptBuilder,
             IDatabaseComparer databaseComparer,
             IDescriptionScriptBuilder descriptionScriptBuilder)
         {
@@ -34,19 +34,14 @@ namespace vcdb.SqlServer.Scripting
             if (databaseDifferences.DescriptionHasChanged)
                 yield return descriptionScriptBuilder.ChangeDatabaseDescription(current.Description, databaseDifferences.DescriptionChangedTo);
 
-            foreach (var creationScript in schemaScriptBuilder.CreateUpgradeScripts(databaseDifferences.SchemaDifferences, true))
+            foreach (var schemaScript in schemaScriptBuilder.CreateUpgradeScripts(databaseDifferences.SchemaDifferences, databaseDifferences.TableDifferences))
             {
-                yield return creationScript;
+                yield return schemaScript;
             }
 
-            foreach (var upgradeScript in tableScriptBuilder.CreateUpgradeScripts(databaseDifferences.TableDifferences))
+            foreach (var tableScript in tableScriptBuilder.CreateUpgradeScripts(databaseDifferences.TableDifferences))
             {
-                yield return upgradeScript;
-            }
-
-            foreach (var upgradeScript in schemaScriptBuilder.CreateUpgradeScripts(databaseDifferences.SchemaDifferences, false))
-            {
-                yield return upgradeScript;
+                yield return tableScript;
             }
         }
     }
