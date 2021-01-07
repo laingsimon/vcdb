@@ -31,7 +31,7 @@ namespace vcdb.Models
         internal int? DefaultObjectId { get; set; }
 
         /// <summary>
-        /// Any previous names for the column, to indicate whether a column might need to change name
+        /// Any previous names for the column, to indicate whether the column might need to change name
         /// </summary>
         public string[] PreviousNames { get; set; }
 

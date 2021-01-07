@@ -2,6 +2,9 @@
 {
     public class SchemaDetails : INamedItem<string>
     {
+        /// <summary>
+        /// Any previous names for the schema, to indicate whether the schema might need to change name
+        /// </summary>
         public string[] PreviousNames { get; set; }
 
         /// <summary>
