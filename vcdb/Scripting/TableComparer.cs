@@ -45,11 +45,11 @@ namespace vcdb.Scripting
                         TableRenamedTo = !currentTable.Key.Equals(requiredTable.Key)
                             ? requiredTable.Key
                             : null,
-                        ColumnDifferences = columnComparer.GetDifferentColumns(currentTable.Value.Columns, requiredTable.Value.Columns).ToArray(),
-                        IndexDifferences = indexComparer.GetIndexDifferences(currentTable.Value.Indexes, requiredTable.Value.Indexes, requiredTable.Value.Columns).ToArray(),
+                        ColumnDifferences = columnComparer.GetDifferentColumns(currentTable.Value.Columns.OrEmpty(), requiredTable.Value.Columns.OrEmpty()).ToArray(),
+                        IndexDifferences = indexComparer.GetIndexDifferences(currentTable.Value.Indexes.OrEmpty(), requiredTable.Value.Indexes.OrEmpty(), requiredTable.Value.Columns.OrEmpty()).ToArray(),
                         DescriptionChangedTo = currentTable.Value.Description != requiredTable.Value.Description
-                            ? requiredTable.Value.Description
-                            : TableDifference.UnchangedDescription
+                            ? requiredTable.Value.Description.AsChange()
+                            : null
                     };
 
                     if (difference.IsChanged)

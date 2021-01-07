@@ -58,12 +58,12 @@ namespace vcdb.SqlServer.Scripting
                     yield return GetDropSchemaScript(difference.CurrentSchema);
                 }
 
-                if (difference.DescriptionHasChanged)
+                if (difference.DescriptionChangedTo != null)
                 {
                     yield return descriptionScriptBuilder.ChangeSchemaDescription(
                         difference.RequiredSchema.Key, 
                         difference.CurrentSchema.Value.Description, 
-                        difference.DescriptionChangedTo);
+                        difference.DescriptionChangedTo.Value);
                 }
             }
 

@@ -4,20 +4,18 @@ namespace vcdb.Scripting
 {
     public class ColumnDifference
     {
-        public static readonly object UnchangedDefault = new object();
-        public const string UnchangedDescription = "\0";
-
         public NamedItem<string, ColumnDetails> CurrentColumn { get; set; }
         public NamedItem<string, ColumnDetails> RequiredColumn { get; set; }
 
         public string ColumnRenamedTo { get; set; }
         public string TypeChangedTo { get; set; }
         public bool? NullabilityChangedTo { get; set; }
-        public object DefaultChangedTo { get; set; } = UnchangedDefault;
+        public Change<object> DefaultChangedTo { get; set; }
+
         public bool ColumnAdded { get; set; }
         public bool ColumnDeleted { get; set; }
-        public string DefaultRenamedTo { get; set; }
-        public string DescriptionChangedTo { get; set; } = UnchangedDescription;
+        public Change<string> DefaultRenamedTo { get; set; }
+        public Change<string> DescriptionChangedTo { get; set; }
 
         public bool IsChanged
         {
@@ -26,31 +24,15 @@ namespace vcdb.Scripting
                 return ColumnRenamedTo != null
                     || TypeChangedTo != null
                     || NullabilityChangedTo != null
-                    || DefaultHasChanged
+                    || DefaultChangedTo != null
                     || ColumnAdded
                     || ColumnDeleted
                     || DefaultRenamedTo != null
-                    || DescriptionHasChanged;
+                    || DescriptionChangedTo != null;
             }
         }
 
-        public bool DefaultHasChanged
-        {
-            get
-            {
-                return !ReferenceEquals(DefaultChangedTo, UnchangedDefault);
-            }
-        }
-
-        public bool DescriptionHasChanged
-        {
-            get
-            {
-                return DescriptionChangedTo != UnchangedDescription;
-            }
-        }
-
-        public  ColumnDifference MergeIn(ColumnDifference other)
+        public ColumnDifference MergeIn(ColumnDifference other)
         {
             return new ColumnDifference
             {
@@ -61,24 +43,10 @@ namespace vcdb.Scripting
                 ColumnDeleted = ColumnDeleted || other.ColumnDeleted,
                 TypeChangedTo = TypeChangedTo ?? other.TypeChangedTo,
                 NullabilityChangedTo = NullabilityChangedTo ?? other.NullabilityChangedTo,
-                DefaultChangedTo = GetDefaultChangedTo() ?? other.GetDefaultChangedTo() ?? UnchangedDefault,
+                DefaultChangedTo = DefaultChangedTo ?? other.DefaultChangedTo,
                 DefaultRenamedTo = DefaultRenamedTo ?? other.DefaultRenamedTo,
-                DescriptionChangedTo = GetDescriptionChangedTo() ?? other.GetDescriptionChangedTo() ?? UnchangedDescription
+                DescriptionChangedTo = DescriptionChangedTo ?? other.DescriptionChangedTo
             };
-        }
-
-        private object GetDefaultChangedTo()
-        {
-            return DefaultHasChanged
-                ? DefaultChangedTo
-                : null;
-        }
-
-        private string GetDescriptionChangedTo()
-        {
-            return DescriptionHasChanged
-                ? DescriptionChangedTo
-                : null;
         }
     }
 }

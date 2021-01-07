@@ -61,12 +61,12 @@ namespace vcdb.SqlServer.Scripting
                     yield return script;
                 }
 
-                if (tableDifference.DescriptionHasChanged)
+                if (tableDifference.DescriptionChangedTo != null)
                 {
                     yield return descriptionScriptBuilder.ChangeTableDescription(
                         tableDifference.RequiredTable.Key,
                         tableDifference.CurrentTable.Value.Description,
-                        tableDifference.DescriptionChangedTo);
+                        tableDifference.DescriptionChangedTo.Value);
                 }
             }
         }
@@ -119,7 +119,7 @@ GO");
                 var currentColumn = rename.CurrentColumn;
                 yield return GetRenameColumnScript(requiredTableName, currentColumn.Key, requiredColumn.Key);
 
-                if (!rename.DefaultHasChanged && requiredColumn.Value.Default != null && rename.DefaultRenamedTo == null && currentColumn.Value.DefaultName == null)
+                if (rename.DefaultChangedTo == null && requiredColumn.Value.Default != null && rename.DefaultRenamedTo == null && currentColumn.Value.DefaultName == null)
                 {
                     //the column has a default and continues to have a default. The default constraint does not have a user-provided name currently or as part of the upgrade
                     //as the column has changed name, the (automatically generated) name of the default should also change (to keep it consistent)
@@ -151,13 +151,13 @@ GO");
                 foreach (var script in GetAddColumnScript(requiredTableName, add.RequiredColumn.Key, add.RequiredColumn.Value))
                     yield return script;
 
-                if (add.DescriptionHasChanged)
+                if (add.DescriptionChangedTo != null)
                 {
                     yield return descriptionScriptBuilder.ChangeColumnDescription(
                         requiredTableName,
                         add.RequiredColumn.Key,
                         null,
-                        add.DescriptionChangedTo);
+                        add.DescriptionChangedTo.Value);
                 }
             }
 
@@ -204,10 +204,10 @@ GO");
                     alteration.CurrentColumn,
                     alteration.CurrentColumn.Value.DefaultName,
                     alteration.RequiredColumn,
-                    alteration.DefaultRenamedTo);
+                    alteration.DefaultRenamedTo.Value);
             }
 
-            if (alteration.DefaultHasChanged)
+            if (alteration.DefaultChangedTo != null)
             {
                 if (alteration.DefaultChangedTo == null)
                     yield return GetDropDefaultScript(tableName, columnName);
@@ -218,13 +218,13 @@ GO");
                 }
             }
 
-            if (alteration.DescriptionHasChanged)
+            if (alteration.DescriptionChangedTo != null)
             {
                 yield return descriptionScriptBuilder.ChangeColumnDescription(
                     tableName, 
                     columnName, 
                     alteration.CurrentColumn.Value.Description, 
-                    alteration.DescriptionChangedTo);
+                    alteration.DescriptionChangedTo.Value);
             }
         }
 
@@ -466,13 +466,13 @@ GO");
                     yield return GetRenameIndexScript(requiredTableName, indexDifference.CurrentIndex.Key, indexDifference.IndexRenamedTo);
                 }
 
-                if (indexDifference.DescriptionHasChanged)
+                if (indexDifference.DescriptionChangedTo != null)
                 {
                     yield return descriptionScriptBuilder.ChangeIndexDescription(
                         requiredTableName,
                         indexDifference.RequiredIndex.Key,
                         indexDifference.CurrentIndex.Value.Description,
-                        indexDifference.DescriptionChangedTo);
+                        indexDifference.DescriptionChangedTo.Value);
                 }
             }
         }

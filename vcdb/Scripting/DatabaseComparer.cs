@@ -18,11 +18,11 @@ namespace vcdb.Scripting
         {
             return new DatabaseDifference
             {
-                TableDifferences = tableComparer.GetDifferentTables(currentDatabase.Tables, requiredDatabase.Tables).ToArray(),
-                SchemaDifferences = schemaComparer.GetSchemaDifferences(currentDatabase.Schemas, requiredDatabase.Schemas).ToArray(),
+                TableDifferences = tableComparer.GetDifferentTables(currentDatabase.Tables.OrEmpty(), requiredDatabase.Tables.OrEmpty()).ToArray(),
+                SchemaDifferences = schemaComparer.GetSchemaDifferences(currentDatabase.Schemas.OrEmpty(), requiredDatabase.Schemas.OrEmpty()).ToArray(),
                 DescriptionChangedTo = currentDatabase.Description != requiredDatabase.Description
-                    ? requiredDatabase.Description
-                    : DatabaseDifference.UnchangedDescription
+                    ? requiredDatabase.Description.AsChange()
+                    : null
             };
         }
     }

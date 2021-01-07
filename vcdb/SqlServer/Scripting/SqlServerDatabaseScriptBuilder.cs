@@ -31,8 +31,8 @@ namespace vcdb.SqlServer.Scripting
         public IEnumerable<SqlScript> CreateUpgradeScripts(DatabaseDetails current, DatabaseDetails required)
         {
             var databaseDifferences = databaseComparer.GetDatabaseDifferences(current, required);
-            if (databaseDifferences.DescriptionHasChanged)
-                yield return descriptionScriptBuilder.ChangeDatabaseDescription(current.Description, databaseDifferences.DescriptionChangedTo);
+            if (databaseDifferences.DescriptionChangedTo != null)
+                yield return descriptionScriptBuilder.ChangeDatabaseDescription(current.Description, databaseDifferences.DescriptionChangedTo.Value);
 
             foreach (var schemaScript in schemaScriptBuilder.CreateUpgradeScripts(databaseDifferences.SchemaDifferences, databaseDifferences.TableDifferences))
             {

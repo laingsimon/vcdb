@@ -39,5 +39,10 @@ namespace vcdb
                 ? new NamedItem<TKey, TValue>(key, dict[key])
                 : null;
         }
+
+        public static IDictionary<TKey, TValue> OrEmpty<TKey, TValue>(this IDictionary<TKey, TValue> current)
+        {
+            return current ?? new Dictionary<TKey, TValue>();
+        }
     }
 }

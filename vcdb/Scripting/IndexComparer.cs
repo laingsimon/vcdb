@@ -51,8 +51,8 @@ namespace vcdb.Scripting
                             ? requiredIndex.Value.Unique
                             : default(bool?),
                         DescriptionChangedTo = currentIndex.Value.Description != requiredIndex.Value.Description
-                            ? requiredIndex.Value.Description
-                            : IndexDifference.UnchangedDescription
+                            ? requiredIndex.Value.Description.AsChange()
+                            : null
                     };
 
                     if (difference.IsChanged)
