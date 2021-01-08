@@ -83,6 +83,12 @@ namespace vcdb.Scripting
                     : null,
                 DescriptionChangedTo = currentColumn.Description != requiredColumn.Description
                     ? requiredColumn.Description.AsChange()
+                    : null,
+                CheckChangedTo = currentColumn.Check != requiredColumn.Check
+                    ? requiredColumn.Check.AsChange()
+                    : null,
+                CheckRenamedTo = currentColumn.CheckName != requiredColumn.CheckName
+                    ? requiredColumn.Check.AsChange()
                     : null
             };
 

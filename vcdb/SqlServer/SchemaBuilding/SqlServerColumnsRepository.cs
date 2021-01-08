@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Data.Common;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using vcdb.Models;
 using vcdb.SchemaBuilding;
@@ -43,7 +44,23 @@ new
 {
     table_name = tableName.Table,
     table_owner = tableName.Schema
-})).ToDictionary(col => col.COLUMN_NAME, col => col);
+})).ToDictionary(defaultConstraint => defaultConstraint.COLUMN_NAME);
+
+            var checkConstraints = (await connection.QueryAsync<CheckConstraintDetails>(@"
+select chk.name as CHECK_NAME, col.name as COLUMN_NAME, chk.OBJECT_ID, chk.DEFINITION
+from sys.check_constraints chk
+inner join sys.columns col
+on col.column_id = chk.parent_column_id
+and col.object_id = chk.parent_object_id
+inner join sys.tables tab
+on tab.object_id = col.object_id
+where tab.name = @table_name
+and SCHEMA_NAME(tab.schema_id) = @table_owner",
+new
+{
+    table_name = tableName.Table,
+    table_owner = tableName.Schema
+})).ToDictionary(check => check.COLUMN_NAME);
 
             var columnDescriptions = await descriptionRepository.GetColumnDescriptions(connection, tableName);
 
@@ -52,30 +69,46 @@ new
                         column =>
                         {
                             var columnDefault = columnDefaults.ItemOrDefault(column.COLUMN_NAME);
+                            var checkConstraint = checkConstraints.ItemOrDefault(column.COLUMN_NAME);
 
                             return new ColumnDetails
                             {
                                 Type = GetDataType(column),
                                 Nullable = column.NULLABLE,
                                 Default = column.COLUMN_DEF?.Trim('(', ')'),
-                                DefaultName = columnDefault == null || IsAutomaticConstraintName(columnDefault, tableName)
+                                DefaultName = columnDefault == null || IsAutomaticName(columnDefault, tableName)
                                     ? null
                                     : columnDefault.DEFAULT_NAME,
                                 DefaultObjectId = columnDefault?.OBJECT_ID,
-                                Description = columnDescriptions.ItemOrDefault(column.COLUMN_NAME)
+                                Description = columnDescriptions.ItemOrDefault(column.COLUMN_NAME),
+                                Check = UnwrapCheckConstraint(checkConstraint?.DEFINITION),
+                                CheckName = checkConstraint == null || IsAutomaticName(checkConstraint, tableName)
+                                    ? null
+                                    : checkConstraint.CHECK_NAME,
                             };
                         });
         }
 
-        private bool IsAutomaticConstraintName(ColumnDefaultDetails columnDefault, TableName tableName)
+        private bool IsAutomaticName(ISqlColumnNamedObject sqlObject, TableName tableName)
         {
             var automaticConstraintName = sqlObjectNameHelper.GetAutomaticConstraintName(
-                "DF",
+                sqlObject.Prefix,
                 tableName.Table,
-                columnDefault.COLUMN_NAME,
-                columnDefault.OBJECT_ID);
+                sqlObject.ColumnName,
+                sqlObject.ObjectId);
 
-            return columnDefault.DEFAULT_NAME == automaticConstraintName;
+            return sqlObject.Name == automaticConstraintName;
+        }
+
+        private string UnwrapCheckConstraint(string definition)
+        {
+            if (string.IsNullOrEmpty(definition))
+                return definition;
+
+            var match = Regex.Match(definition, @"^\({0,1}(?<definition>.+?)\){0,1}$");
+            return match.Success
+                ? match.Groups["definition"].Value
+                : definition;
         }
 
         private string GetDataType(SpColumnsOutput column)

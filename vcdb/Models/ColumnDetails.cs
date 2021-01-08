@@ -39,5 +39,15 @@ namespace vcdb.Models
         /// A description for the column
         /// </summary>
         public string Description { get; set; }
+
+        /// <summary>
+        /// The check constraint for the column
+        /// </summary>
+        public string Check { get; set; }
+
+        /// <summary>
+        /// A optional name for the check to add to the table
+        /// </summary>
+        public string CheckName { get; set; }
     }
 }

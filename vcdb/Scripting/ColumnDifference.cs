@@ -16,6 +16,8 @@ namespace vcdb.Scripting
         public bool ColumnDeleted { get; set; }
         public Change<string> DefaultRenamedTo { get; set; }
         public Change<string> DescriptionChangedTo { get; set; }
+        public Change<string> CheckRenamedTo { get; set; }
+        public Change<string> CheckChangedTo { get; set; }
 
         public bool IsChanged
         {
@@ -28,7 +30,9 @@ namespace vcdb.Scripting
                     || ColumnAdded
                     || ColumnDeleted
                     || DefaultRenamedTo != null
-                    || DescriptionChangedTo != null;
+                    || DescriptionChangedTo != null
+                    || CheckChangedTo != null
+                    || CheckRenamedTo != null;
             }
         }
 
@@ -45,7 +49,9 @@ namespace vcdb.Scripting
                 NullabilityChangedTo = NullabilityChangedTo ?? other.NullabilityChangedTo,
                 DefaultChangedTo = DefaultChangedTo ?? other.DefaultChangedTo,
                 DefaultRenamedTo = DefaultRenamedTo ?? other.DefaultRenamedTo,
-                DescriptionChangedTo = DescriptionChangedTo ?? other.DescriptionChangedTo
+                DescriptionChangedTo = DescriptionChangedTo ?? other.DescriptionChangedTo,
+                CheckChangedTo = CheckChangedTo ?? other.CheckChangedTo,
+                CheckRenamedTo = CheckRenamedTo ?? other.CheckRenamedTo
             };
         }
     }
