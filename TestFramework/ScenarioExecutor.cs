@@ -86,7 +86,7 @@ namespace TestFramework
 
         private void PrintReproductionStatement(DirectoryInfo scenario, ExecutionResult result)
         {
-            log.LogInformation($"Execute vcdb with the following commandline to debug this scenario:\r\n{scenario.FullName}> {result.CommandLine}");
+            log.LogInformation($"Execute vcdb with the following commandline to debug this scenario:\r\n{scenario.FullName}\r\n$ {result.CommandLine}");
         }
 
         private async Task<bool> TestSqlScriptResult(ScenarioSettings settings, ExecutionResult result, DirectoryInfo scenario)

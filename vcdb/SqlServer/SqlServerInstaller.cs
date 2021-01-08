@@ -21,6 +21,8 @@ namespace vcdb.SqlServer
             services.AddSingleton<ISqlObjectNameHelper, SqlObjectNameHelper>();
             services.AddSingleton<ISchemaScriptBuilder, SqlServerSchemaScriptBuilder>();
             services.AddSingleton<IDescriptionScriptBuilder, SqlServerDescriptionScriptBuilder>();
+            services.AddSingleton<IIndexScriptBuilder, SqlServerIndexScriptBuilder>();
+            services.AddSingleton<IDefaultConstraintScriptBuilder, SqlServerDefaultConstraintScriptBuilder>();
         }
     }
 }
