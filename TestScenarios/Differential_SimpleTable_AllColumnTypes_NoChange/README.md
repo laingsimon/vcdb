@@ -1,3 +1,3 @@
 This scenario tests vcdb to confirm it can create the expected schema JSON from a given database.
 
-This scenario tests that vcdb can create a CREATE table script for a table containing different column types
+There are no changes in the database compared to the input JSON, so there should be no content in the output (scripts)
