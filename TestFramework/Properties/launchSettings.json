@@ -2,7 +2,7 @@
   "profiles": {
     "TestFramework": {
       "commandName": "Project",
-      "commandLineArgs": "--connectionString \"server=localhost;user id=sa;password=vcdb_2020\"",
+      "commandLineArgs": "--connectionString \"server=localhost;user id=sa;password=vcdb_2020\" --maxConcurrency 10",
       "workingDirectory": "..\\TestScenarios"
     }
   }

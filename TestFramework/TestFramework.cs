@@ -14,6 +14,7 @@ namespace TestFramework
         private readonly ISql sql;
         private readonly ExecutionContext executionContext;
         private readonly IDocker docker;
+        private readonly ITaskGate taskGate;
         private readonly IServiceProvider serviceProvider;
 
         public TestFramework(
@@ -22,7 +23,8 @@ namespace TestFramework
             IServiceProvider serviceProvider,
             ISql sql,
             ExecutionContext executionContext,
-            IDocker docker)
+            IDocker docker,
+            ITaskGate taskGate)
         {
             this.options = options;
             this.logger = logger;
@@ -30,6 +32,7 @@ namespace TestFramework
             this.sql = sql;
             this.executionContext = executionContext;
             this.docker = docker;
+            this.taskGate = taskGate;
         }
 
         public async Task Execute()
@@ -79,6 +82,7 @@ namespace TestFramework
 
         private async Task ExecuteScenario(DirectoryInfo scenarioDirectory)
         {
+            using (taskGate.StartTask())
             using (var scope = serviceProvider.CreateScope())
             {
                 var scenarioDirectoryFactory = scope.ServiceProvider.GetRequiredService<ScenarioDirectoryFactory>();

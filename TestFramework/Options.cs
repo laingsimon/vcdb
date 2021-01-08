@@ -30,5 +30,8 @@ namespace TestFramework
 
         [Option("keepDatabases", Default = false, HelpText = "Don't drop databases on success")]
         public bool KeepDatabases { get; set; }
+
+        [Option("maxConcurrency", Default = null, HelpText = "The maximum number of scenarios that can run at any one time")]
+        public int? MaxConcurrency { get; set; }
     }
 }

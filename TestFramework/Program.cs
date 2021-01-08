@@ -62,6 +62,7 @@ namespace TestFramework
             services.AddSingleton<IInlineDiffBuilder>(InlineDiffBuilder.Instance);
             services.AddSingleton<IDocker, Docker>();
             services.AddSingleton<ILogger, ConsoleLogger>();
+            services.AddSingleton<ITaskGate, TaskGate>();
 
             services.AddSingleton(new JsonSerializer
             {

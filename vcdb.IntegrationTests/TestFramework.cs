@@ -33,7 +33,7 @@ namespace vcdb.IntegrationTests
         [Test]
         public async Task ExecuteAllAtOnce()
         {
-            var commandLineArguments = $"--connectionString \"{ConnectionString}\"";
+            var commandLineArguments = $"--connectionString \"{ConnectionString}\"  --maxConcurrency 10";
             var result = await processExecutor.ExecuteProcess(commandLineArguments);
 
             result.WriteStdOutTo(Console.Out);
