@@ -19,7 +19,7 @@ namespace vcdb.CommandLine
         [Option('t', "type", Required = false, HelpText = "The type of database server to connect to", Default = DatabaseType.SqlServer)]
         public DatabaseType DatabaseType { get; set; }
 
-        [Option("ignoreUnnamedDefaults", Default = false, HelpText = "Don't create rename scripts for unnamed default constraints when its table or column changes name")]
-        public bool IgnoreUnnamedDefaults { get; set; }
+        [Option("ignoreUnnamedConstraints", Default = false, HelpText = "Don't create rename scripts for unnamed default/check constraints when its table or column changes name")]
+        public bool IgnoreUnnamedConstraints { get; set; }
     }
 }

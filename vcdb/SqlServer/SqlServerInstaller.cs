@@ -23,6 +23,7 @@ namespace vcdb.SqlServer
             services.AddSingleton<IDescriptionScriptBuilder, SqlServerDescriptionScriptBuilder>();
             services.AddSingleton<IIndexScriptBuilder, SqlServerIndexScriptBuilder>();
             services.AddSingleton<IDefaultConstraintScriptBuilder, SqlServerDefaultConstraintScriptBuilder>();
+            services.AddSingleton<ICheckConstraintScriptBuilder, SqlServerCheckConstraintScriptBuilder>();
         }
     }
 }

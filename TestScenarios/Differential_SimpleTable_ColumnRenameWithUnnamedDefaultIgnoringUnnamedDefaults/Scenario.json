@@ -1,5 +1,5 @@
 {
-	"commandLine": "--connectionString \"{ConnectionString}\" --input Input.json --ignoreUnnamedDefaults",
+	"commandLine": "--connectionString \"{ConnectionString}\" --input Input.json --ignoreUnnamedConstraints",
 	"vcdbBuildConfiguration": "Debug",
 	"vcdbPath": null,
 	"mode": "differential",

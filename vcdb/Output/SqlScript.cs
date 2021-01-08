@@ -1,7 +1,9 @@
-﻿using System.Threading.Tasks;
+﻿using System.Diagnostics;
+using System.Threading.Tasks;
 
 namespace vcdb.Output
 {
+    [DebuggerDisplay("{content,nq}")]
     public class SqlScript : IOutputable
     {
         private readonly string content;

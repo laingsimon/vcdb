@@ -80,6 +80,7 @@ new
                                     ? null
                                     : columnDefault.DEFAULT_NAME,
                                 DefaultObjectId = columnDefault?.OBJECT_ID,
+                                CheckObjectId = checkConstraint?.OBJECT_ID,
                                 Description = columnDescriptions.ItemOrDefault(column.COLUMN_NAME),
                                 Check = UnwrapCheckConstraint(checkConstraint?.DEFINITION),
                                 CheckName = checkConstraint == null || IsAutomaticName(checkConstraint, tableName)

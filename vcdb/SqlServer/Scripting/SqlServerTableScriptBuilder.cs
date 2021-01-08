@@ -13,15 +13,18 @@ namespace vcdb.SqlServer.Scripting
         private readonly IDescriptionScriptBuilder descriptionScriptBuilder;
         private readonly IIndexScriptBuilder indexScriptBuilder;
         private readonly IDefaultConstraintScriptBuilder defaultConstraintScriptBuilder;
+        private readonly ICheckConstraintScriptBuilder checkConstraintScriptBuilder;
 
         public SqlServerTableScriptBuilder(
             IDescriptionScriptBuilder descriptionScriptBuilder,
             IIndexScriptBuilder indexScriptBuilder,
-            IDefaultConstraintScriptBuilder defaultConstraintScriptBuilder)
+            IDefaultConstraintScriptBuilder defaultConstraintScriptBuilder,
+            ICheckConstraintScriptBuilder checkConstraintScriptBuilder)
         {
             this.descriptionScriptBuilder = descriptionScriptBuilder;
             this.indexScriptBuilder = indexScriptBuilder;
             this.defaultConstraintScriptBuilder = defaultConstraintScriptBuilder;
+            this.checkConstraintScriptBuilder = checkConstraintScriptBuilder;
         }
 
         public IEnumerable<SqlScript> CreateUpgradeScripts(IReadOnlyCollection<TableDifference> tableDifferences)
@@ -44,6 +47,11 @@ namespace vcdb.SqlServer.Scripting
                     }
 
                     foreach (var script in defaultConstraintScriptBuilder.CreateUpgradeScripts(tableDifference))
+                    {
+                        yield return script;
+                    }
+
+                    foreach (var script in checkConstraintScriptBuilder.CreateUpgradeScripts(tableDifference))
                     {
                         yield return script;
                     }
@@ -74,6 +82,11 @@ namespace vcdb.SqlServer.Scripting
                 }
 
                 foreach (var script in defaultConstraintScriptBuilder.CreateUpgradeScripts(tableDifference))
+                {
+                    yield return script;
+                }
+
+                foreach (var script in checkConstraintScriptBuilder.CreateUpgradeScripts(tableDifference))
                 {
                     yield return script;
                 }
@@ -162,6 +175,11 @@ GO");
             }
 
             foreach (var script in defaultConstraintScriptBuilder.CreateUpgradeScripts(tableName, columnDifference))
+            {
+                yield return script;
+            }
+
+            foreach (var script in checkConstraintScriptBuilder.CreateUpgradeScripts(tableName, columnDifference))
             {
                 yield return script;
             }
