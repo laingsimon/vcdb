@@ -88,7 +88,17 @@ namespace vcdb.SqlServer.Scripting
 
         public IEnumerable<SqlScript> CreateUpgradeScripts(TableName tableName, ColumnDifference columnDifference)
         {
-            if (columnDifference.DefaultRenamedTo != null)
+            if (columnDifference.DefaultChangedTo != null)
+            {
+                if (columnDifference.DefaultChangedTo.Value == null)
+                    yield return GetDropDefaultScript(tableName, GetCurrentConstraintName(tableName, columnDifference));
+                else
+                {
+                    foreach (var script in GetAlterDefaultScript(tableName, columnDifference.RequiredColumn, GetCurrentConstraintName(tableName, columnDifference)))
+                        yield return script;
+                }
+            }
+            else if (columnDifference.DefaultRenamedTo != null)
             {
                 yield return GetRenameDefaultScript(
                     tableName,
@@ -97,17 +107,6 @@ namespace vcdb.SqlServer.Scripting
                     columnDifference.CurrentColumn.Value.DefaultName,
                     columnDifference.RequiredColumn,
                     columnDifference.DefaultRenamedTo.Value);
-            }
-
-            if (columnDifference.DefaultChangedTo != null)
-            {
-                if (columnDifference.DefaultChangedTo == null)
-                    yield return GetDropDefaultScript(tableName, columnDifference.RequiredColumn.Key);
-                else
-                {
-                    foreach (var script in GetAlterDefaultScript(tableName, columnDifference.RequiredColumn.Key, columnDifference.RequiredColumn.Value))
-                        yield return script;
-                }
             }
 
             if (columnDifference.ColumnAdded && columnDifference.RequiredColumn.Value.Default != null)
@@ -120,6 +119,19 @@ namespace vcdb.SqlServer.Scripting
                     yield return script;
                 }
             }
+        }
+
+        private string GetCurrentConstraintName(TableName tableName, ColumnDifference columnDifference)
+        {
+            var currentColumn = columnDifference.CurrentColumn;
+            if (currentColumn.Value.DefaultName != null)
+                return currentColumn.Value.DefaultName;
+
+            return objectNameHelper.GetAutomaticConstraintName(
+                "DF",
+                tableName.Table,
+                currentColumn.Key,
+                currentColumn.Value.DefaultObjectId.Value);
         }
 
         private IEnumerable<SqlScript> GetRenameUnnamedDefaultsIfNoColumnsAreRenamed(TableDifference tableDifference)
@@ -159,16 +171,18 @@ namespace vcdb.SqlServer.Scripting
             return objectNameHelper.GetAutomaticConstraintName("DF", tableName.Table, column.Key, column.Value.DefaultObjectId ?? 0);
         }
 
-        private SqlScript GetDropDefaultScript(TableName tableName, string columnName)
+        private SqlScript GetDropDefaultScript(TableName tableName, string constraintName)
         {
             return new SqlScript($@"ALTER TABLE {tableName.SqlSafeName()}
-ALTER COLUMN {columnName.SqlSafeName()} DROP DEFAULT
+DROP CONSTRAINT {constraintName.SqlSafeName()}
 GO");
         }
 
-        private IEnumerable<SqlScript> GetAlterDefaultScript(TableName tableName, string columnName, ColumnDetails column)
+        private IEnumerable<SqlScript> GetAlterDefaultScript(TableName tableName, NamedItem<string, ColumnDetails> columnDetails, string currentConstraintName)
         {
-            yield return GetDropDefaultScript(tableName, columnName);
+            var columnName = columnDetails.Key;
+            var column = columnDetails.Value;
+            yield return GetDropDefaultScript(tableName, currentConstraintName);
             foreach (var script in GetAddDefaultScript(tableName, columnName, column))
             {
                 yield return script;

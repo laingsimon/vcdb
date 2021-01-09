@@ -88,7 +88,17 @@ namespace vcdb.SqlServer.Scripting
 
         public IEnumerable<SqlScript> CreateUpgradeScripts(TableName tableName, ColumnDifference columnDifference)
         {
-            if (columnDifference.CheckRenamedTo != null)
+            if (columnDifference.CheckChangedTo != null)
+            {
+                if (columnDifference.CheckChangedTo.Value == null)
+                    yield return GetDropCheckScript(tableName, GetCurrentConstraintName(tableName, columnDifference));
+                else
+                {
+                    foreach (var script in GetAlterCheckScript(tableName, columnDifference.RequiredColumn, GetCurrentConstraintName(tableName, columnDifference)))
+                        yield return script;
+                }
+            }
+            else if (columnDifference.CheckRenamedTo != null)
             {
                 yield return GetRenameCheckScript(
                     tableName,
@@ -97,17 +107,6 @@ namespace vcdb.SqlServer.Scripting
                     columnDifference.CurrentColumn.Value.CheckName,
                     columnDifference.RequiredColumn,
                     columnDifference.CheckRenamedTo.Value);
-            }
-
-            if (columnDifference.CheckChangedTo != null)
-            {
-                if (columnDifference.CheckChangedTo == null)
-                    yield return GetDropCheckScript(tableName, columnDifference.RequiredColumn.Key);
-                else
-                {
-                    foreach (var script in GetAlterCheckScript(tableName, columnDifference.RequiredColumn.Key, columnDifference.RequiredColumn.Value))
-                        yield return script;
-                }
             }
 
             if (columnDifference.ColumnAdded && columnDifference.RequiredColumn.Value.Check != null)
@@ -120,6 +119,19 @@ namespace vcdb.SqlServer.Scripting
                     yield return script;
                 }
             }
+        }
+
+        private string GetCurrentConstraintName(TableName tableName, ColumnDifference columnDifference)
+        {
+            var currentColumn = columnDifference.CurrentColumn;
+            if (currentColumn.Value.CheckName != null)
+                return currentColumn.Value.CheckName;
+
+            return objectNameHelper.GetAutomaticConstraintName(
+                "CK",
+                tableName.Table,
+                currentColumn.Key,
+                currentColumn.Value.CheckObjectId.Value);
         }
 
         private IEnumerable<SqlScript> GetRenameUnnamedChecksIfNoColumnsAreRenamed(TableDifference tableDifference)
@@ -159,16 +171,18 @@ namespace vcdb.SqlServer.Scripting
             return objectNameHelper.GetAutomaticConstraintName("CK", tableName.Table, column.Key, column.Value.CheckObjectId ?? 0);
         }
 
-        private SqlScript GetDropCheckScript(TableName tableName, string columnName)
+        private SqlScript GetDropCheckScript(TableName tableName, string constraintName)
         {
             return new SqlScript($@"ALTER TABLE {tableName.SqlSafeName()}
-ALTER COLUMN {columnName.SqlSafeName()} DROP CHECK
+DROP CONSTRAINT {constraintName.SqlSafeName()}
 GO");
         }
 
-        private IEnumerable<SqlScript> GetAlterCheckScript(TableName tableName, string columnName, ColumnDetails column)
+        private IEnumerable<SqlScript> GetAlterCheckScript(TableName tableName, NamedItem<string, ColumnDetails> columnDetails, string currentConstraintName)
         {
-            yield return GetDropCheckScript(tableName, columnName);
+            var columnName = columnDetails.Key;
+            var column = columnDetails.Value;
+            yield return GetDropCheckScript(tableName, currentConstraintName);
             foreach (var script in GetAddCheckScript(tableName, columnName, column))
             {
                 yield return script;

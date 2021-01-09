@@ -88,7 +88,7 @@ namespace vcdb.Scripting
                     ? requiredColumn.Check.AsChange()
                     : null,
                 CheckRenamedTo = currentColumn.CheckName != requiredColumn.CheckName
-                    ? requiredColumn.Check.AsChange()
+                    ? requiredColumn.CheckName.AsChange()
                     : null
             };
 

@@ -1,0 +1,16 @@
+{
+  "tables": {
+	"dbo.Person": {
+		"columns": {
+			"Id": { "type": "int identity", "nullable": false },
+			"FullName": { 
+                "type": "nvarchar(255)", 
+                "nullable": false,
+				"check": "len([FullName])>3",
+                "previousNames": [ "Name" ]
+            },
+		},
+		"indexes": { }
+	}
+  }
+}
