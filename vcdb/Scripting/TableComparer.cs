@@ -9,12 +9,18 @@ namespace vcdb.Scripting
         private readonly IColumnComparer columnComparer;
         private readonly IIndexComparer indexComparer;
         private readonly INamedItemFinder namedItemFinder;
+        private readonly ICheckConstraintComparer checkConstraintComparer;
 
-        public TableComparer(IColumnComparer columnComparer, IIndexComparer indexComparer, INamedItemFinder namedItemFinder)
+        public TableComparer(
+            IColumnComparer columnComparer, 
+            IIndexComparer indexComparer, 
+            INamedItemFinder namedItemFinder,
+            ICheckConstraintComparer checkConstraintComparer)
         {
             this.columnComparer = columnComparer;
             this.indexComparer = indexComparer;
             this.namedItemFinder = namedItemFinder;
+            this.checkConstraintComparer = checkConstraintComparer;
         }
 
         public IEnumerable<TableDifference> GetDifferentTables(
@@ -45,11 +51,19 @@ namespace vcdb.Scripting
                         TableRenamedTo = !currentTable.Key.Equals(requiredTable.Key)
                             ? requiredTable.Key
                             : null,
-                        ColumnDifferences = columnComparer.GetDifferentColumns(currentTable.Value.Columns.OrEmpty(), requiredTable.Value.Columns.OrEmpty()).ToArray(),
-                        IndexDifferences = indexComparer.GetIndexDifferences(currentTable.Value.Indexes.OrEmpty(), requiredTable.Value.Indexes.OrEmpty(), requiredTable.Value.Columns.OrEmpty()).ToArray(),
+                        ColumnDifferences = columnComparer.GetDifferentColumns(
+                            currentTable.Value.Columns.OrEmpty(),
+                            requiredTable.Value.Columns.OrEmpty()).ToArray(),
+                        IndexDifferences = indexComparer.GetIndexDifferences(
+                            currentTable.Value.Indexes.OrEmpty(),
+                            requiredTable.Value.Indexes.OrEmpty(),
+                            requiredTable.Value.Columns.OrEmpty()).ToArray(),
                         DescriptionChangedTo = currentTable.Value.Description != requiredTable.Value.Description
                             ? requiredTable.Value.Description.AsChange()
-                            : null
+                            : null,
+                        ChangedCheckConstraints = checkConstraintComparer.GetDifferentCheckConstraints(
+                            currentTable.Value.Checks.OrEmptyCollection(),
+                            requiredTable.Value.Checks.OrEmptyCollection()).ToArray()
                     };
 
                     if (difference.IsChanged)

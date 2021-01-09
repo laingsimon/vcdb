@@ -6,12 +6,14 @@
 			"FullName": { 
                 "type": "nvarchar(255)", 
                 "nullable": false,
-				"check": "len([Name])>3",
 				"previousNames": [ "Name" ]
             },
 		},
         "previousNames": [ "dbo.Person" ],
-		"indexes": { }
+		"indexes": { },
+        "checks": [ {
+            "check": "len([FullName])>3"
+        } ]
 	}
   }
 }

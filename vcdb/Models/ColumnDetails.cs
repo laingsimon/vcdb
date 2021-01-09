@@ -31,12 +31,6 @@ namespace vcdb.Models
         internal int? DefaultObjectId { get; set; }
 
         /// <summary>
-        /// For internal use only, the id of the default constraint - if present
-        /// </summary>
-        [JsonIgnore]
-        internal int? CheckObjectId { get; set; }
-
-        /// <summary>
         /// Any previous names for the column, to indicate whether the column might need to change name
         /// </summary>
         public string[] PreviousNames { get; set; }
@@ -45,15 +39,5 @@ namespace vcdb.Models
         /// A description for the column
         /// </summary>
         public string Description { get; set; }
-
-        /// <summary>
-        /// The check constraint for the column
-        /// </summary>
-        public string Check { get; set; }
-
-        /// <summary>
-        /// A optional name for the check to add to the table
-        /// </summary>
-        public string CheckName { get; set; }
     }
 }

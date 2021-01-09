@@ -8,7 +8,8 @@ namespace vcdb.Scripting
     {
         private readonly INamedItemFinder namedItemFinder;
 
-        public ColumnComparer(INamedItemFinder namedItemFinder)
+        public ColumnComparer(
+            INamedItemFinder namedItemFinder)
         {
             this.namedItemFinder = namedItemFinder;
         }
@@ -83,12 +84,6 @@ namespace vcdb.Scripting
                     : null,
                 DescriptionChangedTo = currentColumn.Description != requiredColumn.Description
                     ? requiredColumn.Description.AsChange()
-                    : null,
-                CheckChangedTo = currentColumn.Check != requiredColumn.Check
-                    ? requiredColumn.Check.AsChange()
-                    : null,
-                CheckRenamedTo = currentColumn.CheckName != requiredColumn.CheckName
-                    ? requiredColumn.CheckName.AsChange()
                     : null
             };
 

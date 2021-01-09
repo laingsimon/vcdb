@@ -1,0 +1,30 @@
+{
+  "tables": {
+	"[dbo].[Person]": {
+        "columns": {
+            "Id": {
+                "type": "int identity",
+                "nullable": false
+            },
+            "Name": {
+                "type": "nvarchar(255)",
+                "nullable": false
+            }
+        },
+        "indexes": {},
+        "checks":[ {
+                "check": "[Id]>(1)"
+            }, {
+                "name": "CK_Name_LongerThan3",
+                "check": "len([Name])>(3)"
+            }, {
+                "check": "len([Name])<(100)",
+                "name": "CK_Name_ShorterThan100"
+            }, {
+                "check": "len([Name])<(100) AND [Id]<(10)",
+                "name": "CK_ComplicatedCheck"
+            } ]
+	}
+  },
+  "schemas": {}
+}

@@ -6,11 +6,13 @@
 			"FullName": { 
                 "type": "nvarchar(255)", 
                 "nullable": false,
-				"check": "len([FullName])>3",
                 "previousNames": [ "Name" ]
             },
 		},
-		"indexes": { }
+		"indexes": { },
+        "checks": [ {
+            "check": "len([FullName])>3"
+        }]
 	}
   }
 }

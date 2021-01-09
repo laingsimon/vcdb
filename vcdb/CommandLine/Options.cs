@@ -21,5 +21,8 @@ namespace vcdb.CommandLine
 
         [Option("ignoreUnnamedConstraints", Default = false, HelpText = "Don't create rename scripts for unnamed default/check constraints when its table or column changes name")]
         public bool IgnoreUnnamedConstraints { get; set; }
+
+        [Option("hashSize", Default = 8, HelpText = "For unnamed objects, where a hash is required, how long should the hash be, only (increase) this if you are getting hash collisions with objects - this will be extremely unlikely")]
+        public int HashSize { get; internal set; }
     }
 }

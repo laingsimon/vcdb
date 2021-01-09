@@ -16,6 +16,8 @@ namespace vcdb.SqlServer
             services.AddSingleton<IColumnsRepository, SqlServerColumnsRepository>();
             services.AddSingleton<IIndexesRepository, SqlServerIndexesRepository>();
             services.AddSingleton<ISchemaRepository, SqlServerSchemaRepository>();
+            services.AddSingleton<ICheckConstraintRepository, SqlServerCheckConstraintsRepository>();
+
             services.AddSingleton<IDatabaseScriptBuilder, SqlServerDatabaseScriptBuilder>();
             services.AddSingleton<ITableScriptBuilder, SqlServerTableScriptBuilder>();
             services.AddSingleton<ISqlObjectNameHelper, SqlObjectNameHelper>();

@@ -5,12 +5,14 @@
 			"Id": { "type": "int identity", "nullable": false },
 			"Name": { 
                 "type": "nvarchar(255)", 
-                "nullable": false,
-				"check": "len([Name])>(3)"
+                "nullable": false
             },
 		},
         "previousNames": [ "dbo.Person" ],
-		"indexes": { }
+		"indexes": { },
+        "checks": [ {
+            "check": "len([Name])>(3)"
+        } ]
 	}
   }
 }

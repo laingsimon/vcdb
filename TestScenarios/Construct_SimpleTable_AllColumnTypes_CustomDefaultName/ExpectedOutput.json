@@ -11,7 +11,8 @@
 			"Deleted": { "type": "bit", "nullable": false, "default": "0", "defaultName": "DF_PersonActiveByDefault" },
 			"UniqueId": { "type": "uniqueidentifier", "nullable": true } 
 		},
-		"indexes": { }
+		"indexes": { },
+        "checks": []
 	}
   },
   "schemas": {}

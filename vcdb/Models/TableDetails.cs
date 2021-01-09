@@ -15,6 +15,11 @@ namespace vcdb.Models
         public Dictionary<string, IndexDetails> Indexes { get; set; }
 
         /// <summary>
+        /// Any check constraints bound to columns on this table
+        /// </summary>
+        public CheckConstraintDetails[] Checks { get; set; }
+
+        /// <summary>
         /// Any previous names for the table, to indicate whether the table might need to change name
         /// </summary>
         public TableName[] PreviousNames { get; set; }

@@ -44,5 +44,10 @@ namespace vcdb
         {
             return current ?? new Dictionary<TKey, TValue>();
         }
+
+        public static IReadOnlyCollection<TValue> OrEmptyCollection<TValue>(this IReadOnlyCollection<TValue> current)
+        {
+            return current ?? new TValue[0];
+        }
     }
 }

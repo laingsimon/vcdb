@@ -40,7 +40,8 @@
 				"clustered": false,
 				"unique": false
 			}
-		}
+		},
+        "checks": []
 	}
   },
   "schemas": {}

@@ -16,7 +16,8 @@
             },
 			"UniqueId": { "type": "uniqueidentifier", "nullable": true } 
 		},
-		"indexes": { }
+		"indexes": { },
+        "checks": []
 	}
   },
   "schemas": {}

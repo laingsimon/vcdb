@@ -16,6 +16,7 @@ namespace vcdb.Scripting
 
         public IReadOnlyCollection<ColumnDifference> ColumnDifferences { get; set; }
         public IReadOnlyCollection<IndexDifference> IndexDifferences { get; set; }
+        public IReadOnlyCollection<CheckConstraintDifference> ChangedCheckConstraints { get; set; }
 
         public bool IsChanged
         {
@@ -26,7 +27,8 @@ namespace vcdb.Scripting
                     || TableRenamedTo != null
                     || ColumnDifferences?.Any() == true
                     || IndexDifferences?.Any() == true
-                    || DescriptionChangedTo != null;
+                    || DescriptionChangedTo != null
+                    || ChangedCheckConstraints?.Any() == true;
             }
         }
     }

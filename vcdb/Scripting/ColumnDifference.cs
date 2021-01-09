@@ -1,4 +1,6 @@
-﻿using vcdb.Models;
+﻿using System.Collections.Generic;
+using System.Linq;
+using vcdb.Models;
 
 namespace vcdb.Scripting
 {
@@ -16,8 +18,6 @@ namespace vcdb.Scripting
         public bool ColumnDeleted { get; set; }
         public Change<string> DefaultRenamedTo { get; set; }
         public Change<string> DescriptionChangedTo { get; set; }
-        public Change<string> CheckRenamedTo { get; set; }
-        public Change<string> CheckChangedTo { get; set; }
 
         public bool IsChanged
         {
@@ -30,9 +30,7 @@ namespace vcdb.Scripting
                     || ColumnAdded
                     || ColumnDeleted
                     || DefaultRenamedTo != null
-                    || DescriptionChangedTo != null
-                    || CheckChangedTo != null
-                    || CheckRenamedTo != null;
+                    || DescriptionChangedTo != null;
             }
         }
 
@@ -49,9 +47,7 @@ namespace vcdb.Scripting
                 NullabilityChangedTo = NullabilityChangedTo ?? other.NullabilityChangedTo,
                 DefaultChangedTo = DefaultChangedTo ?? other.DefaultChangedTo,
                 DefaultRenamedTo = DefaultRenamedTo ?? other.DefaultRenamedTo,
-                DescriptionChangedTo = DescriptionChangedTo ?? other.DescriptionChangedTo,
-                CheckChangedTo = CheckChangedTo ?? other.CheckChangedTo,
-                CheckRenamedTo = CheckRenamedTo ?? other.CheckRenamedTo
+                DescriptionChangedTo = DescriptionChangedTo ?? other.DescriptionChangedTo
             };
         }
     }

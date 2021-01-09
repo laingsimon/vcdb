@@ -5,7 +5,7 @@ namespace vcdb.Scripting
 {
     public interface ICheckConstraintScriptBuilder
     {
+        IEnumerable<SqlScript> CreateUpgradeScriptsBeforeColumnChanges(TableDifference tableDifference, ColumnDifference alteration);
         IEnumerable<SqlScript> CreateUpgradeScripts(TableDifference tableDifference);
-        IEnumerable<SqlScript> CreateUpgradeScripts(TableName requiredTableName, ColumnDifference columnDifference);
     }
 }

@@ -5,9 +5,12 @@
 			"Id": { "type": "int identity", "nullable": false },
 			"Name": { "type": "nvarchar(255)", "nullable": false },
             "NewDefaultedColumn": { "type": "bit", "nullable": false, "default": "0" },
-            "NewCheckedColumn": { "type": "int", "nullable": false, "check": "[NewCheckedColumn]<5" }
+            "NewCheckedColumn": { "type": "int", "nullable": false }
 		},
-		"indexes": { }
+		"indexes": { },
+        "checks": [ {
+          "check": "[NewCheckedColumn]<5"
+        } ]
 	}
   }
 }

@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using vcdb.CommandLine;
 using vcdb.Models;
 using vcdb.Output;
 using vcdb.Scripting;
@@ -112,16 +111,27 @@ GO");
         {
             var requiredTableName = tableDifference.RequiredTable.Key;
             var columnDifferences = tableDifference.ColumnDifferences;
+
             foreach (var rename in columnDifferences.Where(difference => difference.ColumnRenamedTo != null))
             {
+                foreach (var script in checkConstraintScriptBuilder.CreateUpgradeScriptsBeforeColumnChanges(tableDifference, rename))
+                {
+                    yield return script;
+                }
+
                 var requiredColumn = rename.RequiredColumn;
                 var currentColumn = rename.CurrentColumn;
-                yield return GetRenameColumnScript(requiredTableName, currentColumn.Key, requiredColumn.Key);
+                foreach (var script in GetRenameColumnScript(requiredTableName, currentColumn.Key, requiredColumn.Key))
+                {
+                    yield return script;
+                }
             }
 
             var drops = columnDifferences.Where(diff => diff.ColumnDeleted).ToArray();
             if (drops.Any())
             {
+                //TODO: Drop any constraints first?
+
                 yield return new SqlScript($@"ALTER TABLE {requiredTableName.SqlSafeName()}
 {string.Join(",", drops.Select(col => $"DROP COLUMN {col.CurrentColumn.SqlSafeName()}"))}
 GO");
@@ -179,11 +189,6 @@ GO");
                 yield return script;
             }
 
-            foreach (var script in checkConstraintScriptBuilder.CreateUpgradeScripts(tableName, columnDifference))
-            {
-                yield return script;
-            }
-
             if (columnDifference.DescriptionChangedTo != null)
             {
                 yield return descriptionScriptBuilder.ChangeColumnDescription(
@@ -205,12 +210,14 @@ ADD {columnName.SqlSafeName()} {column.Type}{nullabilityClause}
 GO");
         }
 
-        private SqlScript GetRenameColumnScript(
+        private IEnumerable<SqlScript> GetRenameColumnScript(
             TableName tableName,
             string currentColumnName,
             string requiredColumnName)
         {
-            return new SqlScript(@$"EXEC sp_rename
+            //TODO: If there are anly check constraints bound to this column, drop it first.
+
+            yield return new SqlScript(@$"EXEC sp_rename
     @objname = '{tableName.Schema}.{tableName.Table}.{currentColumnName}',
     @newname = '{requiredColumnName}',
     @objtype = 'COLUMN'

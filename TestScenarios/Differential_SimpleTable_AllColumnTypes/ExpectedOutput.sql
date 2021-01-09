@@ -10,7 +10,7 @@ CREATE TABLE [dbo].[Person] (
 )
 GO
 ALTER TABLE [dbo].[Person]
-ADD CONSTRAINT [DF__Person__Deleted__0]
+ADD CONSTRAINT [DF__Person__Deleted]
 DEFAULT (0)
 FOR [Deleted]
 GO
@@ -24,10 +24,10 @@ INNER JOIN sys.tables tab
 ON tab.object_id = col.object_id
 WHERE tab.name = 'Person'
 AND SCHEMA_NAME(tab.schema_id) = 'dbo'
-AND def.name = 'DF__Person__Deleted__0'
+AND def.name = 'DF__Person__Deleted'
 
 EXEC sp_rename
-    @objname = 'DF__Person__Deleted__0',
+    @objname = 'DF__Person__Deleted',
     @newname = @newName,
     @objtype = 'OBJECT'
 GO

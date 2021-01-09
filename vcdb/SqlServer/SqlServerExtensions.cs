@@ -11,6 +11,9 @@ namespace vcdb.SqlServer
 
         public static string SqlSafeName(this string columnName)
         {
+            if (string.IsNullOrEmpty(columnName))
+                return null;
+
             return $"[{columnName}]";
         }
 

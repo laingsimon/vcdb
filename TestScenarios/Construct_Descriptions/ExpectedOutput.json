@@ -17,7 +17,8 @@
 				"unique": false
 			}
 		},
-		"description": "table description"
+		"description": "table description",
+        "checks": []
 	}
   },
   "schemas": {
