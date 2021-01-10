@@ -5,6 +5,11 @@ using Microsoft.Extensions.DependencyInjection;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 using System;
+using System.IO;
+using System.Runtime.CompilerServices;
+using System.Threading.Tasks;
+
+[assembly:InternalsVisibleTo("vcdb.IntegrationTests")]
 
 namespace TestFramework
 {
@@ -14,40 +19,49 @@ namespace TestFramework
         {
             new Parser(settings =>
             {
-                settings.CaseInsensitiveEnumValues = false;
+                settings.CaseInsensitiveEnumValues = true;
                 settings.CaseSensitive = false;
             }).ParseArguments<Options>(args)
-                   .WithParsed(o =>
-                   {
-                       try
-                       {
-                           var serviceCollection = new ServiceCollection();
-                           serviceCollection.AddSingleton(o);
-                           ConfigureServices(serviceCollection);
-                           using (var serviceProvider = serviceCollection.BuildServiceProvider())
-                           {
-                               var executor = serviceProvider.GetRequiredService<ITestFramework>();
+              .WithParsedAsync(ExecuteWithOptions).Wait();
+        }
 
-                               try
-                               {
-                                   executor.Execute().Wait();
+        internal static async Task ExecuteWithOptions(Options o)
+        {
+            await ExecuteWithOptions(o, null, Console.Error, code => Environment.ExitCode = code);
+        }
 
-                                   var context = serviceProvider.GetRequiredService<ExecutionContext>();
-                                   Environment.ExitCode = context.Fail; //report the number of failures in the exit code
-                               }
-                               catch (Exception exc)
-                               {
-                                   Environment.ExitCode = -1;
-                                   Console.Error.WriteLine(exc.ToString());
-                               }
-                           }
-                       }
-                       catch (Exception exc)
-                       {
-                            Environment.ExitCode = -2;
-                            Console.Error.WriteLine(exc.ToString());
-                       }
-                   });
+        internal static async Task ExecuteWithOptions(Options o, Action<ServiceCollection> modifyServices, TextWriter errorOutput, Action<int> setExitCode)
+        {
+            try
+            {
+                var serviceCollection = new ServiceCollection();
+                serviceCollection.AddSingleton(o);
+                ConfigureServices(serviceCollection);
+                modifyServices?.Invoke(serviceCollection);
+
+                using (var serviceProvider = serviceCollection.BuildServiceProvider())
+                {
+                    var executor = serviceProvider.GetRequiredService<ITestFramework>();
+
+                    try
+                    {
+                        await executor.Execute();
+
+                        var context = serviceProvider.GetRequiredService<ExecutionContext>();
+                        setExitCode(context.Fail); //report the number of failures in the exit code
+                    }
+                    catch (Exception exc)
+                    {
+                        setExitCode(-1);
+                        errorOutput.WriteLine(exc.ToString());
+                    }
+                }
+            }
+            catch (Exception exc)
+            {
+                setExitCode(-2);
+                errorOutput.WriteLine(exc.ToString());
+            }
         }
 
         private static void ConfigureServices(ServiceCollection services)
@@ -63,6 +77,7 @@ namespace TestFramework
             services.AddSingleton<IDocker, Docker>();
             services.AddSingleton<ILogger, ConsoleLogger>();
             services.AddSingleton<ITaskGate, TaskGate>();
+            services.AddSingleton<IVcdbProcess, VcdbProcess>();
 
             services.AddSingleton(new JsonSerializer
             {

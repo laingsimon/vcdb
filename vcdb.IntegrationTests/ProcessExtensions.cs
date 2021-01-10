@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 
 namespace vcdb.IntegrationTests
 {
-    public static class ProcessExtensions
+    internal static class ProcessExtensions
     {
         public static async Task<bool> WaitForExitAsync(this Process process, TimeSpan? timeout = null, CancellationToken cancellationToken = default)
         {

@@ -26,7 +26,7 @@ namespace vcdb.CommandLine
                 return default;
             }
 
-            return await ReadFromStream<T>(new StreamReader(options.InputFile));
+            return await ReadFromStream<T>(new StreamReader(Path.Combine(options.WorkingDirectory, options.InputFile)));
         }
 
         private Task<T> ReadFromStream<T>(TextReader inputStreamReader)

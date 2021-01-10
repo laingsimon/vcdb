@@ -5,9 +5,9 @@ using System.Threading.Tasks;
 
 namespace vcdb.IntegrationTests
 {
-    public class ProcessExecutor
+    internal class ProcessExecutor : IExecutor
     {
-        public async Task<ProcessExecutionResult> ExecuteProcess(string commandLineArguments)
+        public async Task<ExecutorResult> ExecuteProcess(string scenarioName = null)
         {
             var workingDirectory = Path.GetFullPath("..\\..\\..\\..\\TestScenarios");
             if (!Directory.Exists(workingDirectory))
@@ -17,19 +17,23 @@ namespace vcdb.IntegrationTests
             if (!File.Exists(executable))
                 throw new FileNotFoundException($"Executable could not be found: {executable}", executable);
 
+            var commandLineArguments = string.IsNullOrEmpty(scenarioName)
+                ? "--maxConcurrency 10"
+                : $"--include \"^{scenarioName}$\"";
+
             var process = new Process
             {
                 StartInfo =
                 {
                     FileName = Environment.GetEnvironmentVariable("comspec"),
-                    Arguments = $"/c \"dotnet \"{executable}\" {commandLineArguments} \"",
+                    Arguments = $"/c \"dotnet \"{executable}\" --connectionString \"{TestScenarios.ConnectionString}\" {commandLineArguments} \"",
                     WorkingDirectory = workingDirectory,
                     RedirectStandardOutput = true,
                     RedirectStandardError = true
                 }
             };
 
-            var result = new ProcessExecutionResult();
+            var result = new ExecutorResult();
             process.OutputDataReceived += (sender, args) =>
             {
                 result.StdOut.Add(args.Data);

@@ -1,6 +1,6 @@
 ﻿namespace TestFramework
 {
-    internal class ExecutionResult
+    public class ExecutionResult
     {
         public string Output { get; set; }
         public string ErrorOutput { get; set; }

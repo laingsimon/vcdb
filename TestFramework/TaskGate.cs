@@ -3,7 +3,7 @@ using System.Threading;
 
 namespace TestFramework
 {
-    public class TaskGate : ITaskGate
+    internal class TaskGate : ITaskGate
     {
         private readonly AutoResetEvent autoResetEvent = new AutoResetEvent(false);
         private readonly int? maxConcurrency;

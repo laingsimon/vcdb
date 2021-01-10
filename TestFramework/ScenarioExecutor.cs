@@ -5,7 +5,6 @@ using JsonEqualityComparer;
 using System;
 using System.Collections.Generic;
 using System.Data.SqlClient;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -21,6 +20,7 @@ namespace TestFramework
         private readonly IJsonEqualityComparer jsonEqualityComparer;
         private readonly Options options;
         private readonly IInlineDiffBuilder differ;
+        private readonly IVcdbProcess vcdbProcess;
 
         public ScenarioExecutor(
             ILogger log,
@@ -29,7 +29,8 @@ namespace TestFramework
             ExecutionContext executionContext,
             IJsonEqualityComparer jsonEqualityComparer,
             Options options,
-            IInlineDiffBuilder differ)
+            IInlineDiffBuilder differ,
+            IVcdbProcess vcdbProcess)
         {
             this.log = log;
             this.sql = sql;
@@ -38,6 +39,7 @@ namespace TestFramework
             this.jsonEqualityComparer = jsonEqualityComparer;
             this.options = options;
             this.differ = differ;
+            this.vcdbProcess = vcdbProcess;
         }
 
         public async Task<bool> Execute(DirectoryInfo scenario)
@@ -45,7 +47,7 @@ namespace TestFramework
             await InitialiseDatabase(scenario);
             var settings = ReadScenarioSettings(scenario) ?? ScenarioSettings.Default;
 
-            var result = await ExecuteCommandLine(settings, scenario);
+            var result = await vcdbProcess.Execute(settings, scenario);
             if (settings.ExpectedExitCode.HasValue && result.ExitCode != settings.ExpectedExitCode.Value)
             {
                 PrintReproductionStatement(scenario, result);
@@ -59,7 +61,7 @@ namespace TestFramework
                 return false;
             }
 
-            if (settings.Mode == null || settings.Mode == vcdb.CommandLine.ExecutionMode.Construct)
+            if (settings.Mode == null || settings.Mode.Equals("Construct", StringComparison.OrdinalIgnoreCase))
             {
                 return await CompareJsonResult(settings, result, scenario);
             }
@@ -224,50 +226,6 @@ namespace TestFramework
                     PrintReproductionStatement(scenario, result);
                 return !context.Differences.Any();
             });
-        }
-
-        private async Task<ExecutionResult> ExecuteCommandLine(ScenarioSettings settings, DirectoryInfo scenario)
-        {
-            var vcdbBuildConfiguration = settings.VcDbBuildConfiguraton ?? "Debug";
-            var fileName = settings.VcDbPath ?? $@"../../vcdb/bin/{vcdbBuildConfiguration}/netcoreapp3.1/vcdb.dll";
-            var commandLine = $"dotnet \"{fileName}\" --mode {settings.Mode} --database \"{scenario.Name}\" {settings.CommandLine.Replace("{ConnectionString}", options.ConnectionString)}";
-
-            var process = new Process
-            {
-                StartInfo =
-                {
-                    FileName = Environment.GetEnvironmentVariable("comspec"),
-                    Arguments = $"/c \"{commandLine}\"",
-                    WorkingDirectory = scenario.FullName,
-                    RedirectStandardOutput = true,
-                    RedirectStandardError = !options.ShowVcdbProgress
-                }
-            };
-
-            try
-            {
-                if (!process.Start())
-                {
-                    throw new InvalidOperationException($"Unable to start process `{process.StartInfo.FileName} {process.StartInfo.Arguments}`");
-                }
-
-                process.WaitForExit();
-                var output = await process.StandardOutput.ReadToEndAsync();
-
-                return new ExecutionResult
-                {
-                    Output = output,
-                    ErrorOutput = process.StartInfo.RedirectStandardError 
-                        ? await process.StandardError.ReadToEndAsync()
-                        : null,
-                    ExitCode = process.ExitCode,
-                    CommandLine = commandLine
-                };
-            }
-            catch (Exception exc)
-            {
-                throw new InvalidOperationException($"Unable to execute process (`{process.StartInfo.FileName} {process.StartInfo.Arguments}`): {exc.Message}", exc);
-            }
         }
 
         private ScenarioSettings ReadScenarioSettings(DirectoryInfo scenario)

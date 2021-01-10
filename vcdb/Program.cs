@@ -4,10 +4,15 @@ using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 using System;
+using System.IO;
+using System.Runtime.CompilerServices;
+using System.Threading.Tasks;
 using vcdb.CommandLine;
 using vcdb.Output;
 using vcdb.Scripting;
 using vcdb.SqlServer;
+
+[assembly:InternalsVisibleTo("vcdb.IntegrationTests")]
 
 namespace vcdb
 {
@@ -17,55 +22,75 @@ namespace vcdb
         {
             new Parser(settings =>
             {
-                settings.CaseInsensitiveEnumValues = false;
+                settings.CaseInsensitiveEnumValues = true;
                 settings.CaseSensitive = false;
             }).ParseArguments<Options>(args)
-                   .WithParsed(o =>
+                   .WithParsedAsync(async options =>
                    {
-                       try
-                       {
-                           var outputFactory = new OutputFactory();
-                           outputFactory.SetActualConsoleOutput(Console.Out);
-                           Console.SetOut(Console.Error); //replace the ConsoleOutput so that all <loggger> messages go to STDERR rather than STDOUT // TODO: Replace this with CONOUT$
+                       var outputFactory = new OutputFactory();
+                       outputFactory.SetActualConsoleOutput(Console.Out);
+                       Console.SetOut(Console.Error); //replace the ConsoleOutput so that all <loggger> messages go to STDERR rather than STDOUT // TODO: Replace this with CONOUT$
 
-                           var serviceCollection = new ServiceCollection();
-                           serviceCollection
-                            .AddLogging(builder => builder.AddSimpleConsole(o => o.SingleLine = true))
-                            .Configure<LoggerFilterOptions>(opts => opts.MinLevel = LogLevel.Information);
+                       await ExecuteAsync(
+                           options,
+                           outputFactory,
+                           code => Environment.ExitCode = code,
+                           Console.Error,
+                           Console.Out,
+                           Console.IsOutputRedirected);
+                   }).Wait();
+        }
 
-                           serviceCollection.AddSingleton<IOutputFactory>(outputFactory);
-                           serviceCollection.AddSingleton(o);
-                           ConfigureServices(serviceCollection, o);
-                           using (var serviceProvider = serviceCollection.BuildServiceProvider())
-                           {
-                               var executor = serviceProvider.GetRequiredService<IExecutor>();
+        internal static async Task ExecuteAsync(
+            Options options,
+            IOutputFactory outputFactory,
+            Action<int> setExitCode,
+            TextWriter errorOutput,
+            TextWriter standardOutput,
+            bool isOutputRedirected,
+            Action<IServiceCollection> modifyServices = null)
+        {
+            try
+            {
+                var serviceCollection = new ServiceCollection();
+                serviceCollection
+                 .AddLogging(builder => builder.AddSimpleConsole(o => o.SingleLine = true))
+                 .Configure<LoggerFilterOptions>(opts => opts.MinLevel = LogLevel.Information);
 
-                               try
-                               {
-                                   executor.Execute().Wait();
-                               }
-                               catch (Exception exc)
-                               {
-                                   var logger = serviceProvider.GetRequiredService<ILogger<object>>();
-                                   logger.LogError(exc, "Error executing vcdb process");
+                serviceCollection.AddSingleton(outputFactory);
+                serviceCollection.AddSingleton(options);
+                ConfigureServices(serviceCollection, options);
+                modifyServices?.Invoke(serviceCollection);
 
-                                   if (Console.IsOutputRedirected)
-                                   {
-                                       Console.Out.WriteLine($"Error executing vcdb process: {exc.Message}");
-                                   }
+                using (var serviceProvider = serviceCollection.BuildServiceProvider())
+                {
+                    var executor = serviceProvider.GetRequiredService<IExecutor>();
 
-                                   Environment.ExitCode = -2;
-                               }
+                    try
+                    {
+                        await executor.Execute();
+                    }
+                    catch (Exception exc)
+                    {
+                        var logger = serviceProvider.GetRequiredService<ILogger<object>>();
+                        logger.LogError(exc, "Error executing vcdb process");
 
-                               serviceProvider.GetRequiredService<ILoggerFactory>().Dispose();
-                           }
-                       }
-                       catch (Exception exc)
-                       {
-                           Environment.ExitCode = -1;
-                           Console.Error.WriteLine(exc.ToString());
-                       }
-                   });
+                        if (isOutputRedirected)
+                        {
+                            standardOutput.WriteLine($"Error executing vcdb process: {exc.Message}");
+                        }
+
+                        setExitCode(-2);
+                    }
+
+                    serviceProvider.GetRequiredService<ILoggerFactory>().Dispose();
+                }
+            }
+            catch (Exception exc)
+            {
+                setExitCode(-1);
+                errorOutput.WriteLine(exc.ToString());
+            }
         }
 
         private static void ConfigureServices(ServiceCollection services, Options options)

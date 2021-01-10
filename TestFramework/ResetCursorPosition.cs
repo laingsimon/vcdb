@@ -2,7 +2,7 @@
 
 namespace TestFramework
 {
-    public class ResetCursorPosition : IDisposable
+    internal class ResetCursorPosition : IDisposable
     {
         private readonly int cursorLeft;
         private readonly int cursorTop;

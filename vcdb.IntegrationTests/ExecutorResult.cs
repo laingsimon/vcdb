@@ -1,10 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.IO;
 
 namespace vcdb.IntegrationTests
 {
-    public class ProcessExecutionResult
+    internal class ExecutorResult
     {
         public List<string> StdOut { get; } = new List<string>();
         public List<string> StdErr { get; } = new List<string>();

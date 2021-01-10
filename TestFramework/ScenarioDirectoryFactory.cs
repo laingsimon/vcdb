@@ -2,7 +2,7 @@
 
 namespace TestFramework
 {
-    public class ScenarioDirectoryFactory
+    internal class ScenarioDirectoryFactory
     {
         public DirectoryInfo ScenarioDirectory { get; set; }
     }

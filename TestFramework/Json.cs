@@ -4,7 +4,7 @@ using System.IO;
 
 namespace TestFramework
 {
-    public class Json : IJson
+    internal class Json : IJson
     {
         private readonly JsonSerializer jsonSerializer;
         private readonly DirectoryInfo scenarioDirectory;

@@ -1,5 +1,5 @@
 {
-	"commandLine": "--connectionString \"{ConnectionString}\" --input Input.json",
+	"commandLine": " --input Input.json",
 	"vcdbBuildConfiguration": "Debug",
 	"vcdbPath": null,
 	"mode": "differential",

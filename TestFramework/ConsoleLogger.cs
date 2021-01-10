@@ -4,7 +4,7 @@ using System.Threading;
 
 namespace TestFramework
 {
-    public class ConsoleLogger : ILogger
+    internal class ConsoleLogger : ILogger
     {
         private readonly int minLogLevel;
         private readonly bool porcelain;

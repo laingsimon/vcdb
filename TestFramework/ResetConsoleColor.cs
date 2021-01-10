@@ -2,7 +2,7 @@
 
 namespace TestFramework
 {
-    public class ResetConsoleColor : IDisposable
+    internal class ResetConsoleColor : IDisposable
     {
         private readonly ConsoleColor oldForegroundColor;
         private readonly ConsoleColor oldBackgroundColor;

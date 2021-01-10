@@ -1,4 +1,5 @@
 ﻿using CommandLine;
+using System;
 
 namespace vcdb.CommandLine
 {
@@ -24,5 +25,7 @@ namespace vcdb.CommandLine
 
         [Option("hashSize", Default = 8, HelpText = "For unnamed objects, where a hash is required, how long should the hash be, only (increase) this if you are getting hash collisions with objects - this will be extremely unlikely")]
         public int HashSize { get; internal set; }
+
+        internal string WorkingDirectory { get; set; } = Environment.CurrentDirectory;
     }
 }

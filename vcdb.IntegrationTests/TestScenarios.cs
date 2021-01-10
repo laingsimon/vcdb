@@ -8,21 +8,15 @@ using System.Threading.Tasks;
 namespace vcdb.IntegrationTests
 {
     [TestFixture]
-    public class TestFramework
+    public class TestScenarios
     {
-        private const string ConnectionString = "server=localhost;user id=sa;password=vcdb_2020";
-        private ProcessExecutor processExecutor;
-
-        public TestFramework()
-        {
-            processExecutor = new ProcessExecutor();
-        }
+        internal const string ConnectionString = "server=localhost;user id=sa;password=vcdb_2020";
+        private readonly IExecutor processExecutor = ExecutorFactory.GetExecutor();
 
         [TestCaseSource(nameof(ScenarioNames))]
         public async Task ExecuteScenarios(string scenarioName)
         {
-            var commandLineArguments = $"--connectionString \"{ConnectionString}\" --include \"^{scenarioName}$\"";
-            var result = await processExecutor.ExecuteProcess(commandLineArguments);
+            var result = await processExecutor.ExecuteProcess(scenarioName);
 
             result.WriteStdOutTo(Console.Out);
             result.WriteStdErrTo(Console.Error);
@@ -33,8 +27,7 @@ namespace vcdb.IntegrationTests
         [Test]
         public async Task ExecuteAllAtOnce()
         {
-            var commandLineArguments = $"--connectionString \"{ConnectionString}\"  --maxConcurrency 10";
-            var result = await processExecutor.ExecuteProcess(commandLineArguments);
+            var result = await processExecutor.ExecuteProcess();
 
             result.WriteStdOutTo(Console.Out);
             result.WriteStdErrTo(Console.Error);
