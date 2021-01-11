@@ -44,6 +44,10 @@ namespace vcdb.Scripting
                 {
                     processedTables.Add(currentTable.Value);
 
+                    var columnDifferences = columnComparer.GetDifferentColumns(
+                            currentTable.Value.Columns.OrEmpty(),
+                            requiredTable.Value.Columns.OrEmpty()).ToArray();
+
                     var difference = new TableDifference
                     {
                         CurrentTable = currentTable,
@@ -51,9 +55,7 @@ namespace vcdb.Scripting
                         TableRenamedTo = !currentTable.Key.Equals(requiredTable.Key)
                             ? requiredTable.Key
                             : null,
-                        ColumnDifferences = columnComparer.GetDifferentColumns(
-                            currentTable.Value.Columns.OrEmpty(),
-                            requiredTable.Value.Columns.OrEmpty()).ToArray(),
+                        ColumnDifferences = columnDifferences,
                         IndexDifferences = indexComparer.GetIndexDifferences(
                             currentTable.Value.Indexes.OrEmpty(),
                             requiredTable.Value.Indexes.OrEmpty(),
@@ -63,7 +65,8 @@ namespace vcdb.Scripting
                             : null,
                         ChangedCheckConstraints = checkConstraintComparer.GetDifferentCheckConstraints(
                             currentTable.Value.Checks.OrEmptyCollection(),
-                            requiredTable.Value.Checks.OrEmptyCollection()).ToArray()
+                            requiredTable.Value.Checks.OrEmptyCollection(),
+                            columnDifferences).ToArray()
                     };
 
                     if (difference.IsChanged)

@@ -8,7 +8,8 @@ namespace vcdb.Scripting
     {
         public IEnumerable<CheckConstraintDifference> GetDifferentCheckConstraints(
             IReadOnlyCollection<CheckConstraintDetails> currentChecks,
-            IReadOnlyCollection<CheckConstraintDetails> requiredChecks)
+            IReadOnlyCollection<CheckConstraintDetails> requiredChecks,
+            IReadOnlyCollection<ColumnDifference> columnDiffences)
         {
             var processedChecks = new HashSet<CheckConstraintDetails>();
             foreach (var requiredCheck in requiredChecks)
@@ -60,14 +61,7 @@ namespace vcdb.Scripting
         {
             return GetSameNamedItem(currentChecks, requiredCheck.Name)
                 ?? GetRenamedItem(currentChecks, requiredCheck.PreviousNames)
-                ?? GetSameValuedItem(currentChecks, requiredCheck.Check);
-        }
-
-        private CheckConstraintDetails GetSameValuedItem(
-            IReadOnlyCollection<CheckConstraintDetails> currentChecks,
-            string check)
-        {
-            return currentChecks.SingleOrDefault(chk => chk.Check == check);
+                ?? currentChecks.SingleOrDefault(check => check.Check == requiredCheck.Check);
         }
 
         private CheckConstraintDetails GetRenamedItem(
@@ -86,7 +80,7 @@ namespace vcdb.Scripting
             IReadOnlyCollection<CheckConstraintDetails> currentChecks, 
             string name)
         {
-            return currentChecks.SingleOrDefault(check => check.Name == name);
+            return currentChecks.SingleOrDefault(check => check.Name == name && check.Name != null);
         }
     }
 }

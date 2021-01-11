@@ -11,7 +11,7 @@
 		},
 		"indexes": { },
         "checks": [ {
-            "check": "len([FullName])>3"
+            "check": "len([FullName])>(3)"
         }]
 	}
   }

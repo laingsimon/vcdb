@@ -1,7 +1,9 @@
 ﻿using Newtonsoft.Json;
+using System.Diagnostics;
 
 namespace vcdb.Models
 {
+    [DebuggerDisplay("{Check,nq}")]
     public class CheckConstraintDetails
     {
         /// <summary>
