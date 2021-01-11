@@ -10,17 +10,10 @@ namespace vcdb.SqlServer.SchemaBuilding
 {
     public class SqlServerCheckConstraintsRepository : ICheckConstraintRepository
     {
-        private readonly ISqlObjectNameHelper sqlObjectNameHelper;
-
-        public SqlServerCheckConstraintsRepository(ISqlObjectNameHelper sqlObjectNameHelper)
-        {
-            this.sqlObjectNameHelper = sqlObjectNameHelper;
-        }
-
         public async Task<CheckConstraintDetails[]> GetCheckConstraints(DbConnection connection, TableName tableName)
         {
-            var checkConstraints = await connection.QueryAsync<SqlServerCheckConstraintDetails>(@"
-select chk.name as CHECK_NAME, col.name as COLUMN_NAME, chk.OBJECT_ID, chk.DEFINITION
+            var checkConstraints = await connection.QueryAsync<CheckConstraint>(@"
+select chk.name, col.name as column_name, chk.object_id, chk.definition, is_system_named as IS_SYSTEM_NAMED
 from sys.check_constraints chk
 left outer join sys.columns col
 on col.column_id = chk.parent_column_id
@@ -38,13 +31,13 @@ new
             return checkConstraints
                 .Select(chk => new CheckConstraintDetails
                 {
-                    Check = UnwrapCheckConstraint(chk.DEFINITION),
-                    CheckObjectId = chk.OBJECT_ID,
-                    Name = IsAutomaticName(chk.CHECK_NAME, chk.COLUMN_NAME, chk.OBJECT_ID, tableName)
+                    Check = UnwrapCheckConstraint(chk.definition),
+                    CheckObjectId = chk.object_id,
+                    Name = chk.is_system_named
                         ? null
-                        : chk.CHECK_NAME,
-                    ColumnNames = new[] { chk.COLUMN_NAME },
-                    SqlName = chk.CHECK_NAME
+                        : chk.name,
+                    ColumnNames = new[] { chk.column_name },
+                    SqlName = chk.name
                 })
                 .ToArray();
         }
@@ -58,17 +51,6 @@ new
             return match.Success
                 ? match.Groups["definition"].Value
                 : definition;
-        }
-
-        private bool IsAutomaticName(string checkName, string columnName, int objectId, TableName tableName)
-        {
-            var automaticConstraintName = sqlObjectNameHelper.GetAutomaticConstraintName(
-                "CK",
-                tableName.Table,
-                columnName,
-                objectId);
-
-            return checkName == automaticConstraintName;
         }
     }
 }

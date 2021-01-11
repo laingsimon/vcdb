@@ -25,6 +25,12 @@ namespace vcdb.Models
         public string DefaultName { get; set; }
 
         /// <summary>
+        /// For internal use only, the current name of the sql default if one is present
+        /// </summary>
+        [JsonIgnore]
+        public string SqlDefaultName { get; set; }
+
+        /// <summary>
         /// For internal use only, the id of the default constraint - if present
         /// </summary>
         [JsonIgnore]

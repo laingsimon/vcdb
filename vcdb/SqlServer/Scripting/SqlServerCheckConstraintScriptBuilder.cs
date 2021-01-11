@@ -71,6 +71,11 @@ GO");
 
         public IEnumerable<SqlScript> CreateUpgradeScripts(TableDifference tableDifference)
         {
+            if (tableDifference.TableDeleted)
+            {
+                yield break;
+            }
+
             var tableName = tableDifference.RequiredTable.Key;
             if (tableDifference.TableRenamedTo != null)
             {

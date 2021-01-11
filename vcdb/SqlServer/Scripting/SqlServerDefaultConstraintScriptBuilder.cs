@@ -56,7 +56,7 @@ namespace vcdb.SqlServer.Scripting
                             currentTableName,
                             requiredTableName,
                             currentColumn,
-                            currentColumn.Value.DefaultName,
+                            currentColumn.Value.SqlDefaultName,
                             requiredColumn,
                             requiredColumn.Value.DefaultName);
                     }
@@ -91,10 +91,10 @@ namespace vcdb.SqlServer.Scripting
             if (columnDifference.DefaultChangedTo != null)
             {
                 if (columnDifference.DefaultChangedTo.Value == null)
-                    yield return GetDropDefaultScript(tableName, GetCurrentConstraintName(tableName, columnDifference));
+                    yield return GetDropDefaultScript(tableName, columnDifference.CurrentColumn.Value.SqlDefaultName);
                 else
                 {
-                    foreach (var script in GetAlterDefaultScript(tableName, columnDifference.RequiredColumn, GetCurrentConstraintName(tableName, columnDifference)))
+                    foreach (var script in GetAlterDefaultScript(tableName, columnDifference.RequiredColumn, columnDifference.CurrentColumn.Value.SqlDefaultName))
                         yield return script;
                 }
             }
@@ -104,7 +104,7 @@ namespace vcdb.SqlServer.Scripting
                     tableName,
                     tableName,
                     columnDifference.CurrentColumn,
-                    columnDifference.CurrentColumn.Value.DefaultName,
+                    columnDifference.CurrentColumn.Value.SqlDefaultName,
                     columnDifference.RequiredColumn,
                     columnDifference.DefaultRenamedTo.Value);
             }
@@ -119,19 +119,6 @@ namespace vcdb.SqlServer.Scripting
                     yield return script;
                 }
             }
-        }
-
-        private string GetCurrentConstraintName(TableName tableName, ColumnDifference columnDifference)
-        {
-            var currentColumn = columnDifference.CurrentColumn;
-            if (currentColumn.Value.DefaultName != null)
-                return currentColumn.Value.DefaultName;
-
-            return objectNameHelper.GetAutomaticConstraintName(
-                "DF",
-                tableName.Table,
-                currentColumn.Key,
-                currentColumn.Value.DefaultObjectId.Value);
         }
 
         private IEnumerable<SqlScript> GetRenameUnnamedDefaultsIfNoColumnsAreRenamed(TableDifference tableDifference)
@@ -160,7 +147,7 @@ namespace vcdb.SqlServer.Scripting
                     tableDifference.CurrentTable.Key,
                     tableDifference.RequiredTable.Key,
                     currentColumn,
-                    currentColumn.Value.DefaultName,
+                    currentColumn.Value.SqlDefaultName,
                     requiredColumnWithUnnamedDefault.AsNamedItem(),
                     null);
             }
@@ -231,11 +218,6 @@ GO");
             NamedItem<string, ColumnDetails> requiredColumn,
             string requiredConstraintName)
         {
-            var currentAutomaticConstraintName = objectNameHelper.GetAutomaticConstraintName(
-                "DF",
-                currentTableName.Table,
-                currentColumn.Key,
-                currentColumn.Value.DefaultObjectId ?? 0);
             var requiredAutomaticConstraintName = objectNameHelper.GetAutomaticConstraintName(
                 "DF",
                 requiredTableName.Table,
@@ -243,7 +225,7 @@ GO");
                 currentColumn.Value.DefaultObjectId ?? 0);
 
             return new SqlScript(@$"EXEC sp_rename 
-    @objname = '{currentTableName.Schema.SqlSafeName()}.{(currentConstraintName ?? currentAutomaticConstraintName).SqlSafeName()}', 
+    @objname = '{currentTableName.Schema.SqlSafeName()}.{(currentConstraintName).SqlSafeName()}', 
     @newname = '{(requiredConstraintName ?? requiredAutomaticConstraintName).SqlSafeName()}', 
     @objtype = 'OBJECT'
 GO");
