@@ -61,7 +61,7 @@ namespace TestFramework
                 return false;
             }
 
-            if (settings.Mode == null || settings.Mode.Equals("Construct", StringComparison.OrdinalIgnoreCase))
+            if (settings.Mode == null || settings.Mode.Equals("Read", StringComparison.OrdinalIgnoreCase))
             {
                 return await CompareJsonResult(settings, result, scenario);
             }

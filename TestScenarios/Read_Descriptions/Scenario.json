@@ -1,0 +1,11 @@
+{
+	"commandLine": "",
+	"vcdbBuildConfiguration": "Debug",
+	"vcdbPath": null,
+	"mode": "Read",
+	"jsonComparison": {
+		"propertyNameComparer": "OrdinalIgnoreCase",
+		"explicit": true
+	},
+	"expectedExitCode": 0
+}

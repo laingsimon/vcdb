@@ -54,9 +54,9 @@ namespace vcdb
         {
             switch (options.Mode)
             {
-                case ExecutionMode.Construct:
+                case ExecutionMode.Read:
                     return await ConstructRepresentationOutput(database);
-                case ExecutionMode.Differential:
+                case ExecutionMode.Deploy:
                     return await ConstructUpgradeScriptOutput(database);
                 default:
                     throw new NotSupportedException($"Mode {options.Mode} isn't supported");

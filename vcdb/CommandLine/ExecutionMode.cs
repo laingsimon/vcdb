@@ -5,10 +5,10 @@
         /// <summary>
         /// Produce a representation of the database in JSON format
         /// </summary>
-        Construct,
+        Read,
         /// <summary>
         /// Produce a SQL script to get the database to the same state as that specified in the input JSON representation
         /// </summary>
-        Differential
+        Deploy
     }
 }

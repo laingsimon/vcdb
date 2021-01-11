@@ -11,7 +11,7 @@ namespace vcdb.CommandLine
         [Option('d', "database", HelpText = "Use the specified database")]
         public string Database { get; set; }
 
-        [Option('m', "mode", Default = ExecutionMode.Construct, HelpText = "The mode for execution")]
+        [Option('m', "mode", Default = ExecutionMode.Read, HelpText = "The mode for execution")]
         public ExecutionMode Mode { get; set; }
 
         [Option('i', "input", Required = false, HelpText = "The path to the required database representation, if appropriate, otherwise pipe into the command")]
