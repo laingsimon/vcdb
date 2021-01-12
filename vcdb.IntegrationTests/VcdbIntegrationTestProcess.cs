@@ -29,7 +29,7 @@ namespace vcdb.IntegrationTests
                 code => result.ExitCode = code,
                 new UndisposableTextWriter(errorOutput),
                 new UndisposableTextWriter(standardOutput),
-                false);
+                true);
 
             result.Output = standardOutput.GetStringBuilder().ToString();
             result.ErrorOutput = errorOutput.GetStringBuilder().ToString();

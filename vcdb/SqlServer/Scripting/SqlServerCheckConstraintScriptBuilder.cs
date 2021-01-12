@@ -119,19 +119,21 @@ GO");
                     }
                 }
 
+                var columnWasRenamed = changedCheckConstraint?.CurrentConstraint?.ColumnNames.OrEmptyCollection()
+                    .Any(columnName =>
+                        tableDifference.ColumnDifferences.Any(columnDifference =>
+                            columnDifference.CurrentColumn.Key == columnName
+                            && columnDifference.ColumnRenamedTo != null)) == true;
+
                 if (changedCheckConstraint.ConstraintDeleted)
                 {
                     processedCheckConstraintDifferences.Add(changedCheckConstraint);
                     //is the check constraint bound to a column that has been renamed?
                     //if so then the constraint has already been deleted
-                    var columnWasRenamed = changedCheckConstraint.CurrentConstraint.ColumnNames
-                        .Any(columnName => 
-                            tableDifference.ColumnDifferences.Any(columnDifference => 
-                                columnDifference.CurrentColumn.Key == columnName 
-                                && columnDifference.ColumnRenamedTo != null));
 
                     if (!columnWasRenamed)
                     {
+                        //check has aleady been dropped (in the before column rename scripts)
                         yield return DropCheckConstraint(tableName, changedCheckConstraint.CurrentConstraint);
                     }
                 }
@@ -139,9 +141,19 @@ GO");
                 if (changedCheckConstraint.CheckRenamedTo != null)
                 {
                     processedCheckConstraintDifferences.Add(changedCheckConstraint);
-                    yield return RenameCheckConstraint(
-                        changedCheckConstraint.CurrentConstraint.SqlName,
-                        GetNameForCheckConstraint(tableName, changedCheckConstraint.RequiredConstraint));
+                    if (columnWasRenamed)
+                    {
+                        foreach (var script in AddCheckConstraint(tableName, changedCheckConstraint.RequiredConstraint))
+                        {
+                            yield return script;
+                        }
+                    }
+                    else
+                    {
+                        yield return RenameCheckConstraint(
+                            changedCheckConstraint.CurrentConstraint.SqlName,
+                            GetNameForCheckConstraint(tableName, changedCheckConstraint.RequiredConstraint));
+                    }
                 }
 
                 if (changedCheckConstraint.CheckChangedTo != null)
