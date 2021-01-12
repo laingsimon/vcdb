@@ -7,7 +7,7 @@ EXEC sp_rename
     @objtype = 'COLUMN'
 GO
 ALTER TABLE [dbo].[Person]
-ADD CONSTRAINT [CK__Person__WasFullName__35BCFE0A]
+ADD CONSTRAINT [CK__Person__3EDCF935]
 CHECK (len([Name])>3)
 GO
 DECLARE @newName VARCHAR(1024)
@@ -20,10 +20,10 @@ INNER JOIN sys.tables tab
 ON tab.object_id = chk.parent_object_id
 WHERE tab.name = 'Person'
 AND SCHEMA_NAME(tab.schema_id) = 'dbo'
-AND chk.name = 'CK__Person__WasFullName__35BCFE0A'
+AND chk.name = 'CK__Person__3EDCF935'
 
 EXEC sp_rename 
-    @objname = 'CK__Person__WasFullName__35BCFE0A', 
+    @objname = 'CK__Person__3EDCF935', 
     @newname = @newName, 
     @objtype = 'OBJECT'
 GO

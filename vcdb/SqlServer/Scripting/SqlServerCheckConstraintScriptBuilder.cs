@@ -1,7 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
-using vcdb.CommandLine;
 using vcdb.Models;
 using vcdb.Output;
 using vcdb.Scripting;
@@ -10,16 +8,13 @@ namespace vcdb.SqlServer.Scripting
 {
     public class SqlServerCheckConstraintScriptBuilder : ICheckConstraintScriptBuilder
     {
-        private readonly Options options;
         private readonly ISqlObjectNameHelper objectNameHelper;
         private readonly IHashHelper hashHelper;
 
         public SqlServerCheckConstraintScriptBuilder(
-            Options options,
             ISqlObjectNameHelper objectNameHelper,
             IHashHelper hashHelper)
         {
-            this.options = options;
             this.objectNameHelper = objectNameHelper;
             this.hashHelper = hashHelper;
         }
@@ -146,7 +141,7 @@ GO");
                     processedCheckConstraintDifferences.Add(changedCheckConstraint);
                     yield return RenameCheckConstraint(
                         changedCheckConstraint.CurrentConstraint.SqlName,
-                        GetNameForCheckConstraint(tableName, changedCheckConstraint.RequiredConstraint, changedCheckConstraint.CurrentConstraint));
+                        GetNameForCheckConstraint(tableName, changedCheckConstraint.RequiredConstraint));
                 }
 
                 if (changedCheckConstraint.CheckChangedTo != null)
@@ -222,15 +217,14 @@ GO");
 
         private IEnumerable<SqlScript> AddCheckConstraint(TableName tableName, CheckConstraintDifference checkDifference)
         {
-            return AddCheckConstraint(tableName, checkDifference.RequiredConstraint, checkDifference.CurrentConstraint);
+            return AddCheckConstraint(tableName, checkDifference.RequiredConstraint);
         }
 
         private IEnumerable<SqlScript> AddCheckConstraint(
             TableName tableName,
-            CheckConstraintDetails checkConstraint,
-            CheckConstraintDetails oldConstraint = null)
+            CheckConstraintDetails checkConstraint)
         {
-            var unnamedCheckConstraint = GetNameForCheckConstraint(tableName, checkConstraint, oldConstraint);
+            var unnamedCheckConstraint = GetNameForCheckConstraint(tableName, checkConstraint);
             yield return new SqlScript($@"ALTER TABLE {tableName.SqlSafeName()}
 ADD CONSTRAINT {(checkConstraint.Name ?? unnamedCheckConstraint).SqlSafeName()}
 CHECK ({checkConstraint.Check})
@@ -260,28 +254,13 @@ GO");
 
         private string GetNameForCheckConstraint(
             TableName tableName, 
-            CheckConstraintDetails checkConstraint, 
-            CheckConstraintDetails oldConstraint = null)
+            CheckConstraintDetails checkConstraint)
         {
-            var columnNames = (oldConstraint != null
-                ? oldConstraint.ColumnNames
-                : null) ?? checkConstraint.ColumnNames.OrEmptyCollection();
-
-            var objectId = oldConstraint != null
-                ? oldConstraint.CheckObjectId
-                : checkConstraint.CheckObjectId;
-
-            var columnName = columnNames.Count == 1
-                ? columnNames.Single()
-                : null;
-
             return objectNameHelper.GetAutomaticConstraintName(
                 "CK",
                 tableName.Table,
-                objectId.HasValue
-                    ? $"Was{columnName}"
-                    : columnName ?? GetDeterministicIdentifierForNewCheckConstraint(checkConstraint),
-                objectId ?? 0);
+                GetDeterministicIdentifierForNewCheckConstraint(checkConstraint),
+                checkConstraint.CheckObjectId ?? 0);
         }
 
         /// <summary>
