@@ -83,8 +83,6 @@ GO");
                 {
                     yield return script;
                 }
-
-                yield break;
             }
 
             var processedCheckConstraintDifferences = new HashSet<CheckConstraintDifference>();
@@ -151,6 +149,7 @@ GO");
                     else
                     {
                         yield return RenameCheckConstraint(
+                            tableName.Schema,
                             changedCheckConstraint.CurrentConstraint.SqlName,
                             GetNameForCheckConstraint(tableName, changedCheckConstraint.RequiredConstraint));
                     }
@@ -168,10 +167,10 @@ GO");
             }
         }
 
-        private SqlScript RenameCheckConstraint(string currentName, string requiredName)
+        private SqlScript RenameCheckConstraint(string currentSchema, string currentName, string requiredName)
         {
             return new SqlScript($@"EXEC sp_rename 
-    @objname = '{currentName}', 
+    @objname = '{currentSchema}.{currentName}', 
     @newname = '{requiredName}', 
     @objtype = 'OBJECT'
 GO");
@@ -201,6 +200,7 @@ GO");
                     currentConstraint.CheckObjectId.Value);
 
                 yield return RenameCheckConstraint(
+                    tableDifference.RequiredTable.Key.Schema,
                     currentConstraint.SqlName,
                     checkConstraint.Name ?? newAutomaticName);
             }
@@ -214,7 +214,7 @@ GO");
                 var checkDifference = tableDifference.ChangedCheckConstraints.OrEmptyCollection()
                     .SingleOrDefault(difference => difference.RequiredConstraint == checkConstraint);
 
-                if (checkDifference == null)
+                if (checkDifference == null || checkDifference.CurrentConstraint?.Name != null)
                 {
                     //no change to the check
                     continue;
@@ -237,6 +237,7 @@ GO");
             CheckConstraintDetails checkConstraint)
         {
             var unnamedCheckConstraint = GetNameForCheckConstraint(tableName, checkConstraint);
+
             yield return new SqlScript($@"ALTER TABLE {tableName.SqlSafeName()}
 ADD CONSTRAINT {(checkConstraint.Name ?? unnamedCheckConstraint).SqlSafeName()}
 CHECK ({checkConstraint.Check})
@@ -257,7 +258,7 @@ AND SCHEMA_NAME(tab.schema_id) = '{tableName.Schema}'
 AND chk.name = '{unnamedCheckConstraint}'
 
 EXEC sp_rename 
-    @objname = '{unnamedCheckConstraint}', 
+    @objname = '{tableName.Schema}.{unnamedCheckConstraint}', 
     @newname = @newName, 
     @objtype = 'OBJECT'
 GO");
@@ -268,6 +269,9 @@ GO");
             TableName tableName, 
             CheckConstraintDetails checkConstraint)
         {
+            if (!string.IsNullOrEmpty(checkConstraint.Name))
+                return checkConstraint.Name;
+
             return objectNameHelper.GetAutomaticConstraintName(
                 "CK",
                 tableName.Table,

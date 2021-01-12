@@ -23,7 +23,7 @@ AND SCHEMA_NAME(tab.schema_id) = 'dbo'
 AND chk.name = 'CK__Person__6315BCC7'
 
 EXEC sp_rename 
-    @objname = 'CK__Person__6315BCC7', 
+    @objname = 'dbo.CK__Person__6315BCC7', 
     @newname = @newName, 
     @objtype = 'OBJECT'
 GO
