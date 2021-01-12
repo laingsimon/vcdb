@@ -13,13 +13,15 @@ namespace vcdb.SqlServer.SchemaBuilding
         public async Task<CheckConstraintDetails[]> GetCheckConstraints(DbConnection connection, TableName tableName)
         {
             var checkConstraints = await connection.QueryAsync<CheckConstraint>(@"
-select chk.name, col.name as column_name, chk.object_id, chk.definition, is_system_named as IS_SYSTEM_NAMED
+select chk.name, column_usage.COLUMN_NAME, chk.object_id, chk.definition, chk.is_system_named
 from sys.check_constraints chk
-left outer join sys.columns col
-on col.column_id = chk.parent_column_id
-and col.object_id = chk.parent_object_id
 left outer join sys.tables tab
 on tab.object_id = chk.parent_object_id
+left outer join INFORMATION_SCHEMA.CONSTRAINT_COLUMN_USAGE column_usage
+on column_usage.TABLE_NAME = tab.name
+and column_usage.TABLE_SCHEMA = SCHEMA_NAME(tab.schema_id)
+and column_usage.CONSTRAINT_NAME = chk.name
+and column_usage.CONSTRAINT_SCHEMA = SCHEMA_NAME(chk.schema_id)
 where tab.name = @table_name
 and SCHEMA_NAME(tab.schema_id) = @table_owner",
 new
@@ -28,16 +30,23 @@ new
     table_owner = tableName.Schema
 });
 
-            return checkConstraints
-                .Select(chk => new CheckConstraintDetails
+            var groupedCheckConstraints = checkConstraints.GroupBy(chk => chk.object_id);
+
+            return groupedCheckConstraints
+                .Select(group =>
                 {
-                    Check = UnwrapCheckConstraint(chk.definition),
-                    CheckObjectId = chk.object_id,
-                    Name = chk.is_system_named
-                        ? null
-                        : chk.name,
-                    ColumnNames = new[] { chk.column_name },
-                    SqlName = chk.name
+                    var chk = group.First();
+
+                    return new CheckConstraintDetails
+                    {
+                        Check = UnwrapCheckConstraint(chk.definition),
+                        CheckObjectId = chk.object_id,
+                        Name = chk.is_system_named
+                            ? null
+                            : chk.name,
+                        ColumnNames = group.Select(check => check.COLUMN_NAME).ToArray(),
+                        SqlName = chk.name
+                    };
                 })
                 .ToArray();
         }

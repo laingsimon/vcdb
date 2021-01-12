@@ -2,7 +2,7 @@
 {
     public class CheckConstraint
     {
-        public string column_name { get; set; }
+        public string COLUMN_NAME { get; set; }
         public string name { get; set; }
         public int object_id { get; set; }
         public string definition { get; set; }
