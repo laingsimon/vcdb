@@ -110,6 +110,11 @@ GO");
             {
                 if (changedCheckConstraint.ConstraintAdded)
                 {
+                    if (tableDifference.TableRenamedTo != null)
+                    {
+                        continue;
+                    }
+
                     processedCheckConstraintDifferences.Add(changedCheckConstraint);
                     foreach (var script in AddCheckConstraint(tableName, changedCheckConstraint))
                     {
