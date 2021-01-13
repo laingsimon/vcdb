@@ -8,5 +8,6 @@ namespace vcdb.Scripting
         public IReadOnlyCollection<SchemaDifference> SchemaDifferences { get; set; }
 
         public Change<string> DescriptionChangedTo { get; set; }
+        public string CollationChangedTo { get; set; }
     }
 }

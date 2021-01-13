@@ -7,14 +7,18 @@ namespace vcdb.Scripting
     public class ColumnComparer : IColumnComparer
     {
         private readonly INamedItemFinder namedItemFinder;
+        private readonly ICollationComparer collationComparer;
 
         public ColumnComparer(
-            INamedItemFinder namedItemFinder)
+            INamedItemFinder namedItemFinder,
+            ICollationComparer collationComparer)
         {
             this.namedItemFinder = namedItemFinder;
+            this.collationComparer = collationComparer;
         }
 
         public IEnumerable<ColumnDifference> GetDifferentColumns(
+            ComparerContext context,
             IDictionary<string, ColumnDetails> currentColumns,
             IDictionary<string, ColumnDetails> requiredColumns)
         {
@@ -44,7 +48,7 @@ namespace vcdb.Scripting
                             : null
                     };
 
-                    var columnDetailDifferences = ColumnsAreIdentical(currentColumn.Value, requiredColumn.Value);
+                    var columnDetailDifferences = ColumnsAreIdentical(context, currentColumn.Value, requiredColumn.Value);
                     if (columnDetailDifferences != null)
                         yield return difference.MergeIn(columnDetailDifferences);
                     else if (difference.IsChanged)
@@ -63,6 +67,7 @@ namespace vcdb.Scripting
         }
 
         private ColumnDifference ColumnsAreIdentical(
+            ComparerContext context,
             ColumnDetails currentColumn,
             ColumnDetails requiredColumn)
         {
@@ -84,7 +89,11 @@ namespace vcdb.Scripting
                     : null,
                 DescriptionChangedTo = currentColumn.Description != requiredColumn.Description
                     ? requiredColumn.Description.AsChange()
-                    : null
+                    : null,
+                CollationChangedTo = collationComparer.GetColumnCollationChange(
+                    context,
+                    currentColumn,
+                    requiredColumn)
             };
 
             return difference.IsChanged

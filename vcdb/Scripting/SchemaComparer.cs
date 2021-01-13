@@ -7,6 +7,7 @@ namespace vcdb.Scripting
     public class SchemaComparer : ISchemaComparer
     {
         public IEnumerable<SchemaDifference> GetSchemaDifferences(
+            ComparerContext context,
             IDictionary<string, SchemaDetails> currentSchemas,
             IDictionary<string, SchemaDetails> requiredSchemas)
         {

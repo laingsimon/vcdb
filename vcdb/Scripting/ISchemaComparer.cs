@@ -5,6 +5,9 @@ namespace vcdb.Scripting
 {
     public interface ISchemaComparer
     {
-        IEnumerable<SchemaDifference> GetSchemaDifferences(IDictionary<string, SchemaDetails> currentSchemas, IDictionary<string, SchemaDetails> requiredSchemas);
+        IEnumerable<SchemaDifference> GetSchemaDifferences(
+            ComparerContext context,
+            IDictionary<string, SchemaDetails> currentSchemas,
+            IDictionary<string, SchemaDetails> requiredSchemas);
     }
 }

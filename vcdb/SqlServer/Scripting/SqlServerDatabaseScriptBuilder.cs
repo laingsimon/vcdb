@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using vcdb.CommandLine;
 using vcdb.Models;
 using vcdb.Output;
@@ -30,7 +31,12 @@ namespace vcdb.SqlServer.Scripting
 
         public IEnumerable<SqlScript> CreateUpgradeScripts(DatabaseDetails current, DatabaseDetails required)
         {
-            var databaseDifferences = databaseComparer.GetDatabaseDifferences(current, required);
+            var comparerContext = new ComparerContext();
+            var databaseDifferences = databaseComparer.GetDatabaseDifferences(comparerContext, current, required);
+
+            if (databaseDifferences.CollationChangedTo != null)
+                yield return GetChangeDatabaseCollationScript(databaseDifferences.CollationChangedTo);
+
             if (databaseDifferences.DescriptionChangedTo != null)
                 yield return descriptionScriptBuilder.ChangeDatabaseDescription(current.Description, databaseDifferences.DescriptionChangedTo.Value);
 
@@ -43,6 +49,13 @@ namespace vcdb.SqlServer.Scripting
             {
                 yield return tableScript;
             }
+        }
+
+        private SqlScript GetChangeDatabaseCollationScript(string requiredCollation)
+        {
+            return new SqlScript($@"ALTER DATABASE {options.Database.SqlSafeName()}
+COLLATE {requiredCollation}
+GO");
         }
     }
 }

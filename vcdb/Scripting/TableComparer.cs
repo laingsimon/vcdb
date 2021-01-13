@@ -24,6 +24,7 @@ namespace vcdb.Scripting
         }
 
         public IEnumerable<TableDifference> GetDifferentTables(
+            ComparerContext context,
             IDictionary<TableName, TableDetails> currentTables,
             IDictionary<TableName, TableDetails> requiredTables)
         {
@@ -45,6 +46,7 @@ namespace vcdb.Scripting
                     processedTables.Add(currentTable.Value);
 
                     var columnDifferences = columnComparer.GetDifferentColumns(
+                            context.ForTable(currentTable, requiredTable.AsNamedItem()),
                             currentTable.Value.Columns.OrEmpty(),
                             requiredTable.Value.Columns.OrEmpty()).ToArray();
 
@@ -57,16 +59,16 @@ namespace vcdb.Scripting
                             : null,
                         ColumnDifferences = columnDifferences,
                         IndexDifferences = indexComparer.GetIndexDifferences(
+                            context.ForTable(currentTable, requiredTable.AsNamedItem(), columnDifferences),
                             currentTable.Value.Indexes.OrEmpty(),
-                            requiredTable.Value.Indexes.OrEmpty(),
-                            requiredTable.Value.Columns.OrEmpty()).ToArray(),
+                            requiredTable.Value.Indexes.OrEmpty()).ToArray(),
                         DescriptionChangedTo = currentTable.Value.Description != requiredTable.Value.Description
                             ? requiredTable.Value.Description.AsChange()
                             : null,
                         ChangedCheckConstraints = checkConstraintComparer.GetDifferentCheckConstraints(
+                            context.ForTable(currentTable, requiredTable.AsNamedItem(), columnDifferences),
                             currentTable.Value.Checks.OrEmptyCollection(),
-                            requiredTable.Value.Checks.OrEmptyCollection(),
-                            columnDifferences).ToArray()
+                            requiredTable.Value.Checks.OrEmptyCollection()).ToArray()
                     };
 
                     if (difference.IsChanged)

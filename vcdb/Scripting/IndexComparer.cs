@@ -14,10 +14,12 @@ namespace vcdb.Scripting
         }
 
         public IEnumerable<IndexDifference> GetIndexDifferences(
+            ComparerContext context,
             IDictionary<string, IndexDetails> currentIndexes,
-            IDictionary<string, IndexDetails> requiredIndexes,
-            IDictionary<string, ColumnDetails> requiredTableColumns)
+            IDictionary<string, IndexDetails> requiredIndexes)
         {
+            var requiredTableColumns = context.RequiredTable.Value.Columns;
+
             var processedIndexes = new HashSet<IndexDetails>();
             foreach (var requiredIndex in requiredIndexes)
             {

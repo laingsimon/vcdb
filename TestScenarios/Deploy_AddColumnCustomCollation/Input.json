@@ -1,0 +1,11 @@
+{
+  "tables": {
+	"dbo.Person": {
+		"columns": {
+			"Id": { "type": "int identity", "nullable": false },
+			"Name": { "type": "varchar(255)", "nullable": false, "collation": "Latin1_General_CS_AI" },
+		},
+		"indexes": { }
+	}
+  }
+}

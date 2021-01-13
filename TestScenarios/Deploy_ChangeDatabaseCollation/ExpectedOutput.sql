@@ -1,0 +1,3 @@
+ALTER DATABASE [Deploy_ChangeDatabaseCollation]
+COLLATE Latin1_General_CI_AI
+GO

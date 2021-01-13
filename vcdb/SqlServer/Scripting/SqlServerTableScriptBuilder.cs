@@ -130,8 +130,6 @@ GO");
             var drops = columnDifferences.Where(diff => diff.ColumnDeleted).ToArray();
             if (drops.Any())
             {
-                //TODO: Drop any constraints first?
-
                 yield return new SqlScript($@"ALTER TABLE {requiredTableName.SqlSafeName()}
 {string.Join(",", drops.Select(col => $"DROP COLUMN {col.CurrentColumn.SqlSafeName()}"))}
 GO");
@@ -167,20 +165,17 @@ GO");
             return !difference.ColumnAdded && !difference.ColumnDeleted && difference.IsChanged;
         }
 
-        private IEnumerable<SqlScript> GetAlterColumnScript(TableName tableName, ColumnDifference columnDifference)
+        private IEnumerable<SqlScript> GetAlterColumnScript(
+            TableName tableName, 
+            ColumnDifference columnDifference)
         {
             var column = columnDifference.RequiredColumn.Value;
             var columnName = columnDifference.RequiredColumn.Key;
 
-            if (columnDifference.NullabilityChangedTo != null || columnDifference.TypeChangedTo != null)
+            if (columnDifference.NullabilityChangedTo != null || columnDifference.TypeChangedTo != null || columnDifference.CollationChangedTo != null)
             {
-                //type of nullability has changed
-                var nullabilityClause = column.Nullable == true
-                    ? ""
-                    : " NOT NULL";
-
                 yield return new SqlScript($@"ALTER TABLE {tableName.SqlSafeName()}
-ALTER COLUMN {columnName.SqlSafeName()} {column.Type}{nullabilityClause}
+ALTER COLUMN {ColumnClause(columnName, column, columnDifference.CollationChangedTo)}
 GO");
             }
 
@@ -197,17 +192,6 @@ GO");
                     columnDifference.CurrentColumn.Value.Description, 
                     columnDifference.DescriptionChangedTo.Value);
             }
-        }
-
-        private IEnumerable<SqlScript> GetAddColumnScript(TableName tableName, string columnName, ColumnDetails column)
-        {
-            var nullabilityClause = column.Nullable == true
-                ? ""
-                : " NOT NULL";
-
-            yield return new SqlScript($@"ALTER TABLE {tableName.SqlSafeName()}
-ADD {columnName.SqlSafeName()} {column.Type}{nullabilityClause}
-GO");
         }
 
         private IEnumerable<SqlScript> GetRenameColumnScript(
@@ -240,7 +224,7 @@ GO");
 
         private IEnumerable<SqlScript> GetCreateTableScript(TableDetails requiredTable, TableName tableName)
         {
-            var columns = requiredTable.Columns.Select(CreateTableColumn);
+            var columns = requiredTable.Columns.Select(pair => ColumnClause(pair.Key, pair.Value));
             yield return new SqlScript($@"CREATE TABLE {tableName.SqlSafeName()} (
 {string.Join("," + Environment.NewLine, columns)}
 )
@@ -264,13 +248,23 @@ GO");
             }
         }
 
-        private string CreateTableColumn(KeyValuePair<string, ColumnDetails> column)
+        private IEnumerable<SqlScript> GetAddColumnScript(TableName tableName, string columnName, ColumnDetails column)
         {
-            var nullabilityClause = column.Value.Nullable == true
+            yield return new SqlScript($@"ALTER TABLE {tableName.SqlSafeName()}
+ADD {ColumnClause(columnName, column)}
+GO");
+        }
+
+        private string ColumnClause(string columnName, ColumnDetails column, string collationOverride = null)
+        {
+            var nullabilityClause = column.Nullable == true
                 ? ""
                 : " NOT NULL";
+            var collationClause = (collationOverride ?? column.Collation) != null
+                ? $" COLLATE {(collationOverride ?? column.Collation)}"
+                : null;
 
-            return $"  {column.SqlSafeName()} {column.Value.Type}{nullabilityClause}";
+            return $"{columnName.SqlSafeName()} {column.Type}{collationClause}{nullabilityClause}";
         }
     }
 }

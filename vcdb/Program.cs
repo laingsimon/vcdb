@@ -104,6 +104,7 @@ namespace vcdb
             services.AddSingleton<IIndexComparer, IndexComparer>();
             services.AddSingleton<IDatabaseComparer, DatabaseComparer>();
             services.AddSingleton<ISchemaComparer, SchemaComparer>();
+            services.AddSingleton<ICollationComparer, CollationComparer>();
             services.AddSingleton<ICheckConstraintComparer, CheckConstraintComparer>();
             services.AddSingleton<INamedItemFinder, NamedItemFinder>();
             services.AddSingleton<IHashHelper, HashHelper>();

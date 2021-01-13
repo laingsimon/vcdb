@@ -4,6 +4,9 @@ namespace vcdb.Scripting
 {
     public interface IDatabaseComparer
     {
-        DatabaseDifference GetDatabaseDifferences(DatabaseDetails currentDatabase, DatabaseDetails requiredDatabase);
+        DatabaseDifference GetDatabaseDifferences(
+            ComparerContext context,
+            DatabaseDetails currentDatabase, 
+            DatabaseDetails requiredDatabase);
     }
 }

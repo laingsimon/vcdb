@@ -7,10 +7,12 @@ namespace vcdb.Scripting
     public class CheckConstraintComparer : ICheckConstraintComparer
     {
         public IEnumerable<CheckConstraintDifference> GetDifferentCheckConstraints(
+            ComparerContext context,
             IReadOnlyCollection<CheckConstraintDetails> currentChecks,
-            IReadOnlyCollection<CheckConstraintDetails> requiredChecks,
-            IReadOnlyCollection<ColumnDifference> columnDiffences)
+            IReadOnlyCollection<CheckConstraintDetails> requiredChecks)
         {
+            var columnDifferences = context.ColumnDifferences;
+
             var processedChecks = new HashSet<CheckConstraintDetails>();
             foreach (var requiredCheck in requiredChecks)
             {
