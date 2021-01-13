@@ -1,3 +1,3 @@
-This scenario tests vcdb to confirm it can create the expected schema JSON from a given database.
+This scenario tests `vcdb` to confirm it can create scripts to effect the appropriate database change.
 
-This scenario tests that vcdb can create a ALTER database script to change the default collation of the database
+In this scenario the collation of the database is changed.

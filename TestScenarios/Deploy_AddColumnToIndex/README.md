@@ -1,3 +1,4 @@
-This scenario tests vcdb to confirm it can create the expected schema JSON from a given database.
+This scenario tests `vcdb` to confirm it can create scripts to effect the appropriate database change.
 
-This scenario tests that vcdb can create a script to 'update' (which means drop and recreate) an index to have an additional column
+In this scenario a column is added to an index.
+As indexes cannot be altered, the index has to be dropped and recreated.

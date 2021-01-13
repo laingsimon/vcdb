@@ -1,3 +1,3 @@
-This scenario tests vcdb to confirm it can create the expected schema JSON from a given database.
+This scenario tests `vcdb` to confirm it can create scripts to effect the appropriate database change.
 
-This scenario tests that vcdb can handle a column rename when an index is involved - in effect there are no index changes
+In this scenario a column is being renamed. The column is part of an index, which isn't being renamed.

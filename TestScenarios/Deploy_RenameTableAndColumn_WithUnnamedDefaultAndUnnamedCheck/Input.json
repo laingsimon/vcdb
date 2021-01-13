@@ -6,6 +6,7 @@
 			"FullName": { 
                 "type": "nvarchar(255)", 
                 "nullable": false,
+                "default": "unknown",
 				"previousNames": [ "Name" ]
             },
 		},

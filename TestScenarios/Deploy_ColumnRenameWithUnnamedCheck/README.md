@@ -1,3 +1,3 @@
-This scenario tests vcdb to confirm it can create the expected schema JSON from a given database.
+This scenario tests `vcdb` to confirm it can create scripts to effect the appropriate database change.
 
-This scenario tests that vcdb can create a ALTER table script for a table where a column has changed name, where that column has an unnamed check constraint
+In this scenario a column is renamed. The column is bound to a check constraint with a system-generated name. As the system-generated name is calculated based on the name of the columns it is bound to, the system-generated is updated to keep it consistent.

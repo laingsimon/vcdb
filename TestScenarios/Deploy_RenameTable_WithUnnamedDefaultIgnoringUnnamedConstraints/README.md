@@ -1,6 +1,4 @@
-This scenario tests vcdb to confirm it can create the expected schema JSON from a given database.
+This scenario tests `vcdb` to confirm it can create scripts to effect the appropriate database change.
 
-This scenario tests that vcdb can create a ALTER table script for a table that has changed name. 
-The table has a column with an unnamed default constraint.
-
-This scenario uses the `--ignoreUnusedConstraints` switch to save needing to rename any unnamed constrants for tables and or columns that change name.
+In this scenario a table is renamed. The table contains a system-named default constraint. As the default constraint will contain the table name in it's name it is renamed to be consistent.
+This scenario uses the `--ignoreUnusedConstraints` switch to tell `vcdb` to ignore system-named default constraints when their table/column change name.

@@ -1,3 +1,3 @@
-This scenario tests vcdb to confirm it can create the expected schema JSON from a given database.
+This scenario tests `vcdb` to confirm it can create scripts to effect the appropriate database change.
 
-This scenario tests that vcdb can create script to rename a table where one of it's columns has an unnamed default constraint.
+In this scenario a table is renamed. The table contains a system-named default constraint. As the default constraint will contain the table name in it's name it is renamed to be consistent.

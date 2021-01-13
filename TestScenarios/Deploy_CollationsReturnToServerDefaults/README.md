@@ -1,3 +1,3 @@
-This scenario tests vcdb to confirm it can create the expected schema JSON from a given database.
+This scenario tests `vcdb` to confirm it can create scripts to effect the appropriate database change.
 
-This scenario tests that vcdb can create a script that returns the database to the server default collation and columns in a table to using the server default collation too
+In this scenario the collation of the database is returned to the same as the server default collation. At the same time the custom collation of a column is removed and reset to the database (now the server) default collation.

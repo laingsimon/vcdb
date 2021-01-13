@@ -11,6 +11,11 @@ EXEC sp_rename
     @newname = 'FullName', 
     @objtype = 'COLUMN'
 GO
+EXEC sp_rename 
+    @objname = '[dbo].[DF__Person__Name__36B12243]', 
+    @newname = '[DF__People__FullName__36B12243]', 
+    @objtype = 'OBJECT'
+GO
 ALTER TABLE [dbo].[People]
 ADD CONSTRAINT [CK__People__7024CCA]
 CHECK (len([FullName])>3)

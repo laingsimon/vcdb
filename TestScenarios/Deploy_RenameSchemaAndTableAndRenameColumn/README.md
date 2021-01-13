@@ -1,3 +1,4 @@
-This scenario tests vcdb to confirm it can create the expected schema JSON from a given database.
+This scenario tests `vcdb` to confirm it can create scripts to effect the appropriate database change.
 
-This scenario tests that vcdb can create a script to 'rename' (which means drop, create then transfer) a schema and also rename a table it contains whilst also renaming one of the tables' columns.
+In this scenario a schema is renamed. At the same time the table, and one of its columns, in the schema is renamed.
+As schemas cannot be renamed, a new schema is created and all bound items are transfered to the new schema. The old schema is then dropped.
