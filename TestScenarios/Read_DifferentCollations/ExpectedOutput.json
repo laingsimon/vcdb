@@ -1,0 +1,17 @@
+{
+  "tables": {
+	"[dbo].[Person]": {
+		"columns": {
+            "Name": { 
+				"type": "varchar(255)",
+				"nullable": true,
+                "collation": "Latin1_General_CS_AI"
+			}
+		},
+        "checks": [],
+        "indexes": {}
+	}
+  },
+  "schemas": {},
+  "collation": "Latin1_General_CI_AI"
+}

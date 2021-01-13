@@ -1,10 +1,13 @@
-﻿namespace vcdb.SqlServer.SchemaBuilding
+﻿using vcdb.SchemaBuilding;
+
+namespace vcdb.SqlServer.SchemaBuilding
 {
-    public class ColumnDefault
+    public class ColumnDefault : IColumnDefault
     {
         public string column_name { get; set; }
-        public string name { get; set; }
-        public int object_id { get; set; }
-        public bool is_system_named { get; set; }
+
+        public string Name { get; set; }
+        public int ObjectId { get; set; }
+        public bool IsSystemNamed { get; set; }
     }
 }

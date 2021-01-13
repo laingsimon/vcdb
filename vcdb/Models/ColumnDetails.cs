@@ -45,5 +45,11 @@ namespace vcdb.Models
         /// A description for the column
         /// </summary>
         public string Description { get; set; }
+
+        /// <summary>
+        /// If appropriate, the collation that should be used for the column
+        /// If null the column should inherit the collation of the database
+        /// </summary>
+        public string Collation { get; set; }
     }
 }

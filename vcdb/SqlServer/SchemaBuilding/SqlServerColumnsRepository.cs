@@ -11,39 +11,35 @@ namespace vcdb.SqlServer.SchemaBuilding
     public class SqlServerColumnsRepository : IColumnsRepository
     {
         private readonly IDescriptionRepository descriptionRepository;
+        private readonly ICollationRepository collationRepository;
+        private readonly IDefaultConstraintRepository defaultConstraintRepository;
 
-        public SqlServerColumnsRepository(IDescriptionRepository descriptionRepository)
+        public SqlServerColumnsRepository(
+            IDescriptionRepository descriptionRepository, 
+            ICollationRepository collationRepository,
+            IDefaultConstraintRepository defaultConstraintRepository)
         {
             this.descriptionRepository = descriptionRepository;
+            this.collationRepository = collationRepository;
+            this.defaultConstraintRepository = defaultConstraintRepository;
         }
 
         public async Task<Dictionary<string, ColumnDetails>> GetColumns(DbConnection connection, TableName tableName)
         {
             var tableColumns = await connection.QueryAsync<SpColumnsOutput>(@"
-sp_columns @table_name = @table_name, @table_owner = @table_owner",
-new
-{
-    table_name = tableName.Table,
-    table_owner = tableName.Schema
-});
+exec sp_columns 
+    @table_name = @table_name,
+    @table_owner = @table_owner", 
+                new
+                {
+                    table_name = tableName.Table,
+                    table_owner = tableName.Schema
+                });
 
-            var columnDefaults = (await connection.QueryAsync<ColumnDefault>(@"
-select def.name, col.name as column_name, def.object_id, def.is_system_named
-from sys.default_constraints def
-inner join sys.columns col
-on col.column_id = def.parent_column_id
-and col.object_id = def.parent_object_id
-inner join sys.tables tab
-on tab.object_id = col.object_id
-where tab.name = @table_name
-and SCHEMA_NAME(tab.schema_id) = @table_owner",
-new
-{
-    table_name = tableName.Table,
-    table_owner = tableName.Schema
-})).ToDictionary(defaultConstraint => defaultConstraint.column_name);
-
+            var databaseCollation = await collationRepository.GetDatabaseCollation(connection);
+            var columnDefaults = await defaultConstraintRepository.GetColumnDefaults(connection, tableName);
             var columnDescriptions = await descriptionRepository.GetColumnDescriptions(connection, tableName);
+            var columnCollations = await collationRepository.GetColumnCollations(connection, tableName);
 
             return tableColumns.ToDictionary(
                         column => column.COLUMN_NAME,
@@ -56,12 +52,15 @@ new
                                 Type = GetDataType(column),
                                 Nullable = column.NULLABLE,
                                 Default = column.COLUMN_DEF?.Trim('(', ')'),
-                                DefaultName = columnDefault == null || columnDefault.is_system_named
+                                DefaultName = columnDefault == null || columnDefault.IsSystemNamed
                                     ? null
-                                    : columnDefault.name,
-                                SqlDefaultName = columnDefault?.name,
-                                DefaultObjectId = columnDefault?.object_id,
-                                Description = columnDescriptions.ItemOrDefault(column.COLUMN_NAME)
+                                    : columnDefault.Name,
+                                SqlDefaultName = columnDefault?.Name,
+                                DefaultObjectId = columnDefault?.ObjectId,
+                                Description = columnDescriptions.ItemOrDefault(column.COLUMN_NAME),
+                                Collation = columnCollations.ItemOrDefault(column.COLUMN_NAME) == databaseCollation
+                                    ? null
+                                    : columnCollations.ItemOrDefault(column.COLUMN_NAME)
                             };
                         });
         }
