@@ -1,117 +1,42 @@
 The following database entities are tested in the scenarios below.
 
-# Reading
-## 1 Tables
-- [Read_AllColumnTypes](Read_AllColumnTypes)
-- [Read_AllColumnTypes_CustomDefaultName](Read_AllColumnTypes_CustomDefaultName)
-## 2 Indexes
-- [Read_CustomIndexes](Read_CustomIndexes)
-## 3 Columns
-- [Read_AllColumnTypes](Read_AllColumnTypes)
-- [Read_AllColumnTypes_CustomDefaultName](Read_AllColumnTypes_CustomDefaultName)
-## 4 Default Constraints
-- [Read_AllColumnTypes_CustomDefaultName](Read_AllColumnTypes_CustomDefaultName)
-## 5 Check Constraints
-- [Read_CheckConstraints](Read_CheckConstraints)
-- [Read_MultipleCheckConstraints](Read_MultipleCheckConstraints)
-## 6 Descriptions
-- [Read_Descriptions](Read_Descriptions)
-## 7 Collations
-- [Read_DifferentCollations](Read_DifferentCollations)
-## 8 Schemas
-- [Read_CustomSchemas](Read_CustomSchemas)
-
-# Deployment
-## 1 Tables
-#### .1 Add
-- [Deploy_AllColumnTypes](Deploy_AllColumnTypes)
-#### .2 Rename
-- Deploy_RenameTable*
-- [Deploy_MoveTableBetweenSchemas](Deploy_MoveTableBetweenSchemas)
-- [Deploy_MoveTableBetweenSchemasAndRenameTable](Deploy_MoveTableBetweenSchemasAndRenameTable)
-#### .3 Change
-- [Deploy_AddColumn](Deploy_AddColumn)
-- [Deploy_DropColumn](Deploy_DropColumn)
-- [Deploy_AddColumnCustomCollation](Deploy_AddColumnCustomCollation)
-#### .4 Drop
-- [Deploy_DropTable](Deploy_DropTable)
-
-## 2 Indexes
-#### .1 Add
-- [Deploy_AddIndex](Deploy_AddIndex)
-#### .2 Rename
-- [Deploy_RenameIndex](Deploy_RenameIndex)
-#### .3 Change
-- [Deploy_AddColumnToIndex](Deploy_AddColumnToIndex)
-- [Deploy_RemoveColumnFromIndex](Deploy_RemoveColumnFromIndex)
-#### .4 Drop
-- [Deploy_DropIndex](Deploy_DropIndex)
-
-## 3 Columns
-#### .1 Add
-- [Deploy_AddColumn](Deploy_AddColumn)
-- [Deploy_AddColumnCustomCollation](Deploy_AddColumnCustomCollation)
-- [Deploy_AllColumnTypes](Deploy_AllColumnTypes)
-#### .2 Rename
-- Deploy_ColumnRename*
-#### .3 Change
-- [Deploy_ColumnRetype](Deploy_ColumnRetype)
-#### .4 Drop
-- [Deploy_DropColumn](Deploy_DropColumn)
-
-## 4 Default Constraints
-#### .1 Add
-- [Deploy_AddColumn](Deploy_AddColumn)
-#### .2 Rename
-- [Deploy_ColumnRenameWithCustomDefaultNameBeingRemoved](Deploy_ColumnRenameWithCustomDefaultNameBeingRemoved)
-- [Deploy_ColumnRenameWithUnnamedDefault](Deploy_ColumnRenameWithUnnamedDefault)
-- [Deploy_RenameTable_WithUnnamedDefault](Deploy_RenameTable_WithUnnamedDefault)
-- [Deploy_RenameTableAndColumn_WithUnnamedDefaultAndUnnamedCheck](Deploy_RenameTableAndColumn_WithUnnamedDefaultAndUnnamedCheck)
-#### .3 Change
-- [Deploy_ChangeDefault](Deploy_ChangeDefault)
-#### .4 Drop
-- [Deploy_DropDefault](Deploy_DropDefault)
-
-## 5 Check Constraints
-#### .1 Add
-- [Deploy_AddColumn](Deploy_AddColumn)
-#### .2 Rename
-- [Deploy_ColumnRenameWithCheckBeingRenamed](Deploy_ColumnRenameWithCheckBeingRenamed)
-- [Deploy_ColumnRenameWithCustomCheckNameBeingRemoved](Deploy_ColumnRenameWithCustomCheckNameBeingRemoved)
-- [Deploy_ColumnRenameWithUnnamedCheck](Deploy_ColumnRenameWithUnnamedCheck)
-- [Deploy_RenameTable_WithUnnamedCheck](Deploy_RenameTable_WithUnnamedCheck)
-- [Deploy_RenameTableAndColumn_WithUnnamedDefaultAndUnnamedCheck](Deploy_RenameTableAndColumn_WithUnnamedDefaultAndUnnamedCheck)
-#### .3 Change
-- [Deploy_ChangeCheck](Deploy_ChangeCheck)
-#### .4 Drop
-- [Deploy_DropCheck](Deploy_DropCheck)
-
-## 6 Descriptions
-#### .1 Add
-- [Deploy_ChangeDescriptions](Deploy_ChangeDescriptions)
-#### .2 Change
-- [Deploy_ChangeDescriptions](Deploy_ChangeDescriptions)
-#### .3 Drop
-- [Deploy_ChangeDescriptions](Deploy_ChangeDescriptions)
-
-## 7 Collations
-#### .1 Override
-- [Deploy_ColumnChangeCollation](Deploy_ColumnChangeCollation)
-- [Deploy_ChangeDatabaseCollation](Deploy_ChangeDatabaseCollation)
-- [Deploy_ChangeDatabaseCollationAndColumnCollation](Deploy_ChangeDatabaseCollationAndColumnCollation)
-#### .2 Underride (reset)
-- [Deploy_CollationsReturnToServerDefaults](Deploy_CollationsReturnToServerDefaults)
-#### .3 Change
-- [Deploy_ChangeDatabaseCollationAndColumnCollation](Deploy_ChangeDatabaseCollationAndColumnCollation)
-
-## 8 Schemas
-#### .1 Add
-- [Deploy_AddSchema](Deploy_AddSchema)
-#### .2 Rename
-- [Deploy_RenameSchema](Deploy_RenameSchema)
-#### .3 Transfer-in
-- [Deploy_MoveTableBetweenSchemas](Deploy_MoveTableBetweenSchemas)
-- [Deploy_MoveTableBetweenSchemasAndRenameTable](Deploy_MoveTableBetweenSchemasAndRenameTable)
-- [Deploy_MoveTableBetweenSchemasAndRenameCheckConstraint](Deploy_MoveTableBetweenSchemasAndRenameCheckConstraint)
-#### .4 Drop
-- [Deploy_DropSchema](Deploy_DropSchema)
+|Object type|Operation|Scenario|
+|----|----|----|
+|Table|Read|[Read_AllColumnTypes](Read_AllColumnTypes)<br />[Read_AllColumnTypes_CustomDefaultName](Read_AllColumnTypes_CustomDefaultName)|
+|Table|Add|[Deploy_AllColumnTypes](Deploy_AllColumnTypes)|
+|Table|Rename|Deploy_RenameTable*<br />[Deploy_MoveTableBetweenSchemasAndRenameTable](Deploy_MoveTableBetweenSchemasAndRenameTable)|
+|Table|Change|[Deploy_AddColumn](Deploy_AddColumn)<br />[Deploy_DropColumn](Deploy_DropColumn)<br />[Deploy_AddColumnCustomCollation](Deploy_AddColumnCustomCollation)|
+|Table|Drop|[Deploy_DropTable](Deploy_DropTable)|
+|Index|Read|[Read_CustomIndexes](Read_CustomIndexes)|
+|Index|Add|[Deploy_AddIndex](Deploy_AddIndex)|
+|Index|Rename|[Deploy_RenameIndex](Deploy_RenameIndex)|
+|Index|Change|[Deploy_AddColumnToIndex](Deploy_AddColumnToIndex)<br />[Deploy_RemoveColumnFromIndex](Deploy_RemoveColumnFromIndex)|
+|Index|Drop|[Deploy_DropIndex](Deploy_DropIndex)|
+|Column|Read|[Read_AllColumnTypes](Read_AllColumnTypes)<br />[Read_AllColumnTypes_CustomDefaultName](Read_AllColumnTypes_CustomDefaultName)|
+|Column|Add|[Deploy_AddColumn](Deploy_AddColumn)<br />[Deploy_AddColumnCustomCollation](Deploy_AddColumnCustomCollation)<br />[Deploy_AllColumnTypes](Deploy_AllColumnTypes)|
+|Column|Rename|Deploy_ColumnRename*|
+|Column|Change|[Deploy_ColumnRetype](Deploy_ColumnRetype)<br />[Deploy_ColumnChangeCollation](Deploy_ColumnChangeCollation)|
+|Column|Drop|[Deploy_DropColumn](Deploy_DropColumn)|
+|Default constraint|Read|[Read_AllColumnTypes](Read_AllColumnTypes)<br />[Read_AllColumnTypes_CustomDefaultName](Read_AllColumnTypes_CustomDefaultName)|
+|Default constraint|Add|[Deploy_AddColumn](Deploy_AddColumn)|
+|Default constraint|Rename|[Deploy_ColumnRenameWithCustomDefaultNameBeingRemoved](Deploy_ColumnRenameWithCustomDefaultNameBeingRemoved)<br />[Deploy_ColumnRenameWithUnnamedDefault](Deploy_ColumnRenameWithUnnamedDefault)<br />[Deploy_RenameTable_WithUnnamedDefault](Deploy_RenameTable_WithUnnamedDefault)<br />[Deploy_RenameTableAndColumn_WithUnnamedDefaultAndUnnamedCheck](Deploy_RenameTableAndColumn_WithUnnamedDefaultAndUnnamedCheck)|
+|Default constraint|Change|[Deploy_ChangeDefault](Deploy_ChangeDefault)|
+|Default constraint|Drop|[Deploy_DropDefault](Deploy_DropDefault)|
+|Check constraint|Read|[Read_CheckConstraints](Read_CheckConstraints)<br />[Read_MultipleCheckConstraints](Read_MultipleCheckConstraints)|
+|Check constraint|Add|[Deploy_AddColumn](Deploy_AddColumn)|
+|Check constraint|Rename|[Deploy_ColumnRenameWithCheckBeingRenamed](Deploy_ColumnRenameWithCheckBeingRenamed)<br />[Deploy_ColumnRenameWithCustomCheckNameBeingRemoved](Deploy_ColumnRenameWithCustomCheckNameBeingRemoved)<br />[Deploy_ColumnRenameWithUnnamedCheck](Deploy_ColumnRenameWithUnnamedCheck)<br />[Deploy_RenameTable_WithUnnamedCheck](Deploy_RenameTable_WithUnnamedCheck)<br /> [Deploy_RenameTableAndColumn_WithUnnamedDefaultAndUnnamedCheck](Deploy_RenameTableAndColumn_WithUnnamedDefaultAndUnnamedCheck) |
+|Check constraint|Change|[Deploy_ChangeCheck](Deploy_ChangeCheck)|
+|Check constraint|Drop|[Deploy_DropCheck](Deploy_DropCheck)|
+|Description|Read|[Read_Descriptions](Read_Descriptions)|
+|Description|Add|[Deploy_ChangeDescriptions](Deploy_ChangeDescriptions)|
+|Description|Change|[Deploy_ChangeDescriptions](Deploy_ChangeDescriptions)|
+|Description|Drop|[Deploy_ChangeDescriptions](Deploy_ChangeDescriptions)|
+|Default collation|Read|[Read_DifferentCollations](Read_DifferentCollations)|
+|Default collation|Override|[Deploy_ColumnChangeCollation](Deploy_ColumnChangeCollation)<br />[Deploy_ChangeDatabaseCollation](Deploy_ChangeDatabaseCollation)<br />[Deploy_ChangeDatabaseCollationAndColumnCollation](Deploy_ChangeDatabaseCollationAndColumnCollation)|
+|Default collation|Underride|[Deploy_CollationsReturnToServerDefaults](Deploy_CollationsReturnToServerDefaults)|
+|Default collation|Change|[Deploy_ChangeDatabaseCollationAndColumnCollation](Deploy_ChangeDatabaseCollationAndColumnCollation)|
+|Schema|Read|[Read_CustomSchemas](Read_CustomSchemas)|
+|Schema|Add|[Deploy_AddSchema](Deploy_AddSchema)|
+|Schema|Rename|[Deploy_RenameSchema](Deploy_RenameSchema)|
+|Schema|Transfer-in|[Deploy_MoveTableBetweenSchemas](Deploy_MoveTableBetweenSchemas)<br />[Deploy_MoveTableBetweenSchemasAndRenameTable](Deploy_MoveTableBetweenSchemasAndRenameTable)<br />[Deploy_MoveTableBetweenSchemasAndRenameCheckConstraint](Deploy_MoveTableBetweenSchemasAndRenameCheckConstraint)|
+|Schema|Drop|[Deploy_DropSchema](Deploy_DropSchema)|
