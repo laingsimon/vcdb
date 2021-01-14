@@ -8,11 +8,12 @@ using System.IO;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using vcdb.CommandLine;
+using vcdb.DependencyInjection;
 using vcdb.Output;
 using vcdb.Scripting;
 using vcdb.SqlServer;
 
-[assembly:InternalsVisibleTo("vcdb.IntegrationTests")]
+[assembly: InternalsVisibleTo("vcdb.IntegrationTests")]
 
 namespace vcdb
 {
@@ -95,19 +96,11 @@ namespace vcdb
 
         private static void ConfigureServices(ServiceCollection services, Options options)
         {
-            services.AddSingleton<IExecutor, Executor>();
-            services.AddSingleton<IConnectionFactory, ConnectionFactory>();
+            services.InNamespace<ICollationComparer>().AddAsSingleton();
+            services.InNamespace<IExecutor>().AddAsSingleton();
+
             services.AddSingleton<IOutput, ConsoleOutput>();
             services.AddSingleton<IInput, Input>();
-            services.AddSingleton<IColumnComparer, ColumnComparer>();
-            services.AddSingleton<ITableComparer, TableComparer>();
-            services.AddSingleton<IIndexComparer, IndexComparer>();
-            services.AddSingleton<IDatabaseComparer, DatabaseComparer>();
-            services.AddSingleton<ISchemaComparer, SchemaComparer>();
-            services.AddSingleton<ICollationComparer, CollationComparer>();
-            services.AddSingleton<ICheckConstraintComparer, CheckConstraintComparer>();
-            services.AddSingleton<INamedItemFinder, NamedItemFinder>();
-            services.AddSingleton<IHashHelper, HashHelper>();
 
             var databaseServicesInstaller = GetDatabaseServicesInstaller(options);
             databaseServicesInstaller.RegisterServices(services);

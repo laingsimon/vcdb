@@ -1,6 +1,6 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 
-namespace vcdb
+namespace vcdb.DependencyInjection
 {
     public interface IServicesInstaller
     {

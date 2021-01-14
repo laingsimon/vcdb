@@ -1,6 +1,5 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
-using vcdb.SchemaBuilding;
-using vcdb.Scripting;
+using vcdb.DependencyInjection;
 using vcdb.SqlServer.SchemaBuilding;
 using vcdb.SqlServer.Scripting;
 
@@ -10,24 +9,9 @@ namespace vcdb.SqlServer
     {
         public void RegisterServices(IServiceCollection services)
         {
-            services.AddSingleton<IDescriptionRepository, SqlServerDescriptionRepository>();
-            services.AddSingleton<IDatabaseRepository, SqlServerDatabaseRepository>();
-            services.AddSingleton<ITableRepository, SqlServerTableRepository>();
-            services.AddSingleton<IColumnsRepository, SqlServerColumnsRepository>();
-            services.AddSingleton<IIndexesRepository, SqlServerIndexesRepository>();
-            services.AddSingleton<ISchemaRepository, SqlServerSchemaRepository>();
-            services.AddSingleton<ICheckConstraintRepository, SqlServerCheckConstraintsRepository>();
-            services.AddSingleton<ICollationRepository, SqlServerCollationRepository>();
-            services.AddSingleton<IDefaultConstraintRepository, SqlServerDefaultConstraintsRepository>();
-
-            services.AddSingleton<IDatabaseScriptBuilder, SqlServerDatabaseScriptBuilder>();
-            services.AddSingleton<ITableScriptBuilder, SqlServerTableScriptBuilder>();
-            services.AddSingleton<ISqlObjectNameHelper, SqlObjectNameHelper>();
-            services.AddSingleton<ISchemaScriptBuilder, SqlServerSchemaScriptBuilder>();
-            services.AddSingleton<IDescriptionScriptBuilder, SqlServerDescriptionScriptBuilder>();
-            services.AddSingleton<IIndexScriptBuilder, SqlServerIndexScriptBuilder>();
-            services.AddSingleton<IDefaultConstraintScriptBuilder, SqlServerDefaultConstraintScriptBuilder>();
-            services.AddSingleton<ICheckConstraintScriptBuilder, SqlServerCheckConstraintScriptBuilder>();
+            services.InNamespace<SqlObjectNameHelper>().AddAsSingleton();
+            services.InNamespace<SqlServerCheckConstraintsRepository>().AddAsSingleton();
+            services.InNamespace<SqlServerCheckConstraintScriptBuilder>().AddAsSingleton();
         }
     }
 }

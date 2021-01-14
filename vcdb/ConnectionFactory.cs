@@ -5,7 +5,7 @@ using System.Data.SqlClient;
 using System.Threading.Tasks;
 using vcdb.CommandLine;
 
-namespace vcdb.Output
+namespace vcdb
 {
     public class ConnectionFactory : IConnectionFactory
     {
