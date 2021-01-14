@@ -1,0 +1,24 @@
+{
+  "tables": {
+	"dbo.Person": {
+		"columns": {
+			"Id": { "type": "int identity", "nullable": false },
+			"Name": { "type": "nvarchar(255)", "nullable": false },
+			"Age": { "type": "int", "nullable": true }
+		},
+		"indexes": { 
+			"IX_Person_Id_New": {
+				"clustered": true,
+				"unique": true,
+				"columns": { "Id": { } },
+                "previousNames": [ "IX_Person_Id" ]
+			},
+			"IX_Person_IdIncName_New": {
+				"columns": { "Id": { } },
+				"including": [ "Name" ],
+                "previousNames": [ "IX_Person_IdIncName" ]
+			}
+		}
+	}
+  }
+}

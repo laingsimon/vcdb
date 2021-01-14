@@ -184,7 +184,7 @@ GO");
             var unnamedDefaultConstraint = GetNameForColumnDefault(tableName, new NamedItem<string, ColumnDetails>(columnName, column));
             yield return new SqlScript($@"ALTER TABLE {tableName.SqlSafeName()}
 ADD CONSTRAINT {(column.DefaultName ?? unnamedDefaultConstraint).SqlSafeName()}
-DEFAULT ({column.Default})
+DEFAULT ({GetDefaultValue(column.Default)})
 FOR {columnName.SqlSafeName()}
 GO");
 
@@ -208,6 +208,14 @@ EXEC sp_rename
     @objtype = 'OBJECT'
 GO");
             }
+        }
+
+        private object GetDefaultValue(object defaultValue)
+        {
+            if (defaultValue is string)
+                return $"'{defaultValue}'";
+
+            return defaultValue;
         }
 
         private SqlScript GetRenameDefaultScript(

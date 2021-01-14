@@ -34,13 +34,13 @@ The following database entities are tested in the scenarios below.
 - [Deploy_DropColumn](Deploy_DropColumn)
 - [Deploy_AddColumnCustomCollation](Deploy_AddColumnCustomCollation)
 #### .4 Drop
-- **MISSING**
+- [Deploy_DropTable](Deploy_DropTable)
 
 ## 2 Indexes
 #### .1 Add
-- [Deploy_AddClusteredIndex](Deploy_AddClusteredIndex)
+- [Deploy_AddIndex](Deploy_AddIndex)
 #### .2 Rename
-- **MISSING**
+- [Deploy_RenameIndex](Deploy_RenameIndex)
 #### .3 Change
 - [Deploy_AddColumnToIndex](Deploy_AddColumnToIndex)
 - [Deploy_RemoveColumnFromIndex](Deploy_RemoveColumnFromIndex)
@@ -68,7 +68,7 @@ The following database entities are tested in the scenarios below.
 - [Deploy_RenameTable_WithUnnamedDefault](Deploy_RenameTable_WithUnnamedDefault)
 - [Deploy_RenameTableAndColumn_WithUnnamedDefaultAndUnnamedCheck](Deploy_RenameTableAndColumn_WithUnnamedDefaultAndUnnamedCheck)
 #### .3 Change
-- **MISSING**
+- [Deploy_ChangeDefault](Deploy_ChangeDefault)
 #### .4 Drop
 - [Deploy_DropDefault](Deploy_DropDefault)
 
@@ -82,7 +82,7 @@ The following database entities are tested in the scenarios below.
 - [Deploy_RenameTable_WithUnnamedCheck](Deploy_RenameTable_WithUnnamedCheck)
 - [Deploy_RenameTableAndColumn_WithUnnamedDefaultAndUnnamedCheck](Deploy_RenameTableAndColumn_WithUnnamedDefaultAndUnnamedCheck)
 #### .3 Change
-- **MISSING**
+- [Deploy_ChangeCheck](Deploy_ChangeCheck)
 #### .4 Drop
 - [Deploy_DropCheck](Deploy_DropCheck)
 
