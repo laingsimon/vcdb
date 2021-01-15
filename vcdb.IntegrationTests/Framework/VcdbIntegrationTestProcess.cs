@@ -1,10 +1,12 @@
 ﻿using CommandLine;
+using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using TestFramework;
 using vcdb.Output;
+using vcdb.Scripting;
 
 namespace vcdb.IntegrationTests.Framework
 {
@@ -28,13 +30,21 @@ namespace vcdb.IntegrationTests.Framework
                 code => result.ExitCode = code,
                 new UndisposableTextWriter(errorOutput),
                 new UndisposableTextWriter(standardOutput),
-                true);
+                true,
+                services => ModifyServices(services, scenario));
 
             result.Output = standardOutput.GetStringBuilder().ToString();
             result.ErrorOutput = errorOutput.GetStringBuilder().ToString();
             result.CommandLine = $"dotnet vcdb.dll {BuildCommandLine(options)}";
 
             return result;
+        }
+
+        private void ModifyServices(IServiceCollection services, DirectoryInfo scenario)
+        {
+            services.AddSingleton(scenario);
+            services.ReplaceSingleton<IDatabaseComparer, EmittingDatabaseComparer>();
+            services.AddSingleton<DatabaseComparer>();
         }
 
         private static CommandLine.Options GetOptions(DirectoryInfo scenario, ScenarioSettings settings)
