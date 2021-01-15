@@ -223,11 +223,17 @@ namespace TestFramework
                     !context.Differences.Any(),
                     context.Differences.Select(difference => $"- Found a difference: {difference}"));
 
+                var actualOutputFileName = Path.Combine(scenario.FullName, "ActualOutput.json");
                 if (context.Differences.Any())
                 {
-                    json.WriteJsonContent(actual, Path.Combine(scenario.FullName, "ActualOutput.json"), Formatting.Indented);
+                    json.WriteJsonContent(actual, actualOutputFileName, Formatting.Indented);
                     PrintReproductionStatement(scenario, result);
                 }
+                else
+                {
+                    File.Delete(actualOutputFileName);
+                }
+
                 return !context.Differences.Any();
             });
         }
