@@ -1,8 +1,9 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using vcdb.Models;
+using vcdb.Scripting.Collation;
 
-namespace vcdb.Scripting
+namespace vcdb.Scripting.Column
 {
     public class ColumnComparer : IColumnComparer
     {

@@ -6,7 +6,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using TestFramework;
 using vcdb.Output;
-using vcdb.Scripting;
+using vcdb.Scripting.Database;
 
 namespace vcdb.IntegrationTests.Framework
 {

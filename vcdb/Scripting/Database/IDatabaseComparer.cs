@@ -1,12 +1,12 @@
 ﻿using vcdb.Models;
 
-namespace vcdb.Scripting
+namespace vcdb.Scripting.Database
 {
     public interface IDatabaseComparer
     {
         DatabaseDifference GetDatabaseDifferences(
             ComparerContext context,
-            DatabaseDetails currentDatabase, 
+            DatabaseDetails currentDatabase,
             DatabaseDetails requiredDatabase);
     }
 }

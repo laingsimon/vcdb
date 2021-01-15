@@ -1,6 +1,6 @@
 ﻿using vcdb.Models;
 
-namespace vcdb.Scripting
+namespace vcdb.Scripting.Column
 {
     public class ColumnDifference
     {

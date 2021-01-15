@@ -5,7 +5,7 @@ using vcdb.CommandLine;
 using vcdb.Models;
 using vcdb.Output;
 using vcdb.SchemaBuilding;
-using vcdb.Scripting;
+using vcdb.Scripting.Database;
 
 namespace vcdb
 {

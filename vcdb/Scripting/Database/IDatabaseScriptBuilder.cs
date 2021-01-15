@@ -2,7 +2,7 @@
 using vcdb.Models;
 using vcdb.Output;
 
-namespace vcdb.Scripting
+namespace vcdb.Scripting.Database
 {
     public interface IDatabaseScriptBuilder
     {

@@ -2,7 +2,7 @@
 using System.Linq;
 using vcdb.Models;
 
-namespace vcdb.Scripting
+namespace vcdb.Scripting.CheckConstraint
 {
     public class CheckConstraintComparer : ICheckConstraintComparer
     {
@@ -79,7 +79,7 @@ namespace vcdb.Scripting
         }
 
         private CheckConstraintDetails GetSameNamedItem(
-            IReadOnlyCollection<CheckConstraintDetails> currentChecks, 
+            IReadOnlyCollection<CheckConstraintDetails> currentChecks,
             string name)
         {
             return currentChecks.SingleOrDefault(check => check.Name == name && check.Name != null);

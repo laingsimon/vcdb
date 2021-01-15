@@ -1,8 +1,11 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using vcdb.Models;
+using vcdb.Scripting.CheckConstraint;
+using vcdb.Scripting.Column;
+using vcdb.Scripting.Index;
 
-namespace vcdb.Scripting
+namespace vcdb.Scripting.Table
 {
     public class TableDifference
     {

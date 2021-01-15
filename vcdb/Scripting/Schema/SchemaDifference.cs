@@ -1,6 +1,6 @@
 ﻿using vcdb.Models;
 
-namespace vcdb.Scripting
+namespace vcdb.Scripting.Schema
 {
     public class SchemaDifference
     {

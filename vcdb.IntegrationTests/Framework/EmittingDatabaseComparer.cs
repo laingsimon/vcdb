@@ -2,6 +2,7 @@
 using System.IO;
 using vcdb.Models;
 using vcdb.Scripting;
+using vcdb.Scripting.Database;
 
 namespace vcdb.IntegrationTests.Framework
 {

@@ -1,6 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using vcdb.Models;
+using vcdb.Scripting.Column;
 
 namespace vcdb.Scripting
 {

@@ -1,6 +1,6 @@
 ﻿using vcdb.Models;
 
-namespace vcdb.Scripting
+namespace vcdb.Scripting.Index
 {
     public class IndexColumnDetailsDifference
     {

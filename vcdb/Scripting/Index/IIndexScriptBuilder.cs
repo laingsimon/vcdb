@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using vcdb.Output;
 
-namespace vcdb.Scripting
+namespace vcdb.Scripting.Index
 {
     public interface IIndexScriptBuilder
     {

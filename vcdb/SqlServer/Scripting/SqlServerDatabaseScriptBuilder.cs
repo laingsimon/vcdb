@@ -4,6 +4,9 @@ using vcdb.CommandLine;
 using vcdb.Models;
 using vcdb.Output;
 using vcdb.Scripting;
+using vcdb.Scripting.Database;
+using vcdb.Scripting.Schema;
+using vcdb.Scripting.Table;
 
 namespace vcdb.SqlServer.Scripting
 {

@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using vcdb.Models;
 
-namespace vcdb.Scripting
+namespace vcdb.Scripting.Table
 {
     public interface ITableComparer
     {

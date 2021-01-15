@@ -1,7 +1,10 @@
 ﻿using System.Linq;
 using vcdb.Models;
+using vcdb.Scripting.Collation;
+using vcdb.Scripting.Schema;
+using vcdb.Scripting.Table;
 
-namespace vcdb.Scripting
+namespace vcdb.Scripting.Database
 {
     public class DatabaseComparer : IDatabaseComparer
     {
@@ -21,18 +24,18 @@ namespace vcdb.Scripting
 
         public DatabaseDifference GetDatabaseDifferences(
             ComparerContext context,
-            DatabaseDetails currentDatabase, 
+            DatabaseDetails currentDatabase,
             DatabaseDetails requiredDatabase)
         {
             return new DatabaseDifference
             {
                 TableDifferences = tableComparer.GetDifferentTables(
-                    context.ForDatabase(currentDatabase, requiredDatabase), 
-                    currentDatabase.Tables.OrEmpty(), 
+                    context.ForDatabase(currentDatabase, requiredDatabase),
+                    currentDatabase.Tables.OrEmpty(),
                     requiredDatabase.Tables.OrEmpty()).ToArray(),
                 SchemaDifferences = schemaComparer.GetSchemaDifferences(
-                    context.ForDatabase(currentDatabase, requiredDatabase), 
-                    currentDatabase.Schemas.OrEmpty(), 
+                    context.ForDatabase(currentDatabase, requiredDatabase),
+                    currentDatabase.Schemas.OrEmpty(),
                     requiredDatabase.Schemas.OrEmpty()).ToArray(),
                 DescriptionChangedTo = currentDatabase.Description != requiredDatabase.Description
                     ? requiredDatabase.Description.AsChange()

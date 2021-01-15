@@ -2,7 +2,7 @@
 using System.Linq;
 using vcdb.Models;
 
-namespace vcdb.Scripting
+namespace vcdb.Scripting.Index
 {
     public class IndexComparer : IIndexComparer
     {
@@ -46,7 +46,7 @@ namespace vcdb.Scripting
                             : null,
                         ChangedColumns = GetChangedColumns(currentIndex.Value.Columns, requiredIndex.Value.Columns, requiredTableColumns).ToArray(),
                         ChangedIncludedColumns = GetChangedColumns(currentIndex.Value.Including, requiredIndex.Value.Including, requiredTableColumns).ToArray(),
-                        ClusteredChangedTo = requiredIndex.Value.Clustered != currentIndex.Value.Clustered 
+                        ClusteredChangedTo = requiredIndex.Value.Clustered != currentIndex.Value.Clustered
                             ? requiredIndex.Value.Clustered
                             : default(bool?),
                         UniqueChangedTo = requiredIndex.Value.Unique != currentIndex.Value.Unique
@@ -79,7 +79,8 @@ namespace vcdb.Scripting
         {
             var requiredColumnToCurrentColumnMap = requiredColumns.ToDictionary(
                 requiredColumn => requiredColumn.Key,
-                requiredColumn => {
+                requiredColumn =>
+                {
                     var columnAlreadyIncludedWithSameName = currentColumns.GetNamedItem(requiredColumn.Key);
                     var columnAlreadyIncludedWithPreviousName = namedItemFinder.GetCurrentItem(
                         currentColumns,
@@ -110,7 +111,7 @@ namespace vcdb.Scripting
                     ColumnRemoved = true
                 };
             }
-            
+
             foreach (var columnMapping in requiredColumnToCurrentColumnMap.Where(columnMapping => columnMapping.Value != null))
             {
                 var currentColumn = columnMapping.Value;
@@ -139,7 +140,8 @@ namespace vcdb.Scripting
 
             var requiredColumnToCurrentColumnMap = (requiredColumns ?? new string[0]).ToDictionary(
                 requiredColumn => requiredColumn,
-                requiredColumn => {
+                requiredColumn =>
+                {
                     var columnAlreadyIncludedWithSameName = currentColumns.SingleOrDefault(col => col == requiredColumn);
                     var columnAlreadyIncludedWithPreviousName = namedItemFinder.GetCurrentItem(
                         currentColumnProxy,

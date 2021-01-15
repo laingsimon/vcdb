@@ -11,6 +11,13 @@ using vcdb.CommandLine;
 using vcdb.DependencyInjection;
 using vcdb.Output;
 using vcdb.Scripting;
+using vcdb.Scripting.CheckConstraint;
+using vcdb.Scripting.Collation;
+using vcdb.Scripting.Column;
+using vcdb.Scripting.Database;
+using vcdb.Scripting.Index;
+using vcdb.Scripting.Schema;
+using vcdb.Scripting.Table;
 using vcdb.SqlServer;
 
 [assembly: InternalsVisibleTo("vcdb.IntegrationTests")]
@@ -96,7 +103,15 @@ namespace vcdb
 
         private static void ConfigureServices(ServiceCollection services, Options options)
         {
+            services.InNamespace<ICheckConstraintComparer>().AddAsSingleton();
             services.InNamespace<ICollationComparer>().AddAsSingleton();
+            services.InNamespace<IColumnComparer>().AddAsSingleton();
+            services.InNamespace<IDatabaseComparer>().AddAsSingleton();
+            services.InNamespace<IIndexComparer>().AddAsSingleton();
+            services.InNamespace<ISchemaComparer>().AddAsSingleton();
+            services.InNamespace<ITableComparer>().AddAsSingleton();
+            services.InNamespace<INamedItemFinder>().AddAsSingleton();
+
             services.InNamespace<IExecutor>().AddAsSingleton();
 
             services.AddSingleton<IOutput, ConsoleOutput>();

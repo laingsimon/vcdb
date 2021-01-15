@@ -3,6 +3,7 @@ using System.Linq;
 using vcdb.Models;
 using vcdb.Output;
 using vcdb.Scripting;
+using vcdb.Scripting.Index;
 
 namespace vcdb.SqlServer.Scripting
 {

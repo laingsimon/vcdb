@@ -1,6 +1,8 @@
 ﻿using System.Collections.Generic;
+using vcdb.Scripting.Schema;
+using vcdb.Scripting.Table;
 
-namespace vcdb.Scripting
+namespace vcdb.Scripting.Database
 {
     public class DatabaseDifference
     {
