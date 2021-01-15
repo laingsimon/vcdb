@@ -69,18 +69,23 @@ namespace TestFramework
             else
             {
                 var pass = await CompareSqlScriptResult(settings, result, scenario);
+                var actualOutputFilePath = Path.Combine(scenario.FullName, "ActualOutput.sql");
+
                 if (pass)
                 {
                     if (await TestSqlScriptResult(settings, result, scenario))
                     {
+                        File.Delete(actualOutputFilePath);
                         await DropDatabase(scenario);
                         return true;
                     }
 
+                    File.WriteAllText(actualOutputFilePath, result.Output);
                     return false;
                 }
                 else
                 {
+                    File.WriteAllText(actualOutputFilePath, result.Output);
                     PrintReproductionStatement(scenario, result);
                     return false;
                 }
@@ -131,7 +136,9 @@ namespace TestFramework
                     var differences = FormatDiff(diffs.Lines);
 
                     if (!pass)
+                    {
                         executionContext.ScenarioComplete(scenario, pass, differences);
+                    }
 
                     return pass;
                 }
