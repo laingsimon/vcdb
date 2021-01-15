@@ -37,7 +37,7 @@ select TABLE_NAME as [Table], TABLE_SCHEMA as [Schema]
 from INFORMATION_SCHEMA.TABLES
 where TABLE_TYPE = 'BASE TABLE'");
 
-            var tableDetails = await tables.ToDictionaryAsync(
+            return await tables.ToDictionaryAsync(
                 tableName => tableName,
                 async tableName =>
                 {
@@ -50,10 +50,6 @@ where TABLE_TYPE = 'BASE TABLE'");
                         PrimaryKey = await primaryKeyRepository.GetPrimaryKeyDetails(connection, tableName)
                     };
                 });
-
-            return tableDetails.Any()
-                ? tableDetails
-                : null;
         }
     }
 }

@@ -32,7 +32,7 @@ new
 
             var groupedCheckConstraints = checkConstraints.GroupBy(chk => chk.object_id);
 
-            var constraints = groupedCheckConstraints
+            return groupedCheckConstraints
                 .Select(group =>
                 {
                     var chk = group.First();
@@ -49,10 +49,6 @@ new
                     };
                 })
                 .ToArray();
-
-            return constraints.Any()
-                ? constraints
-                : null;
         }
 
         private string UnwrapCheckConstraint(string definition)

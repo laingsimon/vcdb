@@ -111,6 +111,7 @@ namespace vcdb
                 {
                     new StringEnumConverter()
                 },
+                ContractResolver = new JsonOutputContractResolver(),
                 Formatting = Formatting.Indented,
                 NullValueHandling = NullValueHandling.Ignore
             });
