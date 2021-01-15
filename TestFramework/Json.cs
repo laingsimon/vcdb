@@ -41,5 +41,17 @@ namespace TestFramework
                 return (JToken)jsonSerializer.Deserialize<object>(jsonReader);
             }
         }
+
+        public void WriteJsonContent(JToken actual, string fullPath, Formatting formatting)
+        {
+            using (var writer = new StreamWriter(fullPath))
+            using (var jsonWriter = new JsonTextWriter(writer)
+            {
+                Formatting = formatting
+            })
+            {
+                jsonSerializer.Serialize(jsonWriter, actual);
+            }
+        }
     }
 }

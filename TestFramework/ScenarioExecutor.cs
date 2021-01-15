@@ -2,6 +2,7 @@
 using DiffPlex.DiffBuilder;
 using DiffPlex.DiffBuilder.Model;
 using JsonEqualityComparer;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Data.SqlClient;
@@ -223,7 +224,10 @@ namespace TestFramework
                     context.Differences.Select(difference => $"- Found a difference: {difference}"));
 
                 if (context.Differences.Any())
+                {
+                    json.WriteJsonContent(actual, Path.Combine(scenario.FullName, "ActualOutput.json"), Formatting.Indented);
                     PrintReproductionStatement(scenario, result);
+                }
                 return !context.Differences.Any();
             });
         }
