@@ -5,6 +5,7 @@
 		"columns": {
 			"Id": {
 				"type": "int",
+                "nullable": false,
 				"description": "updated column description"
 			}
 		},
@@ -22,6 +23,7 @@
 		"columns": {
 			"Id": {
 				"type": "int",
+                "nullable": false,
 				"description": "new column description"
 			}
 		},
@@ -37,6 +39,7 @@
 	"[DropDescriptionSchema].[DropDescriptionTable]":{
 		"columns": {
 			"Id": {
+                "nullable": false,
 				"type": "int"
 			}
 		},

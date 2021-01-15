@@ -5,15 +5,15 @@ GO
 CREATE SCHEMA DropDescriptionSchema
 GO
 CREATE TABLE ChangeDescriptionSchema.ChangeDescriptionTable (
-	Id 			int
+	Id 			int not null
 )
 GO
 CREATE TABLE AddDescriptionSchema.AddDescriptionTable (
-	Id 			int
+	Id 			int not null
 )
 GO
 CREATE TABLE DropDescriptionSchema.DropDescriptionTable (
-	Id 			int
+	Id 			int not null
 )
 GO
 CREATE INDEX IX_ChangeDescriptionTable_ChangeDescriptionIndex
