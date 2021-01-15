@@ -1,5 +1,5 @@
 {
-	"commandLine": "",
+	"commandLine": "--defaultValueHandling Include",
 	"vcdbBuildConfiguration": "Debug",
 	"vcdbPath": null,
 	"mode": "Read",

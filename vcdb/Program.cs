@@ -113,7 +113,8 @@ namespace vcdb
                 },
                 ContractResolver = new JsonOutputContractResolver(),
                 Formatting = Formatting.Indented,
-                NullValueHandling = NullValueHandling.Ignore
+                NullValueHandling = NullValueHandling.Ignore,
+                DefaultValueHandling = options.DefaultValueOutput
             });
         }
 

@@ -1,4 +1,5 @@
 ﻿using CommandLine;
+using Newtonsoft.Json;
 using System;
 
 namespace vcdb.CommandLine
@@ -27,5 +28,8 @@ namespace vcdb.CommandLine
         public int HashSize { get; internal set; }
 
         internal string WorkingDirectory { get; set; } = Environment.CurrentDirectory;
+
+        [Option("defaultValueHandling", Default = DefaultValueHandling.IgnoreAndPopulate, HelpText = "The handling of default property values in the JSON output")]
+        public DefaultValueHandling DefaultValueOutput { get; set; }
     }
 }
