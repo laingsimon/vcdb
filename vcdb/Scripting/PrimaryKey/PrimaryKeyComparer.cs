@@ -21,6 +21,7 @@ namespace vcdb.Scripting.PrimaryKey
                 RequiredPrimaryKey = requiredPrimaryKey,
                 ColumnsRemoved = currentPrimaryKeyColumns?.Except(requiredPrimaryKeyColumns).ToArray(),
                 ColumnsAdded = requiredPrimaryKeyColumns?.Except(currentPrimaryKeyColumns).ToArray(),
+                RequiredColumns = requiredPrimaryKeyColumns,
                 RenamedTo = currentPrimaryKey?.Name != requiredPrimaryKey?.Name
                     ? (requiredPrimaryKey?.Name ?? null).AsChange()
                     : null,

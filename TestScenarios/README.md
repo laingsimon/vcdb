@@ -41,7 +41,7 @@ The following database entities are tested in the scenarios below.
 |Schema|Transfer-in|[Deploy_MoveTableBetweenSchemas](Deploy_MoveTableBetweenSchemas)<br />[Deploy_MoveTableBetweenSchemasAndRenameTable](Deploy_MoveTableBetweenSchemasAndRenameTable)<br />[Deploy_MoveTableBetweenSchemasAndRenameCheckConstraint](Deploy_MoveTableBetweenSchemasAndRenameCheckConstraint)|
 |Schema|Drop|[Deploy_DropSchema](Deploy_DropSchema)|
 |Primary key|Read|[Read_PrimaryKeys](Read_PrimaryKeys)|
-|Primary key|Add|TBD|
+|Primary key|Add|[Deploy_AddPrimaryKey](Deploy_AddPrimaryKey)|
 |Primary key|Change|TBD|
 |Primary key|Rename|TBD|
-|Primary key|Drop|TBD|
+|Primary key|Drop|[Deploy_DropPrimaryKey](Deploy_DropPrimaryKey)|

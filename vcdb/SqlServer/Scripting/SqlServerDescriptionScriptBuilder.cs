@@ -30,6 +30,11 @@ namespace vcdb.SqlServer.Scripting
             return GetChangeDescriptionScript(requiredTableName.Schema, requiredTableName.Table, "INDEX", requiredIndexName, current, required);
         }
 
+        public SqlScript ChangePrimaryKeyDescription(TableName requiredTableName, string requiredKeyName, string current, string required)
+        {
+            return GetChangeDescriptionScript(requiredTableName.Schema, requiredTableName.Table, "CONSTRAINT", requiredKeyName, current, required);
+        }
+
         private SqlScript GetChangeDescriptionScript(
             string schemaName,
             string tableName,
@@ -72,6 +77,5 @@ GO");
                 ? "null"
                 : $"N'{valueOverride ?? value}'";
         }
-
     }
 }

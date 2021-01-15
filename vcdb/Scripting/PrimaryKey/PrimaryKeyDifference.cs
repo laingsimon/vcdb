@@ -8,6 +8,7 @@ namespace vcdb.Scripting.PrimaryKey
         public PrimaryKeyDetails CurrentPrimaryKey { get; set; }
         public PrimaryKeyDetails RequiredPrimaryKey { get; set; }
 
+        public string[] RequiredColumns { get; set; }
         public string[] ColumnsAdded { get; set; }
         public string[] ColumnsRemoved { get; set; }
         public Change<string> RenamedTo { get; set; }

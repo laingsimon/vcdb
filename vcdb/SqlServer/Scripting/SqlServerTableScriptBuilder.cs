@@ -7,6 +7,7 @@ using vcdb.Scripting;
 using vcdb.Scripting.CheckConstraint;
 using vcdb.Scripting.Column;
 using vcdb.Scripting.Index;
+using vcdb.Scripting.PrimaryKey;
 using vcdb.Scripting.Table;
 
 namespace vcdb.SqlServer.Scripting
@@ -17,17 +18,20 @@ namespace vcdb.SqlServer.Scripting
         private readonly IIndexScriptBuilder indexScriptBuilder;
         private readonly IDefaultConstraintScriptBuilder defaultConstraintScriptBuilder;
         private readonly ICheckConstraintScriptBuilder checkConstraintScriptBuilder;
+        private readonly IPrimaryKeyScriptBuilder primaryKeyScriptBuilder;
 
         public SqlServerTableScriptBuilder(
             IDescriptionScriptBuilder descriptionScriptBuilder,
             IIndexScriptBuilder indexScriptBuilder,
             IDefaultConstraintScriptBuilder defaultConstraintScriptBuilder,
-            ICheckConstraintScriptBuilder checkConstraintScriptBuilder)
+            ICheckConstraintScriptBuilder checkConstraintScriptBuilder,
+            IPrimaryKeyScriptBuilder primaryKeyScriptBuilder)
         {
             this.descriptionScriptBuilder = descriptionScriptBuilder;
             this.indexScriptBuilder = indexScriptBuilder;
             this.defaultConstraintScriptBuilder = defaultConstraintScriptBuilder;
             this.checkConstraintScriptBuilder = checkConstraintScriptBuilder;
+            this.primaryKeyScriptBuilder = primaryKeyScriptBuilder;
         }
 
         public IEnumerable<SqlScript> CreateUpgradeScripts(IReadOnlyCollection<TableDifference> tableDifferences)
@@ -55,6 +59,11 @@ namespace vcdb.SqlServer.Scripting
                     }
 
                     foreach (var script in checkConstraintScriptBuilder.CreateUpgradeScripts(tableDifference))
+                    {
+                        yield return script;
+                    }
+
+                    foreach (var script in primaryKeyScriptBuilder.CreateUpgradeScripts(requiredTable.Key, tableDifference.PrimaryKeyDifference))
                     {
                         yield return script;
                     }
@@ -90,6 +99,11 @@ namespace vcdb.SqlServer.Scripting
                 }
 
                 foreach (var script in checkConstraintScriptBuilder.CreateUpgradeScripts(tableDifference))
+                {
+                    yield return script;
+                }
+
+                foreach (var script in primaryKeyScriptBuilder.CreateUpgradeScripts(requiredTable.Key, tableDifference.PrimaryKeyDifference))
                 {
                     yield return script;
                 }
