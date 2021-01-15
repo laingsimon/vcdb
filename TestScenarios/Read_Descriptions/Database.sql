@@ -1,5 +1,5 @@
 CREATE TABLE dbo.Person (
-	Id 			int
+	Id 			int not null constraint PK_Person_Id primary key
 )
 GO
 CREATE SCHEMA MySchema
@@ -30,4 +30,10 @@ exec sp_addextendedproperty
 		@level0type = N'SCHEMA', @level0name = 'dbo', 
 		@level1type = N'TABLE',  @level1name = 'Person',
 		@level2type = N'INDEX', @level2name = 'IX_Person_Id'
+GO
+exec sp_addextendedproperty 
+		@name = N'MS_Description', @value = 'primary key description',
+		@level0type = N'SCHEMA', @level0name = 'dbo', 
+		@level1type = N'TABLE',  @level1name = 'Person',
+		@level2type = N'CONSTRAINT', @level2name = 'PK_Person_Id'
 GO

@@ -2,14 +2,14 @@
   "tables": {
 	"[dbo].[Person]": {
 		"columns": {
-			"Id": { "type": "int identity", "nullable": false },
-			"Name": { "type": "nvarchar(255)", "nullable": false },
-			"Title": { "type": "varchar(10)", "nullable": true },
-			"Age": { "type": "int", "nullable": true },
-			"Price": { "type": "decimal(18, 2)", "nullable": true },
-			"DoB": { "type": "date", "nullable": true },
-			"Deleted": { "type": "bit", "nullable": false, "default": "0", "defaultName": "DF_PersonActiveByDefault" },
-			"UniqueId": { "type": "uniqueidentifier", "nullable": true } 
+			"Id": { "type": "int identity", "nullable": false, "primaryKey": false },
+			"Name": { "type": "nvarchar(255)", "nullable": false, "primaryKey": false },
+			"Title": { "type": "varchar(10)", "nullable": true, "primaryKey": false },
+			"Age": { "type": "int", "nullable": true, "primaryKey": false },
+			"Price": { "type": "decimal(18, 2)", "nullable": true, "primaryKey": false },
+			"DoB": { "type": "date", "nullable": true, "primaryKey": false },
+			"Deleted": { "type": "bit", "nullable": false, "default": "0", "defaultName": "DF_PersonActiveByDefault", "primaryKey": false },
+			"UniqueId": { "type": "uniqueidentifier", "nullable": true, "primaryKey": false } 
 		},
 		"indexes": { },
         "checks": []

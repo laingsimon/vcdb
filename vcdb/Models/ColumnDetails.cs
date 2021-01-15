@@ -51,5 +51,10 @@ namespace vcdb.Models
         /// If null the column should inherit the collation of the database
         /// </summary>
         public string Collation { get; set; }
+
+        /// <summary>
+        /// Whether this column is part of the primary key for this table
+        /// </summary>
+        public bool PrimaryKey { get; set; }
     }
 }

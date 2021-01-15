@@ -28,5 +28,11 @@ namespace vcdb.Models
         /// A description for the table
         /// </summary>
         public string Description { get; set; }
+
+        /// <summary>
+        /// The details of the primary key on this table
+        /// The columns in the primary key are identified by their 'primaryKey' property
+        /// </summary>
+        public PrimaryKeyDetails PrimaryKey { get; set; }
     }
 }

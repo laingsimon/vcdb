@@ -13,17 +13,20 @@ namespace vcdb.SqlServer.SchemaBuilding
         private readonly IIndexesRepository indexesRepository;
         private readonly IDescriptionRepository descriptionRepository;
         private readonly ICheckConstraintRepository checkConstraintRepository;
+        private readonly IPrimaryKeyRepository primaryKeyRepository;
 
         public SqlServerTableRepository(
             IColumnsRepository columnsRepository,
             IIndexesRepository indexesRepository,
             IDescriptionRepository descriptionRepository,
-            ICheckConstraintRepository checkConstraintRepository)
+            ICheckConstraintRepository checkConstraintRepository,
+            IPrimaryKeyRepository primaryKeyRepository)
         {
             this.columnsRepository = columnsRepository;
             this.indexesRepository = indexesRepository;
             this.descriptionRepository = descriptionRepository;
             this.checkConstraintRepository = checkConstraintRepository;
+            this.primaryKeyRepository = primaryKeyRepository;
         }
 
         public async Task<Dictionary<TableName, TableDetails>> GetTables(DbConnection connection)
@@ -42,7 +45,8 @@ where TABLE_TYPE = 'BASE TABLE'");
                         Columns = await columnsRepository.GetColumns(connection, tableName),
                         Indexes = await indexesRepository.GetIndexes(connection, tableName),
                         Description = await descriptionRepository.GetTableDescription(connection, tableName),
-                        Checks = await checkConstraintRepository.GetCheckConstraints(connection, tableName)
+                        Checks = await checkConstraintRepository.GetCheckConstraints(connection, tableName),
+                        PrimaryKey = await primaryKeyRepository.GetPrimaryKeyDetails(connection, tableName)
                     };
                 });
         }

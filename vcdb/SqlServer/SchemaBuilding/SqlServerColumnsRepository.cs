@@ -13,15 +13,18 @@ namespace vcdb.SqlServer.SchemaBuilding
         private readonly IDescriptionRepository descriptionRepository;
         private readonly ICollationRepository collationRepository;
         private readonly IDefaultConstraintRepository defaultConstraintRepository;
+        private readonly IPrimaryKeyRepository primaryKeyRepository;
 
         public SqlServerColumnsRepository(
             IDescriptionRepository descriptionRepository, 
             ICollationRepository collationRepository,
-            IDefaultConstraintRepository defaultConstraintRepository)
+            IDefaultConstraintRepository defaultConstraintRepository,
+            IPrimaryKeyRepository primaryKeyRepository)
         {
             this.descriptionRepository = descriptionRepository;
             this.collationRepository = collationRepository;
             this.defaultConstraintRepository = defaultConstraintRepository;
+            this.primaryKeyRepository = primaryKeyRepository;
         }
 
         public async Task<Dictionary<string, ColumnDetails>> GetColumns(DbConnection connection, TableName tableName)
@@ -40,6 +43,7 @@ exec sp_columns
             var columnDefaults = await defaultConstraintRepository.GetColumnDefaults(connection, tableName);
             var columnDescriptions = await descriptionRepository.GetColumnDescriptions(connection, tableName);
             var columnCollations = await collationRepository.GetColumnCollations(connection, tableName);
+            var columnsInPrimaryKey = await primaryKeyRepository.GetColumnsInPrimaryKey(connection, tableName);
 
             return tableColumns.ToDictionary(
                         column => column.COLUMN_NAME,
@@ -60,7 +64,8 @@ exec sp_columns
                                 Description = columnDescriptions.ItemOrDefault(column.COLUMN_NAME),
                                 Collation = columnCollations.ItemOrDefault(column.COLUMN_NAME) == databaseCollation
                                     ? null
-                                    : columnCollations.ItemOrDefault(column.COLUMN_NAME)
+                                    : columnCollations.ItemOrDefault(column.COLUMN_NAME),
+                                PrimaryKey = columnsInPrimaryKey.Contains(column.COLUMN_NAME)
                             };
                         });
         }

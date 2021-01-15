@@ -11,5 +11,6 @@ namespace vcdb.SchemaBuilding
         Task<IDictionary<string, string>> GetIndexDescriptions(DbConnection connection, TableName tableName);
         Task<string> GetSchemaDescription(DbConnection connection, string schemaName);
         Task<string> GetTableDescription(DbConnection connection, TableName tableName);
+        Task<string> GetPrimaryKeyDescription(DbConnection connection, TableName tableName, string primaryKeyName);
     }
 }

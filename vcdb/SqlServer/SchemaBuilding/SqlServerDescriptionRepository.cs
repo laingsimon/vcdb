@@ -47,6 +47,13 @@ from fn_listextendedproperty(default, 'SCHEMA', '{tableName.Schema}', 'TABLE', '
 where name = 'MS_Description'")).ToDictionary(map => map.ObjectName, map => map.Description);
         }
 
+        public async Task<string> GetPrimaryKeyDescription(DbConnection connection, TableName tableName, string primaryKeyName)
+        {
+            return await connection.QueryFirstOrDefaultAsync<string>($@"select value
+from fn_listextendedproperty(default, 'SCHEMA', '{tableName.Schema}', 'TABLE', '{tableName.Table}', 'CONSTRAINT', '{primaryKeyName}')
+where name = 'MS_Description'");
+        }
+
         private class DescriptionMap
         {
             public string ObjectName { get; set; }

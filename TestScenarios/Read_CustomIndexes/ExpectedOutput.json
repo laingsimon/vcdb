@@ -2,9 +2,9 @@
   "tables": {
 	"[dbo].[Person]": {
 		"columns": {
-			"Id": { "type": "int identity", "nullable": false },
-			"Name": { "type": "nvarchar(255)", "nullable": false },
-			"Age": { "type": "int", "nullable": true }
+			"Id": { "type": "int identity", "nullable": false, "primaryKey": false },
+			"Name": { "type": "nvarchar(255)", "nullable": false, "primaryKey": false },
+			"Age": { "type": "int", "nullable": true, "primaryKey": false }
 		},
 		"indexes": {
 			"IX_Person_Id": {

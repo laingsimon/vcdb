@@ -3,22 +3,19 @@
 	"[dbo].[Person]": {
 		"columns": {
 			"Id": { 
-				"type": "int",
-				"description": "column description",
-				"nullable": true 
+				"description": "column description"
 			}
 		},
 		"indexes": { 
 			"IX_Person_Id": {
-				"columns": { "Id": { "descending": false } },
-				"including": [],
 				"description": "index description",
-				"clustered": false,
-				"unique": false
 			}
 		},
 		"description": "table description",
-        "checks": []
+        "primaryKey": {
+            "name": "PK_Person_Id",
+            "description": "primary key description"
+        }
 	}
   },
   "schemas": {

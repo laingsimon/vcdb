@@ -5,7 +5,8 @@
             "Name": { 
 				"type": "varchar(255)",
 				"nullable": true,
-                "collation": "Latin1_General_CS_AI"
+                "collation": "Latin1_General_CS_AI", 
+                "primaryKey": false
 			}
 		},
         "checks": [],

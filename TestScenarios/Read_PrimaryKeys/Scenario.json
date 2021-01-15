@@ -5,7 +5,7 @@
 	"mode": "Read",
 	"jsonComparison": {
 		"propertyNameComparer": "OrdinalIgnoreCase",
-		"explicit": false
+		"explicit": true
 	},
 	"expectedExitCode": 0
 }

@@ -11,10 +11,14 @@ namespace vcdb.SqlServer.SchemaBuilding
     public class SqlServerIndexesRepository : IIndexesRepository
     {
         private readonly IDescriptionRepository descriptionRepository;
+        private readonly IPrimaryKeyRepository primaryKeyRepository;
 
-        public SqlServerIndexesRepository(IDescriptionRepository descriptionRepository)
+        public SqlServerIndexesRepository(
+            IDescriptionRepository descriptionRepository,
+            IPrimaryKeyRepository primaryKeyRepository)
         {
             this.descriptionRepository = descriptionRepository;
+            this.primaryKeyRepository = primaryKeyRepository;
         }
 
         public async Task<Dictionary<string, IndexDetails>> GetIndexes(DbConnection connection, TableName tableName)
@@ -38,8 +42,11 @@ and schema_name(t.schema_id) = @schemaName";
                     schemaName = tableName.Schema
                 });
 
-            var columnsInEachIndex = indexesAndColumns.GroupBy(indexColumn => indexColumn.index_name);
             var indexDescriptions = await descriptionRepository.GetIndexDescriptions(connection, tableName);
+            var primaryKey = await primaryKeyRepository.GetPrimaryKeyDetails(connection, tableName);
+            var columnsInEachIndex = indexesAndColumns
+                .GroupBy(indexColumn => indexColumn.index_name)
+                .Where(group => primaryKey == null || group.Key != primaryKey.SqlName);
 
             return columnsInEachIndex.ToDictionary(
                 group => group.Key,
