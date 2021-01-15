@@ -38,12 +38,16 @@ namespace vcdb.SqlServer.SchemaBuilding
             var schemas = await connection.QueryAsync<SqlServerSchemata>(@"
 select *from INFORMATION_SCHEMA.SCHEMATA");
 
-            return await schemas.Where(schema => !BuiltInSchemas.Contains(schema.SCHEMA_NAME)).ToDictionaryAsync(
+            var schemaDetails = await schemas.Where(schema => !BuiltInSchemas.Contains(schema.SCHEMA_NAME)).ToDictionaryAsync(
                 schema => schema.SCHEMA_NAME,
                 async schema => new SchemaDetails
                 {
                     Description = await descriptionRepository.GetSchemaDescription(connection, schema.SCHEMA_NAME)
                 });
+
+            return schemaDetails.Any()
+                ? schemaDetails
+                : null;
         }
     }
 }

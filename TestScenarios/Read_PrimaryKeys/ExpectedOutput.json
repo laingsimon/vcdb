@@ -5,26 +5,21 @@
 			"Id": { "type": "int", "nullable": false, "primaryKey": true },
             "Name": { "type": "varchar(255)", "nullable": true, "primaryKey": false }
 		},
-        "checks": [],
         "primaryKey": {
             "clustered": false,
             "unique": true
-        },
-        "indexes": {}
+        }
 	},
     "[dbo].[Car]": {
 		"columns": {
 			"Id": { "type": "int", "nullable": false, "primaryKey": true },
             "Name": { "type": "varchar(255)", "nullable": false, "primaryKey": true }
 		},
-        "checks": [],
         "primaryKey": {
             "name": "PK_Car_IdAndName",
             "clustered": true,
             "unique": true
-        },
-        "indexes": {}
+        }
 	}
-  },
-  "schemas": {}
+  }
 }

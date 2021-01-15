@@ -13,7 +13,6 @@
                 "primaryKey": false
             }
         },
-        "indexes": {},
         "checks": [ {
               "check": "[Id]>(1)"
             }, {
@@ -21,6 +20,5 @@
               "check": "len([Name])>(3)"
             } ]
 	}
-  },
-  "schemas": {}
+  }
 }

@@ -15,10 +15,7 @@
                 "primaryKey": false
             },
 			"UniqueId": { "type": "uniqueidentifier", "nullable": true, "primaryKey": false } 
-		},
-		"indexes": { },
-        "checks": []
+		}
 	}
-  },
-  "schemas": {}
+  }
 }

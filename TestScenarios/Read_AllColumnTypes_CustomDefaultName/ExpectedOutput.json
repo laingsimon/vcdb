@@ -10,10 +10,7 @@
 			"DoB": { "type": "date", "nullable": true, "primaryKey": false },
 			"Deleted": { "type": "bit", "nullable": false, "default": "0", "defaultName": "DF_PersonActiveByDefault", "primaryKey": false },
 			"UniqueId": { "type": "uniqueidentifier", "nullable": true, "primaryKey": false } 
-		},
-		"indexes": { },
-        "checks": []
+		}
 	}
-  },
-  "schemas": {}
+  }
 }

@@ -58,6 +58,11 @@ GO");
 
         private IEnumerable<SqlScript> DropAllUnnamedCheckConstraints(TableDifference tableDifference)
         {
+            if (tableDifference.CurrentTable.Value.Checks == null)
+            {
+                yield break;
+            }
+
             foreach (var checkConstraint in tableDifference.CurrentTable.Value.Checks.Where(check => check.Name == null))
             {
                 yield return DropCheckConstraint(tableDifference.RequiredTable.Key, checkConstraint);

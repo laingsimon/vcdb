@@ -48,7 +48,7 @@ and schema_name(t.schema_id) = @schemaName";
                 .GroupBy(indexColumn => indexColumn.index_name)
                 .Where(group => primaryKey == null || group.Key != primaryKey.SqlName);
 
-            return columnsInEachIndex.ToDictionary(
+            var indexes = columnsInEachIndex.ToDictionary(
                 group => group.Key,
                 group =>
                 {
@@ -68,6 +68,10 @@ and schema_name(t.schema_id) = @schemaName";
                         Description = indexDescriptions.ItemOrDefault(group.Key)
                     };
                 });
+
+            return indexes.Any()
+                ? indexes
+                : null;
         }
     }
 }
