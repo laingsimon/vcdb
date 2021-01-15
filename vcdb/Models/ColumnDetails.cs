@@ -12,7 +12,7 @@ namespace vcdb.Models
         /// <summary>
         /// Whether the column should accept nulls
         /// </summary>
-        public bool? Nullable { get; set; }
+        public bool Nullable { get; set; }
 
         /// <summary>
         /// The default value for the column

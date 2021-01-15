@@ -8,7 +8,7 @@
 			"Age": { "type": "int", "nullable": true, "primaryKey": false },
 			"Price": { "type": "decimal(18, 2)", "nullable": true, "primaryKey": false },
 			"DoB": { "type": "date", "nullable": true, "primaryKey": false },
-			"Deleted": { "type": "bit", "nullable": false, "default": "0", "defaultName": "DF_PersonActiveByDefault", "primaryKey": false },
+			"Deleted": { "type": "bit", "nullable": false, "default": 0, "defaultName": "DF_PersonActiveByDefault", "primaryKey": false },
 			"UniqueId": { "type": "uniqueidentifier", "nullable": true, "primaryKey": false } 
 		}
 	}

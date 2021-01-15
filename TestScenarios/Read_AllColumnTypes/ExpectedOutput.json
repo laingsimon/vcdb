@@ -11,7 +11,7 @@
 			"Deleted": { 
                 "type": "bit", 
                 "nullable": false, 
-                "default": "0", 
+                "default": 0, 
                 "primaryKey": false
             },
 			"UniqueId": { "type": "uniqueidentifier", "nullable": true, "primaryKey": false } 

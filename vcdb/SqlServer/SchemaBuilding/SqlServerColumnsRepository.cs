@@ -53,7 +53,7 @@ exec sp_columns
                             {
                                 Type = GetDataType(column),
                                 Nullable = column.NULLABLE,
-                                Default = column.COLUMN_DEF?.Trim('(', ')'),
+                                Default = columnDefault?.Definition,
                                 DefaultName = columnDefault == null || columnDefault.IsSystemNamed
                                     ? null
                                     : columnDefault.Name,
