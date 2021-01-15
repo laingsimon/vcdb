@@ -29,23 +29,21 @@ namespace vcdb.SqlServer.SchemaBuilding
 
         public async Task<Dictionary<string, ColumnDetails>> GetColumns(DbConnection connection, TableName tableName)
         {
-            var tableColumns = await connection.QueryAsync<SpColumnsOutput>(@"
-exec sp_columns 
-    @table_name = @table_name,
-    @table_owner = @table_owner", 
-                new
-                {
-                    table_name = tableName.Table,
-                    table_owner = tableName.Schema
-                });
-
             var databaseCollation = await collationRepository.GetDatabaseCollation(connection);
             var columnDefaults = await defaultConstraintRepository.GetColumnDefaults(connection, tableName);
             var columnDescriptions = await descriptionRepository.GetColumnDescriptions(connection, tableName);
             var columnCollations = await collationRepository.GetColumnCollations(connection, tableName);
             var columnsInPrimaryKey = await primaryKeyRepository.GetColumnsInPrimaryKey(connection, tableName);
 
-            return tableColumns.ToDictionary(
+            return await connection.QueryAsync<SpColumnsOutput>(@"
+exec sp_columns 
+    @table_name = @table_name,
+    @table_owner = @table_owner",
+                new
+                {
+                    table_name = tableName.Table,
+                    table_owner = tableName.Schema
+                }).ToDictionaryAsync(
                         column => column.COLUMN_NAME,
                         column =>
                         {

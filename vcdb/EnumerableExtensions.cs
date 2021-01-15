@@ -7,6 +7,21 @@ namespace vcdb
     public static class EnumerableExtensions
     {
         public static async Task<Dictionary<TKey, TValue>> ToDictionaryAsync<TInput, TKey, TValue>(
+            this Task<IEnumerable<TInput>> input,
+            Func<TInput, TKey> keySelector,
+            Func<TInput, TValue> valueSelector)
+        {
+            var dictionary = new Dictionary<TKey, TValue>();
+
+            foreach (var item in await input)
+            {
+                dictionary.Add(keySelector(item), valueSelector(item));
+            }
+
+            return dictionary;
+        }
+
+        public static async Task<Dictionary<TKey, TValue>> ToDictionaryAsync<TInput, TKey, TValue>(
             this IEnumerable<TInput> input,
             Func<TInput, TKey> keySelector,
             Func<TInput, Task<TValue>> valueSelector)

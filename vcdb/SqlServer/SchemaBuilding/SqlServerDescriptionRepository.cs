@@ -42,9 +42,9 @@ where name = 'MS_Description'");
 
         private async Task<IDictionary<string, string>> GetMultipleDescription(DbConnection connection, TableName tableName, string level2Type)
         {
-            return (await connection.QueryAsync<DescriptionMap>($@"select objname as [ObjectName], value as Description
+            return await connection.QueryAsync<DescriptionMap>($@"select objname as [ObjectName], value as Description
 from fn_listextendedproperty(default, 'SCHEMA', '{tableName.Schema}', 'TABLE', '{tableName.Table}', '{level2Type}', null)
-where name = 'MS_Description'")).ToDictionary(map => map.ObjectName, map => map.Description);
+where name = 'MS_Description'").ToDictionaryAsync(map => map.ObjectName, map => map.Description);
         }
 
         public async Task<string> GetPrimaryKeyDescription(DbConnection connection, TableName tableName, string primaryKeyName)

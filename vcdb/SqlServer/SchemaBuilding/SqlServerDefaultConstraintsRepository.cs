@@ -1,9 +1,9 @@
 ﻿using Dapper;
 using System.Collections.Generic;
 using System.Data.Common;
-using System.Linq;
 using System.Threading.Tasks;
 using vcdb.SchemaBuilding;
+using vcdb;
 
 namespace vcdb.SqlServer.SchemaBuilding
 {
@@ -11,7 +11,7 @@ namespace vcdb.SqlServer.SchemaBuilding
     {
         public async Task<IDictionary<string, IColumnDefault>> GetColumnDefaults(DbConnection connection, TableName tableName)
         {
-            return (await connection.QueryAsync<ColumnDefault>($@"
+            var defaultColumns = connection.QueryAsync<ColumnDefault>($@"
 select  def.name as [{nameof(IColumnDefault.Name)}],
         col.name as [{nameof(ColumnDefault.column_name)}],
         def.object_id as [{nameof(IColumnDefault.ObjectId)}],
@@ -28,7 +28,9 @@ and SCHEMA_NAME(tab.schema_id) = @table_owner",
             {
                 table_name = tableName.Table,
                 table_owner = tableName.Schema
-            })).ToDictionary(
+            });
+
+            return await defaultColumns.ToDictionaryAsync(
                 defaultConstraint => defaultConstraint.column_name,
                 defaultConstraint => (IColumnDefault)defaultConstraint);
         }
