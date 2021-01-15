@@ -16,6 +16,7 @@ using vcdb.Scripting.Collation;
 using vcdb.Scripting.Column;
 using vcdb.Scripting.Database;
 using vcdb.Scripting.Index;
+using vcdb.Scripting.PrimaryKey;
 using vcdb.Scripting.Schema;
 using vcdb.Scripting.Table;
 using vcdb.SqlServer;
@@ -108,6 +109,7 @@ namespace vcdb
             services.InNamespace<IColumnComparer>().AddAsSingleton();
             services.InNamespace<IDatabaseComparer>().AddAsSingleton();
             services.InNamespace<IIndexComparer>().AddAsSingleton();
+            services.InNamespace<IPrimaryKeyComparer>().AddAsSingleton();
             services.InNamespace<ISchemaComparer>().AddAsSingleton();
             services.InNamespace<ITableComparer>().AddAsSingleton();
             services.InNamespace<INamedItemFinder>().AddAsSingleton();

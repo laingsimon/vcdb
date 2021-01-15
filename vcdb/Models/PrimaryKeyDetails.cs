@@ -17,12 +17,12 @@ namespace vcdb.Models
         /// <summary>
         /// Whether the index for this primary key should contain unique values or not
         /// </summary>
-        public bool Unique { get; set; }
+        public bool? Unique { get; set; }
 
         /// <summary>
         /// Whether the index for this primary key should be clustered or not
         /// </summary>
-        public bool Clustered { get; set; }
+        public bool Clustered { get; set; } = true;
 
         /// <summary>
         /// A description for the table

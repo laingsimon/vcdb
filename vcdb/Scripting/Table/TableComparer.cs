@@ -4,6 +4,7 @@ using vcdb.Models;
 using vcdb.Scripting.CheckConstraint;
 using vcdb.Scripting.Column;
 using vcdb.Scripting.Index;
+using vcdb.Scripting.PrimaryKey;
 
 namespace vcdb.Scripting.Table
 {
@@ -13,17 +14,20 @@ namespace vcdb.Scripting.Table
         private readonly IIndexComparer indexComparer;
         private readonly INamedItemFinder namedItemFinder;
         private readonly ICheckConstraintComparer checkConstraintComparer;
+        private readonly IPrimaryKeyComparer primaryKeyComparer;
 
         public TableComparer(
             IColumnComparer columnComparer,
             IIndexComparer indexComparer,
             INamedItemFinder namedItemFinder,
-            ICheckConstraintComparer checkConstraintComparer)
+            ICheckConstraintComparer checkConstraintComparer,
+            IPrimaryKeyComparer primaryKeyComparer)
         {
             this.columnComparer = columnComparer;
             this.indexComparer = indexComparer;
             this.namedItemFinder = namedItemFinder;
             this.checkConstraintComparer = checkConstraintComparer;
+            this.primaryKeyComparer = primaryKeyComparer;
         }
 
         public IEnumerable<TableDifference> GetDifferentTables(
@@ -71,7 +75,11 @@ namespace vcdb.Scripting.Table
                         ChangedCheckConstraints = checkConstraintComparer.GetDifferentCheckConstraints(
                             context.ForTable(currentTable, requiredTable.AsNamedItem(), columnDifferences),
                             currentTable.Value.Checks.OrEmptyCollection(),
-                            requiredTable.Value.Checks.OrEmptyCollection()).ToArray()
+                            requiredTable.Value.Checks.OrEmptyCollection()).ToArray(),
+                        PrimaryKeyDifference = primaryKeyComparer.GetPrimaryKeyDifference(
+                            context.ForTable(currentTable, requiredTable.AsNamedItem(), columnDifferences),
+                            currentTable.Value, 
+                            requiredTable.Value)
                     };
 
                     if (difference.IsChanged)
