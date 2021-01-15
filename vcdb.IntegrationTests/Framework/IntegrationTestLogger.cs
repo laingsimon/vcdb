@@ -3,7 +3,7 @@ using System.IO;
 using System.Threading;
 using TestFramework;
 
-namespace vcdb.IntegrationTests
+namespace vcdb.IntegrationTests.Framework
 {
     internal class IntegrationTestLogger : ILogger
     {

@@ -3,7 +3,7 @@ using System.IO;
 using System.Threading.Tasks;
 using TestFramework;
 
-namespace vcdb.IntegrationTests
+namespace vcdb.IntegrationTests.Framework
 {
     internal class AssemblyReferenceExecutor : IExecutor
     {

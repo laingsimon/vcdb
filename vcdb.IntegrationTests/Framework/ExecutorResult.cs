@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.IO;
 
-namespace vcdb.IntegrationTests
+namespace vcdb.IntegrationTests.Framework
 {
     internal class ExecutorResult
     {

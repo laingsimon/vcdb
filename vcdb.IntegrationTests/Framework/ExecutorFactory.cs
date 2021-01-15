@@ -1,4 +1,4 @@
-﻿namespace vcdb.IntegrationTests
+﻿namespace vcdb.IntegrationTests.Framework
 {
     internal static class ExecutorFactory
     {

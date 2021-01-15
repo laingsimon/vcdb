@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using vcdb.IntegrationTests.Framework;
 
 namespace vcdb.IntegrationTests
 {
@@ -11,7 +12,7 @@ namespace vcdb.IntegrationTests
     public class TestScenarios
     {
         internal const string ConnectionString = "server=localhost;user id=sa;password=vcdb_2020";
-        private readonly IExecutor processExecutor = ExecutorFactory.GetExecutor();
+        private readonly Framework.IExecutor processExecutor = ExecutorFactory.GetExecutor();
 
         [TestCaseSource(nameof(ScenarioNames))]
         public async Task ExecuteScenarios(string scenarioName)

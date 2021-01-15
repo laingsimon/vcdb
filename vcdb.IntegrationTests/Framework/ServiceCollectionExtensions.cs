@@ -1,7 +1,7 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 
-namespace vcdb.IntegrationTests
+namespace vcdb.IntegrationTests.Framework
 {
     internal static class ServiceCollectionExtensions
     {

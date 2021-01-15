@@ -3,7 +3,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Threading.Tasks;
 
-namespace vcdb.IntegrationTests
+namespace vcdb.IntegrationTests.Framework
 {
     internal class ProcessExecutor : IExecutor
     {

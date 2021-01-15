@@ -4,7 +4,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace vcdb.IntegrationTests
+namespace vcdb.IntegrationTests.Framework
 {
     public class UndisposableTextWriter : TextWriter
     {
@@ -31,10 +31,10 @@ namespace vcdb.IntegrationTests
 
         public override IFormatProvider FormatProvider => underlyingWriter.FormatProvider;
 
-        public override string NewLine 
+        public override string NewLine
         {
-            get => underlyingWriter.NewLine; 
-            set => underlyingWriter.NewLine = value; 
+            get => underlyingWriter.NewLine;
+            set => underlyingWriter.NewLine = value;
         }
 
         public override void Flush()

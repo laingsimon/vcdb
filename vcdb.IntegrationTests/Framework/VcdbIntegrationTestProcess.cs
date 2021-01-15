@@ -1,5 +1,4 @@
 ﻿using CommandLine;
-using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.IO;
 using System.Linq;
@@ -7,7 +6,7 @@ using System.Threading.Tasks;
 using TestFramework;
 using vcdb.Output;
 
-namespace vcdb.IntegrationTests
+namespace vcdb.IntegrationTests.Framework
 {
     internal class VcdbIntegrationTestProcess : IVcdbProcess
     {

@@ -2,7 +2,7 @@
 using System.IO;
 using System.Text;
 
-namespace vcdb.IntegrationTests
+namespace vcdb.IntegrationTests.Framework
 {
     internal class ListWrappingWriter : TextWriter
     {

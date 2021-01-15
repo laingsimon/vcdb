@@ -1,6 +1,6 @@
 ﻿using System.Threading.Tasks;
 
-namespace vcdb.IntegrationTests
+namespace vcdb.IntegrationTests.Framework
 {
     internal interface IExecutor
     {
