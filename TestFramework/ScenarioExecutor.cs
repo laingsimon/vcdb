@@ -20,7 +20,7 @@ namespace TestFramework
         private readonly ExecutionContext executionContext;
         private readonly IJsonEqualityComparer jsonEqualityComparer;
         private readonly Options options;
-        private readonly IInlineDiffBuilder differ;
+        private readonly IScriptDiffer differ;
         private readonly IVcdbProcess vcdbProcess;
 
         public ScenarioExecutor(
@@ -30,7 +30,7 @@ namespace TestFramework
             ExecutionContext executionContext,
             IJsonEqualityComparer jsonEqualityComparer,
             Options options,
-            IInlineDiffBuilder differ,
+            IScriptDiffer differ,
             IVcdbProcess vcdbProcess)
         {
             this.log = log;
@@ -68,7 +68,7 @@ namespace TestFramework
             }
             else
             {
-                var pass = await CompareSqlScriptResult(settings, result, scenario);
+                var pass = await CompareSqlScriptResult(result, scenario);
                 var actualOutputFilePath = Path.Combine(scenario.FullName, "ActualOutput.sql");
 
                 if (pass)
@@ -121,19 +121,14 @@ namespace TestFramework
             }
         }
 
-        private Task<bool> CompareSqlScriptResult(ScenarioSettings settings, ExecutionResult result, DirectoryInfo scenario)
+        private Task<bool> CompareSqlScriptResult(ExecutionResult result, DirectoryInfo scenario)
         {
             return Task.Run(() =>
             {
-                var actual = result.Output?.Trim() ?? "";
-
                 using (var expectedReader = new StreamReader(Path.Combine(scenario.FullName, "ExpectedOutput.sql")))
                 {
-                    var expectedOutput = expectedReader.ReadToEnd().Trim();
-                    var diffs = differ.BuildDiffModel(expectedOutput, actual, true, false, new LineChunker());
-
-                    var pass = !diffs.HasDifferences;
-                    var differences = FormatDiff(diffs.Lines);
+                    var differences = differ.CompareScripts(expectedReader, result.Output);
+                    var pass = !differences.Any();
 
                     if (!pass)
                     {
@@ -143,68 +138,6 @@ namespace TestFramework
                     return pass;
                 }
             });
-        }
-
-        private IEnumerable<string> FormatDiff(IEnumerable<DiffPiece> lines)
-        {
-            var diffBlock = new List<DiffPiece>();
-            DiffPiece lastDiff = null;
-
-            foreach (var line in lines)
-            {
-                var captureDiff = line.Type == ChangeType.Deleted || line.Type == ChangeType.Inserted;
-                if (captureDiff && lastDiff != null)
-                {
-                    diffBlock.Add(lastDiff);
-                    lastDiff = null;
-                }
-
-                if (captureDiff)
-                {
-                    diffBlock.Add(line);
-                    continue;
-                }
-                else if (diffBlock.Any())
-                {
-                    //add the line as the last line of context
-                    diffBlock.Add(line);
-                    foreach (var diffDetail in FormatDiffBlock(diffBlock))
-                        yield return diffDetail;
-                    diffBlock = new List<DiffPiece>();
-                }
-
-                lastDiff = line;
-            }
-
-            if (diffBlock.Any())
-            {
-                foreach (var diffDetail in FormatDiffBlock(diffBlock))
-                    yield return diffDetail;
-            }
-        }
-
-        private IEnumerable<string> FormatDiffBlock(List<DiffPiece> diffBlock)
-        {
-            var startingLine = diffBlock[0].Position;
-            var endingLine = diffBlock.LastOrDefault(l => l.Position != null)?.Position;
-
-            yield return $@"Lines {startingLine}..{endingLine} (vcdb output vs ExpectedOutput.json)";
-
-            foreach (var line in diffBlock)
-            {
-                switch (line.Type)
-                {
-                    case ChangeType.Inserted:
-                        yield return $"+ {line.Text}";
-                        break;
-                    case ChangeType.Deleted:
-                        yield return $"- {line.Text}";
-                        break;
-                    default:
-                        yield return $"  {line.Text}";
-                        break;
-                }
-            }
         }
 
         private Task<bool> CompareJsonResult(ScenarioSettings settings, ExecutionResult result, DirectoryInfo scenario)
