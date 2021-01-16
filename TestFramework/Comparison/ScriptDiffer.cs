@@ -18,7 +18,7 @@ namespace TestFramework.Comparison
             this.differ = differ;
         }
 
-        public IEnumerable<string> CompareScripts(TextReader expected, string actual)
+        public IEnumerable<Difference> CompareScripts(TextReader expected, string actual)
         {
             var expectedOutput = expected.ReadToEnd().Trim();
             var diffs = differ.BuildDiffModel(
@@ -28,68 +28,54 @@ namespace TestFramework.Comparison
                 ignoreCase,
                 new LineChunker());
 
-            return FormatDiff(diffs.Lines);
+            return CreateDifferences(diffs.Lines);
         }
 
-        private IEnumerable<string> FormatDiff(IEnumerable<DiffPiece> lines)
+        private IEnumerable<Difference> CreateDifferences(IEnumerable<DiffPiece> lines)
         {
-            var diffBlock = new List<DiffPiece>();
-            DiffPiece lastDiff = null;
+            var unchanged = new List<Line>();
+            var deleted = new List<Line>();
+            var added = new List<Line>();
 
-            foreach (var line in lines)
+            foreach (var lineDiff in lines)
             {
-                var captureDiff = line.Type == ChangeType.Deleted || line.Type == ChangeType.Inserted;
-                if (captureDiff && lastDiff != null)
+                var line = new Line(lineDiff.Position, lineDiff.Text);
+
+                switch (lineDiff.Type)
                 {
-                    diffBlock.Add(lastDiff);
-                    lastDiff = null;
-                }
-
-                if (captureDiff)
-                {
-                    diffBlock.Add(line);
-                    continue;
-                }
-                else if (diffBlock.Any())
-                {
-                    //add the line as the last line of context
-                    diffBlock.Add(line);
-                    foreach (var diffDetail in FormatDiffBlock(diffBlock))
-                        yield return diffDetail;
-                    diffBlock = new List<DiffPiece>();
-                }
-
-                lastDiff = line;
-            }
-
-            if (diffBlock.Any())
-            {
-                foreach (var diffDetail in FormatDiffBlock(diffBlock))
-                    yield return diffDetail;
-            }
-        }
-
-        private IEnumerable<string> FormatDiffBlock(List<DiffPiece> diffBlock)
-        {
-            var startingLine = diffBlock[0].Position;
-            var endingLine = diffBlock.LastOrDefault(l => l.Position != null)?.Position;
-
-            yield return $@"Lines {startingLine}..{endingLine} (vcdb output vs ExpectedOutput.json)";
-
-            foreach (var line in diffBlock)
-            {
-                switch (line.Type)
-                {
-                    case ChangeType.Inserted:
-                        yield return $"+ {line.Text}";
-                        break;
                     case ChangeType.Deleted:
-                        yield return $"- {line.Text}";
+                        deleted.Add(line);
+                        break;
+                    case ChangeType.Inserted:
+                        added.Add(line);
                         break;
                     default:
-                        yield return $"  {line.Text}";
+                        if (deleted.Any() || added.Any())
+                        {
+                            yield return new Difference
+                            {
+                                Before = unchanged.ToArray(),
+                                Actual = added.ToArray(),
+                                Expected = deleted.ToArray()
+                            };
+                            unchanged.Clear();
+                            added.Clear();
+                            deleted.Clear();
+                        }
+
+                        unchanged.Add(line);
                         break;
                 }
+            }
+
+            if (deleted.Any() || added.Any())
+            {
+                yield return new Difference
+                {
+                    Before = unchanged.ToArray(),
+                    Actual = added.ToArray(),
+                    Expected = deleted.ToArray()
+                };
             }
         }
     }

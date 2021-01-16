@@ -133,7 +133,7 @@ namespace TestFramework.Execution
 
                     if (!pass)
                     {
-                        executionContext.ScenarioComplete(scenario, pass, differences);
+                        executionContext.ScenarioComplete(scenario, pass, differences.SelectMany(difference => difference.GetLineDifferences()));
                     }
 
                     return pass;
