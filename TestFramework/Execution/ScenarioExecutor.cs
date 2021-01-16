@@ -23,6 +23,7 @@ namespace TestFramework.Execution
         private readonly Options options;
         private readonly IScriptDiffer differ;
         private readonly IVcdbProcess vcdbProcess;
+        private readonly IDifferenceFilter differenceFilter;
 
         public ScenarioExecutor(
             ILogger log,
@@ -32,7 +33,8 @@ namespace TestFramework.Execution
             IJsonEqualityComparer jsonEqualityComparer,
             Options options,
             IScriptDiffer differ,
-            IVcdbProcess vcdbProcess)
+            IVcdbProcess vcdbProcess,
+            IDifferenceFilter differenceFilter)
         {
             this.log = log;
             this.sql = sql;
@@ -42,6 +44,7 @@ namespace TestFramework.Execution
             this.options = options;
             this.differ = differ;
             this.vcdbProcess = vcdbProcess;
+            this.differenceFilter = differenceFilter;
         }
 
         public async Task<bool> Execute(DirectoryInfo scenario)
@@ -129,11 +132,15 @@ namespace TestFramework.Execution
                 using (var expectedReader = new StreamReader(Path.Combine(scenario.FullName, "ExpectedOutput.sql")))
                 {
                     var differences = differ.CompareScripts(expectedReader, result.Output);
-                    var pass = !differences.Any();
+                    var filteredDifferences = differenceFilter.FilterDifferences(differences).ToArray();
+                    var pass = !filteredDifferences.Any();
 
                     if (!pass)
                     {
-                        executionContext.ScenarioComplete(scenario, pass, differences.SelectMany(difference => difference.GetLineDifferences()));
+                        executionContext.ScenarioComplete(
+                            scenario,
+                            pass,
+                            filteredDifferences.SelectMany(difference => difference.GetLineDifferences()));
                     }
 
                     return pass;
