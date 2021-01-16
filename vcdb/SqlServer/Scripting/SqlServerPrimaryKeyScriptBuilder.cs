@@ -139,7 +139,7 @@ GO");
         private IEnumerable<SqlScript> GetDropPrimaryKeyScripts(TableName tableName, PrimaryKeyDetails currentPrimaryKey)
         {
             yield return new SqlScript($@"ALTER TABLE {tableName.SqlSafeName()}
-DROP PRIMARY KEY {currentPrimaryKey.SqlName.SqlSafeName()}
+DROP CONSTRAINT {currentPrimaryKey.SqlName.SqlSafeName()}
 GO");
         }
 
