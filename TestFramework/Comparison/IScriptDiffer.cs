@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.IO;
 
-namespace TestFramework
+namespace TestFramework.Comparison
 {
     internal interface IScriptDiffer
     {

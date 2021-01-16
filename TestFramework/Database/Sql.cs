@@ -3,8 +3,10 @@ using System.Data.SqlClient;
 using System.IO;
 using System.Text;
 using System.Threading.Tasks;
+using TestFramework.Input;
+using TestFramework.Output;
 
-namespace TestFramework
+namespace TestFramework.Database
 {
     internal class Sql : ISql
     {
@@ -13,13 +15,13 @@ namespace TestFramework
 
         public Sql(Options options, ILogger log)
         {
-            this.connectionString = options.ConnectionString;
+            connectionString = options.ConnectionString;
             this.log = log;
         }
 
         public async Task ExecuteBatchedSql(TextReader sqlContent, string database = null)
         {
-            using (var connection = new SqlConnection(this.connectionString))
+            using (var connection = new SqlConnection(connectionString))
             {
                 await connection.OpenAsync();
                 if (!string.IsNullOrEmpty(database))
@@ -55,7 +57,7 @@ namespace TestFramework
 
         public async Task ExecuteSql(string sql, string database = null)
         {
-            using (var connection = new SqlConnection(this.connectionString))
+            using (var connection = new SqlConnection(connectionString))
             {
                 await connection.OpenAsync();
                 if (!string.IsNullOrEmpty(database))
@@ -87,7 +89,7 @@ namespace TestFramework
         {
             try
             {
-                using (var connection = new SqlConnection(this.connectionString))
+                using (var connection = new SqlConnection(connectionString))
                 {
                     await connection.OpenAsync();
 

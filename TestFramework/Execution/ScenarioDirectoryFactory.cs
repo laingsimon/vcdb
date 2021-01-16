@@ -1,6 +1,6 @@
 ﻿using System.IO;
 
-namespace TestFramework
+namespace TestFramework.Execution
 {
     internal class ScenarioDirectoryFactory
     {

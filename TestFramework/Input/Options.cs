@@ -1,6 +1,7 @@
 ﻿using CommandLine;
+using TestFramework.Output;
 
-namespace TestFramework
+namespace TestFramework.Input
 {
     public class Options
     {

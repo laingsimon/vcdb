@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace TestFramework
+namespace TestFramework.Execution
 {
     public interface ITaskGate
     {

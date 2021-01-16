@@ -2,8 +2,9 @@
 using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
+using TestFramework.Execution;
 
-namespace TestFramework
+namespace TestFramework.Execution
 {
     public static class ProcessExtensions
     {

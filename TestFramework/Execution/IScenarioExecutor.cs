@@ -1,7 +1,7 @@
 ﻿using System.IO;
 using System.Threading.Tasks;
 
-namespace TestFramework
+namespace TestFramework.Execution
 {
     internal interface IScenarioExecutor
     {

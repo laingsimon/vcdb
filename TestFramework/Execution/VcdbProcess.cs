@@ -2,8 +2,9 @@
 using System.Diagnostics;
 using System.IO;
 using System.Threading.Tasks;
+using TestFramework.Input;
 
-namespace TestFramework
+namespace TestFramework.Execution
 {
     internal class VcdbProcess : IVcdbProcess
     {

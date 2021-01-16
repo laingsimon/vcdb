@@ -1,4 +1,4 @@
-﻿namespace TestFramework
+﻿namespace TestFramework.Output
 {
     public class OutputDetail
     {

@@ -1,7 +1,9 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using System.IO;
 using System.Threading.Tasks;
-using TestFramework;
+using TestFramework.Execution;
+using TestFramework.Input;
+using TestFramework.Output;
 
 namespace vcdb.IntegrationTests.Framework
 {

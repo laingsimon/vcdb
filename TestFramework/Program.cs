@@ -8,8 +8,14 @@ using System;
 using System.IO;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
+using TestFramework.Comparison;
+using TestFramework.Content;
+using TestFramework.Database;
+using TestFramework.Execution;
+using TestFramework.Input;
+using TestFramework.Output;
 
-[assembly:InternalsVisibleTo("vcdb.IntegrationTests")]
+[assembly: InternalsVisibleTo("vcdb.IntegrationTests")]
 
 namespace TestFramework
 {
@@ -66,7 +72,7 @@ namespace TestFramework
 
         private static void ConfigureServices(ServiceCollection services)
         {
-            services.AddSingleton<ITestFramework, TestFramework>();
+            services.AddSingleton<ITestFramework, Execution.TestFramework>();
             services.AddSingleton<ISql, Sql>();
             services.AddScoped<IJson, Json>();
             services.AddScoped<ScenarioDirectoryFactory>();

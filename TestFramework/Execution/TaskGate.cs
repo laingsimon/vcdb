@@ -1,7 +1,8 @@
 ﻿using System;
 using System.Threading;
+using TestFramework.Input;
 
-namespace TestFramework
+namespace TestFramework.Execution
 {
     internal class TaskGate : ITaskGate
     {
@@ -11,7 +12,7 @@ namespace TestFramework
 
         public TaskGate(Options options)
         {
-            this.maxConcurrency = options.MaxConcurrency;
+            maxConcurrency = options.MaxConcurrency;
         }
 
         public IDisposable StartTask()

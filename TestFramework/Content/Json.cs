@@ -2,7 +2,7 @@
 using Newtonsoft.Json.Linq;
 using System.IO;
 
-namespace TestFramework
+namespace TestFramework.Content
 {
     internal class Json : IJson
     {

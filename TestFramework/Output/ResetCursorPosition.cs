@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace TestFramework
+namespace TestFramework.Output
 {
     internal class ResetCursorPosition : IDisposable
     {

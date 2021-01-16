@@ -1,4 +1,4 @@
-﻿namespace TestFramework
+﻿namespace TestFramework.Execution
 {
     public class ExecutionResult
     {

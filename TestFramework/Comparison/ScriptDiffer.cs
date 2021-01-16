@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 
-namespace TestFramework
+namespace TestFramework.Comparison
 {
     internal class ScriptDiffer : IScriptDiffer
     {

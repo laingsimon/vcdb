@@ -1,7 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Threading;
-using TestFramework;
+using TestFramework.Output;
 
 namespace vcdb.IntegrationTests.Framework
 {

@@ -1,7 +1,7 @@
 ﻿using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
-namespace TestFramework
+namespace TestFramework.Content
 {
     public interface IJson
     {

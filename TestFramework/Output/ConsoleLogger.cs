@@ -1,8 +1,9 @@
 ﻿using System;
 using System.IO;
 using System.Threading;
+using TestFramework.Input;
 
-namespace TestFramework
+namespace TestFramework.Output
 {
     internal class ConsoleLogger : ILogger
     {

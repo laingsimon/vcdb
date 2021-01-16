@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using TestFramework.Input;
+using TestFramework.Output;
 
-namespace TestFramework
+namespace TestFramework.Execution
 {
     public class ExecutionContext
     {
@@ -37,7 +39,7 @@ namespace TestFramework
         public void Finished()
         {
             var total = (double)Pass + Fail;
-            var passPercentage = (Pass / total) * 100;
+            var passPercentage = Pass / total * 100;
             if (Console.IsOutputRedirected || options.Porcelain)
             {
                 log.LogInformation($"Finished: Pass: {Pass} ({passPercentage:n0}%), Fail: {Fail} ({100 - passPercentage:n0}%)");

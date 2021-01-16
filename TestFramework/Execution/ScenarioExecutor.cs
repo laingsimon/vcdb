@@ -1,16 +1,17 @@
-﻿using DiffPlex.Chunkers;
-using DiffPlex.DiffBuilder;
-using DiffPlex.DiffBuilder.Model;
-using JsonEqualityComparer;
+﻿using JsonEqualityComparer;
 using Newtonsoft.Json;
 using System;
-using System.Collections.Generic;
 using System.Data.SqlClient;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using TestFramework.Comparison;
+using TestFramework.Content;
+using TestFramework.Database;
+using TestFramework.Input;
+using TestFramework.Output;
 
-namespace TestFramework
+namespace TestFramework.Execution
 {
     internal class ScenarioExecutor : IScenarioExecutor
     {
@@ -54,7 +55,7 @@ namespace TestFramework
                 PrintReproductionStatement(scenario, result);
                 executionContext.ScenarioComplete(scenario, false, new[] { $"Expected process to exit with code {settings.ExpectedExitCode}, but it exited with {result.ExitCode}", result.ErrorOutput });
                 return false;
-            } 
+            }
             else if (result.ExitCode != 0)
             {
                 PrintReproductionStatement(scenario, result);

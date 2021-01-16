@@ -1,8 +1,7 @@
-﻿using System.IO;
-using System.Threading;
+﻿using System.Threading;
 using System.Threading.Tasks;
 
-namespace TestFramework
+namespace TestFramework.Execution
 {
     public interface IDocker
     {

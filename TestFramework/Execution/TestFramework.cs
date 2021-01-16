@@ -4,8 +4,11 @@ using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using TestFramework.Database;
+using TestFramework.Input;
+using TestFramework.Output;
 
-namespace TestFramework
+namespace TestFramework.Execution
 {
     internal class TestFramework : ITestFramework
     {

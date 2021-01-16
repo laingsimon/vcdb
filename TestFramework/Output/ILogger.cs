@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace TestFramework
+namespace TestFramework.Output
 {
     public interface ILogger
     {

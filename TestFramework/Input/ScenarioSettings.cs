@@ -1,7 +1,7 @@
 ﻿using JsonEqualityComparer;
 using System;
 
-namespace TestFramework
+namespace TestFramework.Input
 {
     public class ScenarioSettings
     {

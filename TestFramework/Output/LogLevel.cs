@@ -1,4 +1,4 @@
-﻿namespace TestFramework
+﻿namespace TestFramework.Output
 {
     /// <summary>
     /// This is a copy of the Microsoft.Extensions.Logging.LogLevel enum
