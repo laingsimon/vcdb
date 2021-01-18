@@ -62,13 +62,10 @@ namespace vcdb.SqlServer.Scripting
                 }
                 yield break;
             }
-            
+
             if (primaryKeyDifference.RenamedTo != null)
             {
-                foreach (var script in GetRenameIndexScript(tableName, primaryKeyDifference))
-                {
-                    yield return script;
-                }
+                yield return GetRenamePrimaryKeyScript(tableName, primaryKeyDifference);
             }
 
             if (primaryKeyDifference.DescriptionChangedTo != null)
@@ -128,20 +125,20 @@ DROP CONSTRAINT {currentPrimaryKey.SqlName.SqlSafeName()}
 GO");
         }
 
-        private IEnumerable<SqlScript> GetRenameIndexScript(TableName tableName, PrimaryKeyDifference primaryKeyDifference)
+        private SqlScript GetRenamePrimaryKeyScript(TableName tableName, PrimaryKeyDifference primaryKeyDifference)
         {
-            if (primaryKeyDifference.RequiredPrimaryKey.Name == null)
+            if (string.IsNullOrEmpty(primaryKeyDifference.RequiredPrimaryKey?.Name))
             {
                 var newName = GetNameForPrimaryKey(tableName, primaryKeyDifference.RequiredPrimaryKey, primaryKeyDifference.RequiredColumns);
 
-                yield return new SqlScript(@$"EXEC sp_rename 
+                return new SqlScript(@$"EXEC sp_rename 
     @objname = '{tableName.Schema}.{primaryKeyDifference.CurrentPrimaryKey.SqlName}', 
     @newname = '{newName}', 
     @objtype = 'OBJECT'
 GO");
             }
 
-            yield return new SqlScript($@"EXEC sp_rename 
+            return new SqlScript($@"EXEC sp_rename 
     @objname = '{primaryKeyDifference.CurrentPrimaryKey.SqlName}', 
     @newname = '{primaryKeyDifference.RequiredPrimaryKey.Name}', 
     @objtype = 'OBJECT'
