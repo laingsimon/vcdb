@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using vcdb.Models;
 using vcdb.Output;
@@ -10,13 +9,20 @@ namespace vcdb.SqlServer.Scripting
 {
     public class SqlServerPrimaryKeyScriptBuilder : IPrimaryKeyScriptBuilder
     {
+        private const string PrimaryKeyObjectIdPrefix = "3214EC07";
+
         private readonly IDescriptionScriptBuilder descriptionScriptBuilder;
         private readonly ISqlObjectNameHelper objectNameHelper;
+        private readonly IHashHelper hashHelper;
 
-        public SqlServerPrimaryKeyScriptBuilder(IDescriptionScriptBuilder descriptionScriptBuilder, ISqlObjectNameHelper objectNameHelper)
+        public SqlServerPrimaryKeyScriptBuilder(
+            IDescriptionScriptBuilder descriptionScriptBuilder,
+            ISqlObjectNameHelper objectNameHelper,
+            IHashHelper hashHelper)
         {
             this.descriptionScriptBuilder = descriptionScriptBuilder;
             this.objectNameHelper = objectNameHelper;
+            this.hashHelper = hashHelper;
         }
 
         public IEnumerable<SqlScript> CreateUpgradeScripts(TableName tableName, PrimaryKeyDifference primaryKeyDifference)
@@ -96,29 +102,6 @@ GO");
                     null,
                     requiredPrimaryKey?.Description);
             }
-
-            if (requiredPrimaryKey?.Name == null)
-            {
-                yield return new SqlScript(@$"DECLARE @newName VARCHAR(1024)
-SELECT @newName = 'PK__{tableName.Table}__' + col.name + '__' + FORMAT(k.OBJECT_ID, 'X')
-FROM sys.key_constraints k
-INNER JOIN sys.index_columns ic
-ON ic.object_id = k.parent_object_id
-INNER JOIN sys.columns col
-ON col.column_id = ic.column_id
-AND col.object_id = k.parent_object_id
-INNER JOIN sys.tables tab
-ON tab.object_id = k.parent_object_id
-WHERE tab.name = '{tableName.Table}'
-AND SCHEMA_NAME(tab.schema_id) = '{tableName.Schema}'
-AND k.name = '{primaryKeyName}'
-
-EXEC sp_rename 
-    @objname = '{tableName.Schema}.{primaryKeyName}', 
-    @newname = @newName, 
-    @objtype = 'OBJECT'
-GO");
-            }
         }
 
         private string GetNameForPrimaryKey(
@@ -129,11 +112,13 @@ GO");
             if (!string.IsNullOrEmpty(primaryKeyDetails?.Name))
                 return primaryKeyDetails.Name;
 
+            var hashOfRequiredColumns = hashHelper.GetHash(string.Join(",", requiredColumns), 8);
+
             return objectNameHelper.GetAutomaticConstraintName(
                 "PK",
                 tableName.Table,
-                string.Join("__", requiredColumns),
-                primaryKeyDetails?.ObjectId ?? 0);
+                null,
+                PrimaryKeyObjectIdPrefix + hashOfRequiredColumns);
         }
 
         private IEnumerable<SqlScript> GetDropPrimaryKeyScripts(TableName tableName, PrimaryKeyDetails currentPrimaryKey)
@@ -147,21 +132,11 @@ GO");
         {
             if (primaryKeyDifference.RequiredPrimaryKey.Name == null)
             {
-                yield return new SqlScript(@$"DECLARE @newName VARCHAR(1024)
-SELECT @newName = 'PK__{tableName.Table}__' + col.name + '__' + FORMAT(chk.OBJECT_ID, 'X')
-FROM sys.check_constraints chk
-INNER JOIN sys.columns col
-ON col.column_id = chk.parent_column_id
-AND col.object_id = chk.parent_object_id
-INNER JOIN sys.tables tab
-ON tab.object_id = chk.parent_object_id
-WHERE tab.name = '{tableName.Table}'
-AND SCHEMA_NAME(tab.schema_id) = '{tableName.Schema}'
-AND chk.name = '{primaryKeyDifference.CurrentPrimaryKey.SqlName}'
+                var newName = GetNameForPrimaryKey(tableName, primaryKeyDifference.RequiredPrimaryKey, primaryKeyDifference.RequiredColumns);
 
-EXEC sp_rename 
+                yield return new SqlScript(@$"EXEC sp_rename 
     @objname = '{tableName.Schema}.{primaryKeyDifference.CurrentPrimaryKey.SqlName}', 
-    @newname = @newName, 
+    @newname = '{newName}', 
     @objtype = 'OBJECT'
 GO");
             }
