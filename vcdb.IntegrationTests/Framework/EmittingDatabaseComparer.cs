@@ -1,4 +1,5 @@
 ﻿using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
 using System.IO;
 using vcdb.Models;
 using vcdb.Scripting;
@@ -22,7 +23,18 @@ namespace vcdb.IntegrationTests.Framework
             var difference = databaseComparer.GetDatabaseDifferences(context, currentDatabase, requiredDatabase);
 
             var outputFilePath = Path.Combine(scenario.FullName, "Differences.json");
-            File.WriteAllText(outputFilePath, JsonConvert.SerializeObject(difference, Formatting.Indented));
+            File.WriteAllText(
+                outputFilePath,
+                JsonConvert.SerializeObject(
+                    difference,
+                    new JsonSerializerSettings
+                    {
+                        Formatting = Formatting.Indented,
+                        Converters =
+                        {
+                            new StringEnumConverter()
+                        }
+                    }));
 
             return difference;
         }
