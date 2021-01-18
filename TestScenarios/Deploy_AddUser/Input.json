@@ -1,0 +1,12 @@
+{
+  "users": {
+    "MyUser": {
+        "loginName": "MyLogin",
+        "enabled": true
+    },
+    "MyOtherUser": {
+        "loginName": "MyOtherLogin",
+        "enabled": false
+    }
+  }
+}

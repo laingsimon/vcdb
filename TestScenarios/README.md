@@ -46,6 +46,7 @@ The following database entities are tested in the scenarios below.
 |Primary key|Rename|[Deploy_RenamePrimaryKey](Deploy_RenamePrimaryKey)|
 |Primary key|Drop|[Deploy_DropPrimaryKey](Deploy_DropPrimaryKey)<br />[Deploy_ChangePrimaryKeyClustering](Deploy_ChangePrimaryKeyClustering)|
 |User|Read|[Read_Users]([Read_Users])|
-|User|Add|TBD|
-|User|Change|TBD|
-|User|Drop|TBD|
+|User|Add|[Deploy_AddUser](Deploy_AddUser)|
+|User|Change|[Deploy_ChangeUser](Deploy_ChangeUser)|
+|User|Rename|[Deploy_RenameUser](Deploy_RenameUser)|
+|User|Drop|[Deploy_DropUser](Deploy_DropUser)|

@@ -48,8 +48,8 @@ namespace vcdb.Scripting.Database
                     currentDatabase,
                     requiredDatabase),
                 UserDifferences = userComparer.GetUserDifferences(
-                    currentDatabase.Users,
-                    requiredDatabase.Users).ToArray()
+                    currentDatabase.Users.OrEmpty(),
+                    requiredDatabase.Users.OrEmpty()).ToArray()
             };
         }
     }

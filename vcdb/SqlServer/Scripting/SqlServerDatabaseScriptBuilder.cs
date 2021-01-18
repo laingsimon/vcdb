@@ -7,6 +7,7 @@ using vcdb.Scripting;
 using vcdb.Scripting.Database;
 using vcdb.Scripting.Schema;
 using vcdb.Scripting.Table;
+using vcdb.Scripting.User;
 
 namespace vcdb.SqlServer.Scripting
 {
@@ -17,19 +18,22 @@ namespace vcdb.SqlServer.Scripting
         private readonly ISchemaScriptBuilder schemaScriptBuilder;
         private readonly IDatabaseComparer databaseComparer;
         private readonly IDescriptionScriptBuilder descriptionScriptBuilder;
+        private readonly IUserScriptBuilder userScriptBuilder;
 
         public SqlServerDatabaseScriptBuilder(
             Options options,
             ITableScriptBuilder tableScriptBuilder,
             ISchemaScriptBuilder schemaScriptBuilder,
             IDatabaseComparer databaseComparer,
-            IDescriptionScriptBuilder descriptionScriptBuilder)
+            IDescriptionScriptBuilder descriptionScriptBuilder,
+            IUserScriptBuilder userScriptBuilder)
         {
             this.options = options;
             this.tableScriptBuilder = tableScriptBuilder;
             this.schemaScriptBuilder = schemaScriptBuilder;
             this.databaseComparer = databaseComparer;
             this.descriptionScriptBuilder = descriptionScriptBuilder;
+            this.userScriptBuilder = userScriptBuilder;
         }
 
         public IEnumerable<SqlScript> CreateUpgradeScripts(DatabaseDetails current, DatabaseDetails required)
@@ -42,6 +46,9 @@ namespace vcdb.SqlServer.Scripting
 
             if (databaseDifferences.DescriptionChangedTo != null)
                 yield return descriptionScriptBuilder.ChangeDatabaseDescription(current.Description, databaseDifferences.DescriptionChangedTo.Value);
+
+            foreach (var script in userScriptBuilder.CreateUpgradeScripts(databaseDifferences.UserDifferences))
+                yield return script;
 
             foreach (var schemaScript in schemaScriptBuilder.CreateUpgradeScripts(databaseDifferences.SchemaDifferences, databaseDifferences.TableDifferences))
             {

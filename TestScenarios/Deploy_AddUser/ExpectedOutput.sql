@@ -1,0 +1,7 @@
+CREATE USER [MyUser] FOR LOGIN [MyLogin]
+GO
+CREATE USER [MyOtherUser] FOR LOGIN [MyOtherLogin]
+GO
+ALTER LOGIN [MyOtherLogin]
+DISABLE
+GO

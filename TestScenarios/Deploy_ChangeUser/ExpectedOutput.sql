@@ -1,0 +1,10 @@
+DROP USER [MyUser]
+GO
+CREATE USER [MyUser] FOR LOGIN [MyOtherLogin]
+GO
+ALTER LOGIN [MyEnabledLogin]
+DISABLE
+GO
+ALTER LOGIN [MyDisabledLogin]
+ENABLE
+GO

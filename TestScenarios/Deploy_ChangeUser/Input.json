@@ -1,0 +1,16 @@
+{
+  "users": {
+    "MyUser": {
+        "loginName": "MyOtherLogin",
+        "enabled": true
+    },
+    "MyEnabledUser": {
+        "loginName": "MyEnabledLogin",
+        "enabled": false
+    },
+    "MyDisabledUser": {
+        "loginName": "MyDisabledLogin",
+        "enabled": true
+    }
+  }
+}
