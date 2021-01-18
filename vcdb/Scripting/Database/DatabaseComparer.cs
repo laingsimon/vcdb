@@ -3,6 +3,7 @@ using vcdb.Models;
 using vcdb.Scripting.Collation;
 using vcdb.Scripting.Schema;
 using vcdb.Scripting.Table;
+using vcdb.Scripting.User;
 
 namespace vcdb.Scripting.Database
 {
@@ -11,15 +12,18 @@ namespace vcdb.Scripting.Database
         private readonly ITableComparer tableComparer;
         private readonly ISchemaComparer schemaComparer;
         private readonly ICollationComparer collationComparer;
+        private readonly IUserComparer userComparer;
 
         public DatabaseComparer(
             ITableComparer tableComparer,
             ISchemaComparer schemaComparer,
-            ICollationComparer collationComparer)
+            ICollationComparer collationComparer,
+            IUserComparer userComparer)
         {
             this.tableComparer = tableComparer;
             this.schemaComparer = schemaComparer;
             this.collationComparer = collationComparer;
+            this.userComparer = userComparer;
         }
 
         public DatabaseDifference GetDatabaseDifferences(
@@ -42,7 +46,10 @@ namespace vcdb.Scripting.Database
                     : null,
                 CollationChangedTo = collationComparer.GetDatabaseCollationChange(
                     currentDatabase,
-                    requiredDatabase)
+                    requiredDatabase),
+                UserDifferences = userComparer.GetUserDifferences(
+                    currentDatabase.Users,
+                    requiredDatabase.Users).ToArray()
             };
         }
     }

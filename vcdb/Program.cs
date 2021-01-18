@@ -20,6 +20,7 @@ using vcdb.Scripting.Index;
 using vcdb.Scripting.PrimaryKey;
 using vcdb.Scripting.Schema;
 using vcdb.Scripting.Table;
+using vcdb.Scripting.User;
 using vcdb.SqlServer;
 
 [assembly: InternalsVisibleTo("vcdb.IntegrationTests")]
@@ -113,6 +114,7 @@ namespace vcdb
             services.InNamespace<IPrimaryKeyComparer>().AddAsSingleton();
             services.InNamespace<ISchemaComparer>().AddAsSingleton();
             services.InNamespace<ITableComparer>().AddAsSingleton();
+            services.InNamespace<IUserComparer>().AddAsSingleton();
             services.InNamespace<INamedItemFinder>().AddAsSingleton();
 
             services.InNamespace<IExecutor>().AddAsSingleton();
