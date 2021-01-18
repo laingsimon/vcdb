@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 
 namespace TestFramework.Comparison
@@ -12,8 +11,8 @@ namespace TestFramework.Comparison
 
         public IEnumerable<string> GetLineDifferences()
         {
-            var startingLine = Expected.FirstOrDefault()?.LineNumber ?? Actual.First().LineNumber;
-            var endingLine = Expected.LastOrDefault().LineNumber ?? Actual.Last().LineNumber;
+            var startingLine = Expected.FirstOrDefault()?.LineNumber ?? Actual.FirstOrDefault()?.LineNumber;
+            var endingLine = Expected.LastOrDefault()?.LineNumber ?? Actual.LastOrDefault()?.LineNumber;
 
             yield return $@"Lines {startingLine}..{endingLine} (vcdb output vs ExpectedOutput.json)";
 
