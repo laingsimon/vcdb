@@ -82,7 +82,7 @@ namespace vcdb.SqlServer.Scripting
         {
             var requiredPrimaryKey = primaryKeyDifference.RequiredPrimaryKey;
             var primaryKeyName = requiredPrimaryKey?.Name ?? GetNameForPrimaryKey(tableName, primaryKeyDifference.RequiredPrimaryKey, primaryKeyDifference.RequiredColumns);
-            var clusteredClause = (requiredPrimaryKey?.Clustered ?? true)
+            var clusteredClause = requiredPrimaryKey?.Clustered == true
                 ? ""
                 : " NONCLUSTERED";
 

@@ -12,7 +12,7 @@ namespace vcdb.Scripting.PrimaryKey
         public string[] ColumnsAdded { get; set; }
         public string[] ColumnsRemoved { get; set; }
         public Change<string> RenamedTo { get; set; }
-        public Change<bool> ClusteredChangedTo { get; set; }
+        public Change<OptOut> ClusteredChangedTo { get; set; }
         public bool Added { get; set; }
         public bool Removed { get; set; }
         public Change<string> DescriptionChangedTo { get; set; }

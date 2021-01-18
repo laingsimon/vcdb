@@ -9,6 +9,7 @@ using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using vcdb.CommandLine;
 using vcdb.DependencyInjection;
+using vcdb.Models;
 using vcdb.Output;
 using vcdb.Scripting;
 using vcdb.Scripting.CheckConstraint;
@@ -128,7 +129,7 @@ namespace vcdb
                 {
                     new StringEnumConverter()
                 },
-                ContractResolver = new JsonOutputContractResolver(),
+                ContractResolver = new MultipleJsonContractResolver(new JsonOutputContractResolver(), new OptOut.OptOutContractResover()),
                 Formatting = Formatting.Indented,
                 NullValueHandling = NullValueHandling.Ignore,
                 DefaultValueHandling = options.DefaultValueOutput

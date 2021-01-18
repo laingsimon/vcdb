@@ -1,30 +1,23 @@
-﻿using Newtonsoft.Json;
-using Newtonsoft.Json.Serialization;
+﻿using Newtonsoft.Json.Serialization;
+using System;
 using System.Collections;
-using System.Collections.Generic;
-using System.Reflection;
 
 namespace vcdb.Output
 {
-    public class JsonOutputContractResolver : DefaultContractResolver
+    public class JsonOutputContractResolver : IVcdbJsonContractResolver
     {
-        protected override JsonProperty CreateProperty(MemberInfo member, MemberSerialization memberSerialization)
+        public Func<object, bool> GetShouldSerialise(JsonProperty property)
         {
-            var property = base.CreateProperty(member, memberSerialization);
-
             if (typeof(IEnumerable).IsAssignableFrom(property.PropertyType) && !typeof(string).IsAssignableFrom(property.PropertyType))
             {
-                var shouldSerialiseFallback = property.ShouldSerialize ?? (_ => true);
-                property.ShouldSerialize =
-                    instance => ShouldSerialiseProperty(instance, property) && shouldSerialiseFallback(instance);
+                return ShouldSerialiseProperty;
             }
-            
-            return property;
+
+            return null;
         }
 
-        private bool ShouldSerialiseProperty(object instance, JsonProperty property)
+        private bool ShouldSerialiseProperty(object value)
         {
-            var value = property.ValueProvider.GetValue(instance);
             if (value is ICollection collection && collection.Count == 0)
                 return collection.Count > 0;
 

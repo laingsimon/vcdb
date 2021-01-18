@@ -52,7 +52,7 @@ exec sp_columns
                             return new ColumnDetails
                             {
                                 Type = GetDataType(column),
-                                Nullable = column.NULLABLE,
+                                Nullable = OptOut.From(column.NULLABLE),
                                 Default = columnDefault?.Definition,
                                 DefaultName = columnDefault == null || columnDefault.IsSystemNamed
                                     ? null

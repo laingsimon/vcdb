@@ -4,17 +4,17 @@
 		"columns": {
 			"Id": { "type": "int identity", "nullable": false, "primaryKey": false },
 			"Name": { "type": "nvarchar(255)", "nullable": false, "primaryKey": false },
-			"Title": { "type": "varchar(10)", "nullable": true, "primaryKey": false },
-			"Age": { "type": "int", "nullable": true, "primaryKey": false },
-			"Price": { "type": "decimal(18, 2)", "nullable": true, "primaryKey": false },
-			"DoB": { "type": "date", "nullable": true, "primaryKey": false },
+			"Title": { "type": "varchar(10)", "primaryKey": false },
+			"Age": { "type": "int", "primaryKey": false },
+			"Price": { "type": "decimal(18, 2)", "primaryKey": false },
+			"DoB": { "type": "date", "primaryKey": false },
 			"Deleted": { 
                 "type": "bit", 
                 "nullable": false, 
                 "default": 0, 
                 "primaryKey": false
             },
-			"UniqueId": { "type": "uniqueidentifier", "nullable": true, "primaryKey": false } 
+			"UniqueId": { "type": "uniqueidentifier", "primaryKey": false } 
 		}
 	}
   }

@@ -80,7 +80,7 @@ namespace vcdb.Scripting.Column
                     ? null
                     : requiredColumn.Type,
                 NullabilityChangedTo = currentColumn.Nullable == requiredColumn.Nullable
-                    ? default(bool?)
+                    ? null
                     : requiredColumn.Nullable,
                 DefaultChangedTo = defaultsIdentical
                     ? null

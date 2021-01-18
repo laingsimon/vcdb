@@ -69,7 +69,7 @@ new { table_name = tableName.Table, table_owner = tableName.Schema });
                 SqlName = primaryKey.name,
                 ObjectId = primaryKey.object_id,
                 Description = await descriptionRepository.GetPrimaryKeyDescription(connection, tableName, primaryKey.name),
-                Clustered = primaryKey.type_desc == "CLUSTERED",
+                Clustered = OptOut.From(primaryKey.type_desc == "CLUSTERED"),
                 Unique = primaryKey.is_unique
             };
         }

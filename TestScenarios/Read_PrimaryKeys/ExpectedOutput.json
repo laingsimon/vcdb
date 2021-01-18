@@ -3,7 +3,7 @@
 	"[dbo].[Person]": {
 		"columns": {
 			"Id": { "type": "int", "nullable": false, "primaryKey": true },
-            "Name": { "type": "varchar(255)", "nullable": true, "primaryKey": false }
+            "Name": { "type": "varchar(255)", "primaryKey": false }
 		},
         "primaryKey": {
             "clustered": false,
