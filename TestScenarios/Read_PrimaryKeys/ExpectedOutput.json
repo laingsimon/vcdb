@@ -17,7 +17,6 @@
 		},
         "primaryKey": {
             "name": "PK_Car_IdAndName",
-            "clustered": true,
             "unique": true
         }
 	}

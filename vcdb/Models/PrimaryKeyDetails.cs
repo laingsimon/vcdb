@@ -22,6 +22,7 @@ namespace vcdb.Models
         /// <summary>
         /// Whether the index for this primary key should be clustered or not
         /// </summary>
+        [JsonIgnore()]
         public bool Clustered { get; set; } = true;
 
         /// <summary>
@@ -40,5 +41,24 @@ namespace vcdb.Models
         /// </summary>
         [JsonIgnore]
         public string SqlName { get; set; }
+
+        [JsonProperty(nameof(Clustered))]
+        public bool? JsonClustered
+        {
+            get
+            {
+                if (Clustered)
+                    return null; //the default value for a nullable-bool
+
+                return false;
+            }
+            set
+            {
+                if (value == null)
+                    return;
+
+                Clustered = value.Value;
+            }
+        }
     }
 }
