@@ -15,11 +15,6 @@ namespace vcdb.Models
         public string[] PreviousNames { get; set; }
 
         /// <summary>
-        /// Whether the index for this primary key should contain unique values or not
-        /// </summary>
-        public bool? Unique { get; set; }
-
-        /// <summary>
         /// Whether the index for this primary key should be clustered or not
         /// </summary>
         public OptOut Clustered { get; set; }

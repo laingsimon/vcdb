@@ -6,8 +6,7 @@
             "Name": { "type": "varchar(255)", "primaryKey": false }
 		},
         "primaryKey": {
-            "clustered": false,
-            "unique": true
+            "clustered": false
         }
 	},
     "[dbo].[Car]": {
@@ -16,8 +15,7 @@
             "Name": { "type": "varchar(255)", "nullable": false, "primaryKey": true }
 		},
         "primaryKey": {
-            "name": "PK_Car_IdAndName",
-            "unique": true
+            "name": "PK_Car_IdAndName"
         }
 	}
   }
