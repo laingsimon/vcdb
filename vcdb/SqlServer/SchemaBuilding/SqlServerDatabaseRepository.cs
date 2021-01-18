@@ -11,17 +11,20 @@ namespace vcdb.SqlServer.SchemaBuilding
         private readonly ISchemaRepository schemaRepository;
         private readonly IDescriptionRepository descriptionRepository;
         private readonly ICollationRepository collationRepository;
+        private readonly IUserRepository userRepository;
 
         public SqlServerDatabaseRepository(
             ITableRepository tableRepository,
             ISchemaRepository schemaRepository,
             IDescriptionRepository descriptionRepository,
-            ICollationRepository collationRepository)
+            ICollationRepository collationRepository,
+            IUserRepository loginRepository)
         {
             this.tableRepository = tableRepository;
             this.schemaRepository = schemaRepository;
             this.descriptionRepository = descriptionRepository;
             this.collationRepository = collationRepository;
+            this.userRepository = loginRepository;
         }
 
         public async Task<DatabaseDetails> GetDatabaseDetails(DbConnection connection)
@@ -37,7 +40,8 @@ namespace vcdb.SqlServer.SchemaBuilding
                 Collation = databaseCollation == serverCollation
                     ? null
                     : databaseCollation,
-                ServerCollation = serverCollation
+                ServerCollation = serverCollation,
+                Users = await userRepository.GetUsers(connection)
             };
         }
     }

@@ -30,5 +30,10 @@ namespace vcdb.Models
         /// </summary>
         [JsonIgnore]
         public string ServerCollation { get; set; }
+
+        /// <summary>
+        /// The users permitted to access this database
+        /// </summary>
+        public Dictionary<string, UserDetails> Users { get; set; }
     }
 }

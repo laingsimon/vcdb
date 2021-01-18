@@ -1,0 +1,14 @@
+{
+  "users": {
+    "MyUser": {
+      "Type": "DatabaseAuthority",
+      "Enabled": true,
+      "LoginName": "MyLogin"
+    },
+    "MyDisabledUser": {
+      "Type": "DatabaseAuthority",
+      "Enabled": false,
+      "LoginName": "MyDisabledLogin"
+    }
+  }
+}
