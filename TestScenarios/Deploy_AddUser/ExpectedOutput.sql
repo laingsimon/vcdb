@@ -1,6 +1,7 @@
 CREATE USER [MyUser] FOR LOGIN [MyLogin_Add]
 GO
 CREATE USER [MyOtherUser] FOR LOGIN [MyOtherLogin_Add]
+WITH DEFAULT_SCHEMA = [MySchema]
 GO
 ALTER LOGIN [MyOtherLogin_Add]
 DISABLE

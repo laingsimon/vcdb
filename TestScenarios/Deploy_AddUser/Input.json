@@ -1,4 +1,7 @@
 {
+  "schemas": {
+    "MySchema": {}
+  },
   "users": {
     "MyUser": {
         "loginName": "MyLogin_Add",
@@ -6,7 +9,8 @@
     },
     "MyOtherUser": {
         "loginName": "MyOtherLogin_Add",
-        "enabled": false
+        "enabled": false,
+        "defaultSchema": "MySchema"
     }
   }
 }

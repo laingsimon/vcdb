@@ -32,15 +32,7 @@ namespace vcdb.SqlServer.Scripting
                     continue;
                 }
 
-                if (userDifference.LoginChangedTo != null)
-                {
-                    foreach (var script in DropAndRecreateUser(currentUser.Key, requiredUser))
-                        yield return script;
-
-                    continue;
-                }
-
-                if (userDifference.UserRenamedTo != null || userDifference.DefaultSchemaChangedTo != null)
+                if (userDifference.UserRenamedTo != null || userDifference.DefaultSchemaChangedTo != null || userDifference.LoginChangedTo != null)
                 {
                     foreach (var script in GetAlterUserScript(currentUser.Key, userDifference))
                         yield return script;
@@ -64,6 +56,9 @@ namespace vcdb.SqlServer.Scripting
                     : "",
                 userDifference.DefaultSchemaChangedTo != null
                     ? $"DEFAULT_SCHEMA = {userDifference.DefaultSchemaChangedTo.SqlSafeName()}"
+                    : "",
+                userDifference.LoginChangedTo != null
+                    ? $"LOGIN = {userDifference.LoginChangedTo.SqlSafeName()}"
                     : ""
             }.Where(clause => !string.IsNullOrEmpty(clause)).ToArray();
             var clauses = string.Join("," + Environment.NewLine, withClauses);
@@ -71,15 +66,6 @@ namespace vcdb.SqlServer.Scripting
             yield return new SqlScript($@"ALTER USER {currentName.SqlSafeName()}
 WITH {clauses}
 GO");
-        }
-
-        private IEnumerable<SqlScript> DropAndRecreateUser(string userName, NamedItem<string, UserDetails> requiredUser)
-        {
-            yield return GetDropUserScript(userName);
-            foreach (var script in GetCreateUserScript(requiredUser))
-            {
-                yield return script;
-            }
         }
 
         private SqlScript GetDropUserScript(string userName)
@@ -90,25 +76,24 @@ GO");
 
         private IEnumerable<SqlScript> GetCreateUserScript(NamedItem<string, UserDetails> requiredUser)
         {
+            var withClauses = new[]
+            {
+                requiredUser.Value.DefaultSchema != null
+                    ? $"DEFAULT_SCHEMA = {requiredUser.Value.DefaultSchema.SqlSafeName()}"
+                    : ""
+            }.Where(clause => !string.IsNullOrEmpty(clause)).ToArray();
+
+            var clauses = withClauses.Any()
+                ? @$"WITH {string.Join("," + Environment.NewLine, withClauses)}{Environment.NewLine}"
+                : "";
+
             yield return new SqlScript($@"CREATE USER {requiredUser.Key.SqlSafeName()} FOR LOGIN {requiredUser.Value.LoginName.SqlSafeName()}
-GO");
+{clauses}GO");
 
             if (!requiredUser.Value.Enabled)
             {
                 yield return GetChangeLoginStateScript(requiredUser.Value.LoginName, requiredUser.Value.Enabled);
             }
-
-            if (requiredUser.Value.DefaultSchema != null)
-            {
-                yield return GetChangeDefaultSchemaScript(requiredUser);
-            }
-        }
-
-        private SqlScript GetChangeDefaultSchemaScript(NamedItem<string, UserDetails> requiredUser)
-        {
-            return new SqlScript($@"ALTER USER {requiredUser.Key.SqlSafeName()}
-WITH DEFAULT_SCHEMA = {requiredUser.Value.DefaultSchema.SqlSafeName()}
-GO");
         }
 
         private SqlScript GetChangeLoginStateScript(string loginName, bool enabled)

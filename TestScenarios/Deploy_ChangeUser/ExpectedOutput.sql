@@ -1,9 +1,6 @@
-DROP USER [MyUser]
-GO
-CREATE USER [MyUser] FOR LOGIN [MyOtherLogin_Change]
-GO
 ALTER USER [MyUser]
-WITH DEFAULT_SCHEMA = [MySchema]
+WITH DEFAULT_SCHEMA = [MySchema],
+LOGIN = [MyOtherLogin_Change]
 GO
 ALTER USER [MyEnabledUser]
 WITH DEFAULT_SCHEMA = [dbo]
