@@ -1,7 +1,7 @@
-CREATE USER [MyUser] FOR LOGIN [MyLogin]
+CREATE USER [MyUser] FOR LOGIN [MyLogin_Add]
 GO
-CREATE USER [MyOtherUser] FOR LOGIN [MyOtherLogin]
+CREATE USER [MyOtherUser] FOR LOGIN [MyOtherLogin_Add]
 GO
-ALTER LOGIN [MyOtherLogin]
+ALTER LOGIN [MyOtherLogin_Add]
 DISABLE
 GO

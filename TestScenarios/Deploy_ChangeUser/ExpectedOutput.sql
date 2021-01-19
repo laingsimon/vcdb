@@ -1,6 +1,6 @@
 DROP USER [MyUser]
 GO
-CREATE USER [MyUser] FOR LOGIN [MyOtherLogin]
+CREATE USER [MyUser] FOR LOGIN [MyOtherLogin_Change]
 GO
 ALTER USER [MyUser]
 WITH DEFAULT_SCHEMA = [MySchema]

@@ -4,7 +4,7 @@
   },
   "users": {
     "MyUser": {
-        "loginName": "MyOtherLogin",
+        "loginName": "MyOtherLogin_Change",
         "enabled": true,
         "defaultSchema": "MySchema"
     },

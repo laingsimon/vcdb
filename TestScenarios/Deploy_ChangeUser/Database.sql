@@ -1,16 +1,16 @@
-IF EXISTS (SELECT * FROM sys.server_principals WHERE name = N'MyLogin')
+IF EXISTS (SELECT * FROM sys.server_principals WHERE name = N'MyLogin_Change')
 BEGIN
-    DROP LOGIN MyLogin
+    DROP LOGIN MyLogin_Change
 END    
 GO
-CREATE LOGIN MyLogin WITH PASSWORD = '123__aBC'
+CREATE LOGIN MyLogin_Change WITH PASSWORD = '123__aBC'
 GO
-IF EXISTS (SELECT * FROM sys.server_principals WHERE name = N'MyOtherLogin')
+IF EXISTS (SELECT * FROM sys.server_principals WHERE name = N'MyOtherLogin_Change')
 BEGIN
-    DROP LOGIN MyOtherLogin
+    DROP LOGIN MyOtherLogin_Change
 END
 GO
-CREATE LOGIN MyOtherLogin WITH PASSWORD = '123__aBC'
+CREATE LOGIN MyOtherLogin_Change WITH PASSWORD = '123__aBC'
 GO
 IF EXISTS (SELECT * FROM sys.server_principals WHERE name = N'MyDisabledLogin')
 BEGIN
@@ -29,7 +29,7 @@ GO
 ALTER LOGIN [MyDisabledLogin]
 DISABLE
 GO
-CREATE USER [MyUser] FOR LOGIN [MyLogin]
+CREATE USER [MyUser] FOR LOGIN [MyLogin_Change]
 GO
 CREATE USER [MyDisabledUser] FOR LOGIN [MyDisabledLogin]
 GO
