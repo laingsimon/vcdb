@@ -7,5 +7,6 @@
         public string authentication_type_desc { get; set; }
         public string login { get; set; }
         public bool is_disabled { get; set; }
+        public string default_schema_name { get; set; }
     }
 }

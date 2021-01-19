@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Data.Common;
 using System.Linq;
 using System.Threading.Tasks;
+using vcdb.CommandLine;
 using vcdb.Models;
 using vcdb.SchemaBuilding;
 
@@ -25,6 +26,12 @@ namespace vcdb.SqlServer.SchemaBuilding
             "NT AUTHORITY\\SYSTEM",
             "sa"
         };
+        private readonly Options options;
+
+        public SqlServerUserRepository(Options options)
+        {
+            this.options = options;
+        }
 
         public async Task<Dictionary<string, UserDetails>> GetUsers(DbConnection connection)
         {
@@ -32,6 +39,7 @@ namespace vcdb.SqlServer.SchemaBuilding
 select db.name,
        db.type_desc,
        db.authentication_type_desc,
+       db.default_schema_name,
        svr.name as login,
        svr.is_disabled
 from sys.database_principals db
@@ -49,7 +57,10 @@ where db.type not in ('A', 'G', 'R', 'X')
                     {
                         Type = GetLoginType(user.type_desc),
                         Enabled = !user.is_disabled,
-                        LoginName = user.login
+                        LoginName = user.login,
+                        DefaultSchema = user.default_schema_name == options.UserDefaultSchemaName
+                            ? null
+                            : user.default_schema_name
                     });
         }
 

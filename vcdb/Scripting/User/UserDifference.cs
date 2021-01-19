@@ -12,6 +12,7 @@ namespace vcdb.Scripting.User
         public string UserRenamedTo { get; set; }
         public Change<bool> StateChangedTo { get; set; }
         public string LoginChangedTo { get; set; }
+        public string DefaultSchemaChangedTo { get; set; }
 
         public bool IsChanged
         {
@@ -21,7 +22,8 @@ namespace vcdb.Scripting.User
                     || UserDeleted
                     || UserRenamedTo != null
                     || StateChangedTo != null
-                    || LoginChangedTo != null;
+                    || LoginChangedTo != null
+                    || DefaultSchemaChangedTo != null;
             }
         }
     }

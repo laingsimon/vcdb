@@ -35,3 +35,8 @@ CREATE USER [MyDisabledUser] FOR LOGIN [MyDisabledLogin]
 GO
 CREATE USER [MyEnabledUser] FOR LOGIN [MyEnabledLogin]
 GO
+CREATE SCHEMA [MySchema]
+GO
+ALTER USER [MyEnabledUser]
+WITH DEFAULT_SCHEMA = [MySchema]
+GO

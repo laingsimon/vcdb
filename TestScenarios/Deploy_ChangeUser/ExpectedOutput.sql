@@ -2,6 +2,12 @@ DROP USER [MyUser]
 GO
 CREATE USER [MyUser] FOR LOGIN [MyOtherLogin]
 GO
+ALTER USER [MyUser]
+WITH DEFAULT_SCHEMA = [MySchema]
+GO
+ALTER USER [MyEnabledUser]
+WITH DEFAULT_SCHEMA = [dbo]
+GO
 ALTER LOGIN [MyEnabledLogin]
 DISABLE
 GO

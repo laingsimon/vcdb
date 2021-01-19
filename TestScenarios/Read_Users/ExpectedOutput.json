@@ -1,4 +1,7 @@
 {
+  "schemas": { 
+    "MySchema": {}
+  },
   "users": {
     "MyUser": {
       "Type": "DatabaseAuthority",
@@ -8,7 +11,8 @@
     "MyDisabledUser": {
       "Type": "DatabaseAuthority",
       "Enabled": false,
-      "LoginName": "MyDisabledLogin"
+      "LoginName": "MyDisabledLogin",
+      "DefaultSchema": "MySchema"
     }
   }
 }

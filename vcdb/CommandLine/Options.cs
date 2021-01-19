@@ -31,5 +31,8 @@ namespace vcdb.CommandLine
 
         [Option("defaultValueHandling", Default = DefaultValueHandling.IgnoreAndPopulate, HelpText = "The handling of default property values in the JSON output")]
         public DefaultValueHandling DefaultValueOutput { get; set; }
+
+        [Option("userDefaultSchemaName", Default = "dbo", HelpText = "The name of the schema that users are considered to be set to use if not specified explicitly")]
+        public string UserDefaultSchemaName { get; internal set; }
     }
 }

@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using vcdb.CommandLine;
 using vcdb.Models;
 
 namespace vcdb.Scripting.User
@@ -7,10 +8,12 @@ namespace vcdb.Scripting.User
     public class UserComparer : IUserComparer
     {
         private readonly INamedItemFinder namedItemFinder;
+        private readonly Options options;
 
-        public UserComparer(INamedItemFinder namedItemFinder)
+        public UserComparer(INamedItemFinder namedItemFinder, Options options)
         {
             this.namedItemFinder = namedItemFinder;
+            this.options = options;
         }
 
         public IEnumerable<UserDifference> GetUserDifferences(
@@ -46,6 +49,9 @@ namespace vcdb.Scripting.User
                             : null,
                         LoginChangedTo = currentUser.Value.LoginName != requiredUser.Value.LoginName
                             ? requiredUser.Value.LoginName
+                            : null,
+                        DefaultSchemaChangedTo = (currentUser.Value.DefaultSchema ?? options.UserDefaultSchemaName) != (requiredUser.Value.DefaultSchema ?? options.UserDefaultSchemaName)
+                            ? requiredUser.Value.DefaultSchema ?? options.UserDefaultSchemaName
                             : null
                     };
 

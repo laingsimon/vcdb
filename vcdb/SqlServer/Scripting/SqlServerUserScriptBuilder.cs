@@ -1,4 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using vcdb.Models;
 using vcdb.Output;
 using vcdb.Scripting.User;
@@ -38,9 +40,9 @@ namespace vcdb.SqlServer.Scripting
                     continue;
                 }
 
-                if (userDifference.UserRenamedTo != null)
+                if (userDifference.UserRenamedTo != null || userDifference.DefaultSchemaChangedTo != null)
                 {
-                    foreach (var script in GetRenameUserScript(currentUser.Key, requiredUser.Key))
+                    foreach (var script in GetAlterUserScript(currentUser.Key, userDifference))
                         yield return script;
                 }
 
@@ -51,10 +53,23 @@ namespace vcdb.SqlServer.Scripting
             }
         }
 
-        private IEnumerable<SqlScript> GetRenameUserScript(string currentName, string requiredName)
+        private IEnumerable<SqlScript> GetAlterUserScript(string currentName, UserDifference userDifference)
         {
+            var requiredUser = userDifference.RequiredUser;
+
+            var withClauses = new[] 
+            {
+                userDifference.UserRenamedTo != null
+                    ? $"NAME = {requiredUser.Key.SqlSafeName()}"
+                    : "",
+                userDifference.DefaultSchemaChangedTo != null
+                    ? $"DEFAULT_SCHEMA = {userDifference.DefaultSchemaChangedTo.SqlSafeName()}"
+                    : ""
+            }.Where(clause => !string.IsNullOrEmpty(clause)).ToArray();
+            var clauses = string.Join("," + Environment.NewLine, withClauses);
+
             yield return new SqlScript($@"ALTER USER {currentName.SqlSafeName()}
-WITH NAME = {requiredName.SqlSafeName()}
+WITH {clauses}
 GO");
         }
 
@@ -82,6 +97,18 @@ GO");
             {
                 yield return GetChangeLoginStateScript(requiredUser.Value.LoginName, requiredUser.Value.Enabled);
             }
+
+            if (requiredUser.Value.DefaultSchema != null)
+            {
+                yield return GetChangeDefaultSchemaScript(requiredUser);
+            }
+        }
+
+        private SqlScript GetChangeDefaultSchemaScript(NamedItem<string, UserDetails> requiredUser)
+        {
+            return new SqlScript($@"ALTER USER {requiredUser.Key.SqlSafeName()}
+WITH DEFAULT_SCHEMA = {requiredUser.Value.DefaultSchema.SqlSafeName()}
+GO");
         }
 
         private SqlScript GetChangeLoginStateScript(string loginName, bool enabled)

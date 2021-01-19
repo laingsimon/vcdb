@@ -15,7 +15,12 @@ GO
 ALTER LOGIN [MyDisabledLogin]
 DISABLE
 GO
+CREATE SCHEMA [MySchema]
+GO
 CREATE USER MyUser FOR LOGIN MyLogin
 GO
 CREATE USER MyDisabledUser FOR LOGIN MyDisabledLogin
+GO
+ALTER USER [MyDisabledUser]
+WITH DEFAULT_SCHEMA = MySchema
 GO

@@ -1,8 +1,12 @@
 {
+  "schemas": {
+    "MySchema": {}
+  },
   "users": {
     "MyUser": {
         "loginName": "MyOtherLogin",
-        "enabled": true
+        "enabled": true,
+        "defaultSchema": "MySchema"
     },
     "MyEnabledUser": {
         "loginName": "MyEnabledLogin",

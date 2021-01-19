@@ -18,6 +18,11 @@
         public string LoginName { get; set; }
 
         /// <summary>
+        /// The schema this user will use by default
+        /// </summary>
+        public string DefaultSchema { get; set; }
+
+        /// <summary>
         /// Any previous names for the user, to indicate whether the user might need to change name
         /// </summary>
         public string[] PreviousNames { get; set; }
