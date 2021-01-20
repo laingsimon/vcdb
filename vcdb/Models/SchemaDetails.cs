@@ -1,4 +1,6 @@
-﻿namespace vcdb.Models
+﻿using System.Collections.Generic;
+
+namespace vcdb.Models
 {
     public class SchemaDetails : INamedItem<string>
     {
@@ -11,5 +13,10 @@
         /// A description for the schema
         /// </summary>
         public string Description { get; set; }
+
+        /// <summary>
+        /// A record of permissions for this schema
+        /// </summary>
+        public PermissionStates Permissions { get; set; }
     }
 }

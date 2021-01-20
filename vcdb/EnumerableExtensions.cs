@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace vcdb
@@ -63,6 +64,11 @@ namespace vcdb
         public static IReadOnlyCollection<TValue> OrEmptyCollection<TValue>(this IReadOnlyCollection<TValue> current)
         {
             return current ?? new TValue[0];
+        }
+
+        public static HashSet<TValue> ToHashSet<TItem, TValue>(this IEnumerable<TItem> items, Func<TItem, TValue> selector)
+        {
+            return items.Select(selector).ToHashSet();
         }
     }
 }

@@ -1,0 +1,22 @@
+{
+  "schemas": {
+	"MySchema": {
+        "permissions": {
+            "grant": { "CONTROL": { "MyUser_Grant": { "withGrant": true } } },
+            "deny": { "CONTROL": [ "MyUser_Deny" ] }
+        }
+    }
+  },
+  "users": {
+    "MyUser_Grant": {
+        "type": "DatabaseAuthority",
+        "enabled": true,
+        "loginName": "MyLogin_SchemaPermissions_Grant"
+    },
+    "MyUser_Deny": {
+        "type": "DatabaseAuthority",
+        "enabled": true,
+        "loginName": "MyLogin_SchemaPermissions_Deny"
+    }
+  }
+}

@@ -27,10 +27,14 @@ namespace vcdb.SqlServer.SchemaBuilding
             "db_denydatawriter"
         };
         private readonly IDescriptionRepository descriptionRepository;
+        private readonly IPermissionRepository permissionRepository;
 
-        public SqlServerSchemaRepository(IDescriptionRepository descriptionRepository)
+        public SqlServerSchemaRepository(
+            IDescriptionRepository descriptionRepository,
+            IPermissionRepository permissionRepository)
         {
             this.descriptionRepository = descriptionRepository;
+            this.permissionRepository = permissionRepository;
         }
 
         public async Task<Dictionary<string, SchemaDetails>> GetSchemas(DbConnection connection)
@@ -38,11 +42,14 @@ namespace vcdb.SqlServer.SchemaBuilding
             var schemas = await connection.QueryAsync<SqlServerSchemata>(@"
 select *from INFORMATION_SCHEMA.SCHEMATA");
 
+            var permissions = await permissionRepository.GetSchemaPermissions(connection);
+
             return await schemas.Where(schema => !BuiltInSchemas.Contains(schema.SCHEMA_NAME)).ToDictionaryAsync(
                 schema => schema.SCHEMA_NAME,
                 async schema => new SchemaDetails
                 {
-                    Description = await descriptionRepository.GetSchemaDescription(connection, schema.SCHEMA_NAME)
+                    Description = await descriptionRepository.GetSchemaDescription(connection, schema.SCHEMA_NAME),
+                    Permissions = permissions.ItemOrDefault(schema.SCHEMA_NAME)
                 });
         }
     }
