@@ -34,6 +34,12 @@ namespace vcdb
                 && other.Table == Table;
         }
 
+        public static TableName Parse(string tableName)
+        {
+            var converter = new TypeConverter();
+            return (TableName)converter.ConvertFrom(null, null, tableName);
+        }
+
         public class TypeConverter : System.ComponentModel.TypeConverter
         {
             public override bool CanConvertFrom(ITypeDescriptorContext context, Type sourceType)

@@ -34,5 +34,10 @@ namespace vcdb.Models
         /// The columns in the primary key are identified by their 'primaryKey' property
         /// </summary>
         public PrimaryKeyDetails PrimaryKey { get; set; }
+
+        /// <summary>
+        /// The user defined permissions for this table
+        /// </summary>
+        public Permissions Permissions { get; set; }
     }
 }

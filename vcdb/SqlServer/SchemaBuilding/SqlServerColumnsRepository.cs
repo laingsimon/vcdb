@@ -1,7 +1,6 @@
 ﻿using Dapper;
 using System.Collections.Generic;
 using System.Data.Common;
-using System.Linq;
 using System.Threading.Tasks;
 using vcdb.Models;
 using vcdb.SchemaBuilding;
@@ -27,7 +26,10 @@ namespace vcdb.SqlServer.SchemaBuilding
             this.primaryKeyRepository = primaryKeyRepository;
         }
 
-        public async Task<Dictionary<string, ColumnDetails>> GetColumns(DbConnection connection, TableName tableName)
+        public async Task<Dictionary<string, ColumnDetails>> GetColumns(
+            DbConnection connection,
+            TableName tableName,
+            Permissions tablePermissions)
         {
             var databaseCollation = await collationRepository.GetDatabaseCollation(connection);
             var columnDefaults = await defaultConstraintRepository.GetColumnDefaults(connection, tableName);
@@ -63,7 +65,8 @@ exec sp_columns
                                 Collation = columnCollations.ItemOrDefault(column.COLUMN_NAME) == databaseCollation
                                     ? null
                                     : columnCollations.ItemOrDefault(column.COLUMN_NAME),
-                                PrimaryKey = columnsInPrimaryKey.Contains(column.COLUMN_NAME)
+                                PrimaryKey = columnsInPrimaryKey.Contains(column.COLUMN_NAME),
+                                Permissions = tablePermissions.SubEntityPermissions.ItemOrDefault(column.COLUMN_NAME)
                             };
                         });
         }

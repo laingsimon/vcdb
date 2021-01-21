@@ -1,0 +1,35 @@
+{
+  "tables": {
+	"[dbo].[Person]": {
+        "columns": {
+            "Id": {
+                "type": "int",
+                "primaryKey": false
+            },
+            "Name": {
+                "type": "varchar(255)",
+                "primaryKey": false,
+                "permissions": {
+                    "revoke": { "SELECT": [ "MyUser_Grant" ] }
+                }
+            }
+        },
+        "permissions": {
+            "grant": { "SELECT": { "MyUser_Grant": { "withGrant": false } } },
+            "deny": { "SELECT": [ "MyUser_Deny" ] }
+        }
+    }
+  },
+  "users": {
+    "MyUser_Grant": {
+        "type": "DatabaseAuthority",
+        "enabled": true,
+        "loginName": "MyLogin_TablePermissions_Grant"
+    },
+    "MyUser_Deny": {
+        "type": "DatabaseAuthority",
+        "enabled": true,
+        "loginName": "MyLogin_TablePermissions_Deny"
+    }
+  }
+}

@@ -17,6 +17,6 @@ namespace vcdb.Models
         /// <summary>
         /// A record of permissions for this schema
         /// </summary>
-        public PermissionStates Permissions { get; set; }
+        public Permissions Permissions { get; set; }
     }
 }

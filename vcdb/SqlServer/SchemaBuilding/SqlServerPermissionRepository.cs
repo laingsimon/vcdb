@@ -11,20 +11,17 @@ namespace vcdb.SqlServer.SchemaBuilding
 {
     public class SqlServerPermissionRepository : IPermissionRepository
     {
-        private const string GrantWithGrantOption = "GRANT_WITH_GRANT_OPTION";
-        private const string Grant = "GRANT";
-        private const string Deny = "DENY";
-        private const string Revoke = "REVOKE";
+        internal const string GrantWithGrantOption = "GRANT_WITH_GRANT_OPTION";
+        internal const string Grant = "GRANT";
+        internal const string Deny = "DENY";
+        internal const string Revoke = "REVOKE";
 
-        public async Task<Dictionary<string, PermissionStates>> GetSchemaPermissions(DbConnection connection)
+        public async Task<Dictionary<string, Permissions>> GetSchemaPermissions(DbConnection connection)
         {
             var permissionRecords = await connection.QueryAsync<PermissionRecord>(@"
 select  class_desc,
         major_id,
-        major_name = case class_desc
-            when 'SCHEMA' then schema_name(major_id)
-            else null
-        end,
+        schema_name(major_id) as major_name,
         minor_id,
         null as minor_name,
         USER_NAME(grantee_principal_id) as grantee_principal,
@@ -37,53 +34,85 @@ and class_desc = 'SCHEMA'");
 
             return BuildPermissions(
                 permissionRecords.ToArray(),
-                r => r.major_name);
+                r => r.major_name,
+                GetEntityPermissions);
         }
 
-        private Dictionary<TKey, PermissionStates> BuildPermissions<TKey>(IReadOnlyCollection<PermissionRecord> records, Func<PermissionRecord, TKey> entityNameSelector)
+        public async Task<Dictionary<TableName, Permissions>> GetTablePermissions(DbConnection connection)
+        {
+            var permissionRecords = await connection.QueryAsync<PermissionRecord>(@"
+select  perm.class_desc,
+        perm.major_id,
+        schema_name(tab.schema_id) + '.' + tab.name as major_name,
+        col.name as minor_name,
+        USER_NAME(perm.grantee_principal_id) as grantee_principal,
+        USER_NAME(perm.grantor_principal_id) as grantor_principal,
+        perm.permission_name,
+        perm.state_desc
+from sys.database_permissions perm
+inner join sys.tables tab
+on tab.object_id = perm.major_id
+left join sys.columns col
+on col.object_id = tab.object_id
+and col.column_id = perm.minor_id
+where perm.major_id > 0
+and perm.class_desc = 'OBJECT_OR_COLUMN'");
+
+            return BuildPermissions(
+                permissionRecords.ToArray(),
+                r => TableName.Parse(r.major_name),
+                GetEntityAndSubEntityPermissions);
+        }
+
+        private Dictionary<TKey, TEntityPermissions> BuildPermissions<TKey, TEntityPermissions>(
+            IReadOnlyCollection<PermissionRecord> records,
+            Func<PermissionRecord, TKey> entityNameSelector,
+            Func<IGrouping<TKey, PermissionRecord>, TEntityPermissions> entityPermissionFactory)
+            where TEntityPermissions: Permissions, new ()
         {
             var perEntityPermissions = records.GroupBy(entityNameSelector);
 
             return perEntityPermissions.ToDictionary(
                 group => group.Key, //entity name, e.g. schema name, table name, etc.
-                permissionsForSchema =>
-                {
-                    return new PermissionStates
-                    {
-                        Grant = permissionsForSchema
-                            .Where(permission => permission.state_desc == Grant || permission.state_desc == GrantWithGrantOption)
-                            .GroupBy(grants => grants.permission_name)
-                            .ToDictionary(
-                                grantByPermissionName => grantByPermissionName.Key, //permission name, e.g. CONTROL
-                                grantByPermissionName =>
-                                {
-                                    return grantByPermissionName.ToDictionary(
-                                        record => record.grantee_principal, //the grantee, i.e. the username
-                                        record => new PermissionDetails
-                                        {
-                                            WithGrant = record.state_desc == GrantWithGrantOption
-                                        });
-                                }),
-                        Deny = permissionsForSchema
-                            .Where(permission => permission.state_desc == Deny)
-                            .GroupBy(denys => denys.permission_name)
-                            .ToDictionary(
-                                denyByPermissionName => denyByPermissionName.Key, //permissionName, e.g. CONTROL
-                                denyByPermissionName =>
-                                {
-                                    return denyByPermissionName.ToHashSet(record => record.grantee_principal);
-                                }),
-                        Revoke = permissionsForSchema
-                            .Where(permission => permission.state_desc == Revoke)
-                            .GroupBy(revokes => revokes.permission_name)
-                            .ToDictionary(
-                                denyByPermissionName => denyByPermissionName.Key, //permissionName, e.g. CONTROL
-                                denyByPermissionName =>
-                                {
-                                    return denyByPermissionName.ToHashSet(record => record.grantee_principal); //TODO: Consider the inclusion of the column name?
-                                })
-                    };
-                });
+                entityPermissionFactory);
+        }
+
+        private Permissions GetEntityPermissions(IEnumerable<PermissionRecord> permissionsForEntity)
+        {
+            return GetEntityPermissions(permissionsForEntity, false, null);
+        }
+
+        private Permissions GetEntityAndSubEntityPermissions(IEnumerable<PermissionRecord> permissionsForEntity)
+        {
+            return GetEntityPermissions(permissionsForEntity, true, null);
+        }
+
+        private Permissions GetEntityPermissions(
+            IEnumerable<PermissionRecord> permissionsForEntity,
+            bool processSubEntityPermissions,
+            string thisLevelMinorEntityName)
+        {
+            var subEntityPermissions = processSubEntityPermissions
+                ? permissionsForEntity.Where(permission => permission.minor_name != thisLevelMinorEntityName)
+                    .GroupBy(subEntityPermission => subEntityPermission.minor_name)
+                    .ToDictionary(
+                        subEntityPermissionGroup => subEntityPermissionGroup.Key,
+                        subEntityPermissionGroup => GetEntityPermissions(subEntityPermissionGroup, false, subEntityPermissionGroup.Key))
+                : null;
+
+            return new Permissions
+            {
+                Grant = permissionsForEntity
+                    .Where(permission => permission.IsGrant() && permission.minor_name == thisLevelMinorEntityName)
+                    .ToPermissionNameThenGranteeMapping(record => new PermissionDetails { WithGrant = record.state_desc == GrantWithGrantOption }),
+                Deny = permissionsForEntity
+                    .Where(permission => permission.IsDeny() && permission.minor_name == thisLevelMinorEntityName)
+                    .ToPermissionNameThenGranteeHashSet(),
+                Revoke = permissionsForEntity
+                    .Where(permission => permission.IsRevoke() && permission.minor_name == thisLevelMinorEntityName)
+                    .ToPermissionNameThenGranteeHashSet(),
+                SubEntityPermissions = subEntityPermissions
+            };
         }
     }
 }

@@ -56,5 +56,10 @@ namespace vcdb.Models
         /// Whether this column is part of the primary key for this table
         /// </summary>
         public bool PrimaryKey { get; set; }
+
+        /// <summary>
+        /// The user defined permissions on this column
+        /// </summary>
+        public Permissions Permissions { get; set; }
     }
 }

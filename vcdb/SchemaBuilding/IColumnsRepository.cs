@@ -7,6 +7,9 @@ namespace vcdb.SchemaBuilding
 {
     public interface IColumnsRepository
     {
-        Task<Dictionary<string, ColumnDetails>> GetColumns(DbConnection connection, TableName tableName);
+        Task<Dictionary<string, ColumnDetails>> GetColumns(
+            DbConnection connection,
+            TableName tableName,
+            Permissions tablePermissions);
     }
 }
