@@ -5,6 +5,7 @@ using vcdb.Models;
 using vcdb.Output;
 using vcdb.Scripting;
 using vcdb.Scripting.Database;
+using vcdb.Scripting.Permission;
 using vcdb.Scripting.Schema;
 using vcdb.Scripting.Table;
 using vcdb.Scripting.User;
@@ -19,6 +20,7 @@ namespace vcdb.SqlServer.Scripting
         private readonly IDatabaseComparer databaseComparer;
         private readonly IDescriptionScriptBuilder descriptionScriptBuilder;
         private readonly IUserScriptBuilder userScriptBuilder;
+        private readonly IPermissionScriptBuilder permissionScriptBuilder;
 
         public SqlServerDatabaseScriptBuilder(
             Options options,
@@ -26,7 +28,8 @@ namespace vcdb.SqlServer.Scripting
             ISchemaScriptBuilder schemaScriptBuilder,
             IDatabaseComparer databaseComparer,
             IDescriptionScriptBuilder descriptionScriptBuilder,
-            IUserScriptBuilder userScriptBuilder)
+            IUserScriptBuilder userScriptBuilder,
+            IPermissionScriptBuilder permissionScriptBuilder)
         {
             this.options = options;
             this.tableScriptBuilder = tableScriptBuilder;
@@ -34,6 +37,7 @@ namespace vcdb.SqlServer.Scripting
             this.databaseComparer = databaseComparer;
             this.descriptionScriptBuilder = descriptionScriptBuilder;
             this.userScriptBuilder = userScriptBuilder;
+            this.permissionScriptBuilder = permissionScriptBuilder;
         }
 
         public IEnumerable<SqlScript> CreateUpgradeScripts(DatabaseDetails current, DatabaseDetails required)
@@ -48,7 +52,14 @@ namespace vcdb.SqlServer.Scripting
                 yield return descriptionScriptBuilder.ChangeDatabaseDescription(current.Description, databaseDifferences.DescriptionChangedTo.Value);
 
             foreach (var script in userScriptBuilder.CreateUpgradeScripts(databaseDifferences.UserDifferences))
+            {
                 yield return script;
+            }
+
+            foreach (var script in permissionScriptBuilder.CreateDatabasePermissionScripts(databaseDifferences.PermissionDifferences))
+            {
+                yield return script;
+            }
 
             foreach (var schemaScript in schemaScriptBuilder.CreateUpgradeScripts(databaseDifferences.SchemaDifferences, databaseDifferences.TableDifferences))
             {

@@ -1,4 +1,5 @@
 ﻿using vcdb.Models;
+using vcdb.Scripting.Permission;
 
 namespace vcdb.Scripting.Schema
 {
@@ -10,6 +11,7 @@ namespace vcdb.Scripting.Schema
         public bool SchemaDeleted { get; set; }
         public string SchemaRenamedTo { get; set; }
         public Change<string> DescriptionChangedTo { get; set; }
+        public PermissionDifferences PermissionDifferences { get; set; }
 
         public bool IsChanged
         {
@@ -18,7 +20,8 @@ namespace vcdb.Scripting.Schema
                 return SchemaRenamedTo != null
                     || SchemaAdded
                     || SchemaDeleted
-                    || DescriptionChangedTo != null;
+                    || DescriptionChangedTo != null
+                    || PermissionDifferences != null;
             }
         }
     }

@@ -7,6 +7,7 @@ namespace vcdb.SchemaBuilding
 {
     public interface IPermissionRepository
     {
+        Task<Permissions> GetDatabasePermissions(DbConnection connection);
         Task<Dictionary<string, Permissions>> GetSchemaPermissions(DbConnection connection);
         Task<Dictionary<TableName, Permissions>> GetTablePermissions(DbConnection connection);
     }

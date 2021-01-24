@@ -12,7 +12,7 @@ namespace vcdb.Models
     [TypeConverter(typeof(TypeConverter))]
     public class UserPrincipal
     {
-        private readonly string name;
+        internal readonly string name;
 
         public UserPrincipal(string name)
         {

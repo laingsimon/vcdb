@@ -1,11 +1,19 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using vcdb.Models;
+using vcdb.Scripting.Permission;
 
 namespace vcdb.Scripting.Schema
 {
     public class SchemaComparer : ISchemaComparer
     {
+        private readonly IPermissionComparer permissionComparer;
+
+        public SchemaComparer(IPermissionComparer permissionComparer)
+        {
+            this.permissionComparer = permissionComparer;
+        }
+
         public IEnumerable<SchemaDifference> GetSchemaDifferences(
             ComparerContext context,
             IDictionary<string, SchemaDetails> currentSchemas,
@@ -38,7 +46,11 @@ namespace vcdb.Scripting.Schema
                             : null,
                         DescriptionChangedTo = currentSchema.Value.Description != requiredSchema.Value.Description
                             ? requiredSchema.Value.Description.AsChange()
-                            : null
+                            : null,
+                        PermissionDifferences = permissionComparer.GetPermissionDifferences(
+                            context,
+                            currentSchema.Value.Permissions,
+                            requiredSchema.Value.Permissions)
                     };
 
                     if (differences.IsChanged)

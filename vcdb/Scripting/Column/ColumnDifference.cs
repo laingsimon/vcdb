@@ -1,4 +1,5 @@
 ﻿using vcdb.Models;
+using vcdb.Scripting.Permission;
 
 namespace vcdb.Scripting.Column
 {
@@ -17,6 +18,7 @@ namespace vcdb.Scripting.Column
         public Change<string> DefaultRenamedTo { get; set; }
         public Change<string> DescriptionChangedTo { get; set; }
         public string CollationChangedTo { get; set; }
+        public PermissionDifferences PermissionDifferences { get; set; }
 
         public bool IsChanged
         {
@@ -30,7 +32,8 @@ namespace vcdb.Scripting.Column
                     || ColumnDeleted
                     || DefaultRenamedTo != null
                     || DescriptionChangedTo != null
-                    || CollationChangedTo != null;
+                    || CollationChangedTo != null
+                    || PermissionDifferences != null;
             }
         }
 

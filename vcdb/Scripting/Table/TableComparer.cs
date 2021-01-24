@@ -4,6 +4,7 @@ using vcdb.Models;
 using vcdb.Scripting.CheckConstraint;
 using vcdb.Scripting.Column;
 using vcdb.Scripting.Index;
+using vcdb.Scripting.Permission;
 using vcdb.Scripting.PrimaryKey;
 
 namespace vcdb.Scripting.Table
@@ -15,19 +16,22 @@ namespace vcdb.Scripting.Table
         private readonly INamedItemFinder namedItemFinder;
         private readonly ICheckConstraintComparer checkConstraintComparer;
         private readonly IPrimaryKeyComparer primaryKeyComparer;
+        private readonly IPermissionComparer permissionComparer;
 
         public TableComparer(
             IColumnComparer columnComparer,
             IIndexComparer indexComparer,
             INamedItemFinder namedItemFinder,
             ICheckConstraintComparer checkConstraintComparer,
-            IPrimaryKeyComparer primaryKeyComparer)
+            IPrimaryKeyComparer primaryKeyComparer,
+            IPermissionComparer permissionComparer)
         {
             this.columnComparer = columnComparer;
             this.indexComparer = indexComparer;
             this.namedItemFinder = namedItemFinder;
             this.checkConstraintComparer = checkConstraintComparer;
             this.primaryKeyComparer = primaryKeyComparer;
+            this.permissionComparer = permissionComparer;
         }
 
         public IEnumerable<TableDifference> GetDifferentTables(
@@ -79,7 +83,11 @@ namespace vcdb.Scripting.Table
                         PrimaryKeyDifference = primaryKeyComparer.GetPrimaryKeyDifference(
                             context.ForTable(currentTable, requiredTable.AsNamedItem(), columnDifferences),
                             currentTable.Value, 
-                            requiredTable.Value)
+                            requiredTable.Value),
+                        PermissionDifferences = permissionComparer.GetPermissionDifferences(
+                            context.ForTable(currentTable, requiredTable.AsNamedItem(), columnDifferences),
+                            currentTable.Value.Permissions,
+                            requiredTable.Value.Permissions)
                     };
 
                     if (difference.IsChanged)

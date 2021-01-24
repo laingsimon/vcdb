@@ -14,5 +14,20 @@
       "LoginName": "MyDisabledLogin",
       "DefaultSchema": "MySchema"
     }
+  },
+  "permissions": {
+    "grant": {
+      "CONNECT": {
+        "dbo": {
+          "WithGrant": false
+        },
+        "MyUser": {
+          "WithGrant": false
+        },
+        "MyDisabledUser": {
+          "WithGrant": false
+        }
+      }
+    }
   }
 }

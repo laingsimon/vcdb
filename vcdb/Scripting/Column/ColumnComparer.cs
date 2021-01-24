@@ -2,6 +2,7 @@
 using System.Linq;
 using vcdb.Models;
 using vcdb.Scripting.Collation;
+using vcdb.Scripting.Permission;
 
 namespace vcdb.Scripting.Column
 {
@@ -9,13 +10,16 @@ namespace vcdb.Scripting.Column
     {
         private readonly INamedItemFinder namedItemFinder;
         private readonly ICollationComparer collationComparer;
+        private readonly IPermissionComparer permissionComparer;
 
         public ColumnComparer(
             INamedItemFinder namedItemFinder,
-            ICollationComparer collationComparer)
+            ICollationComparer collationComparer,
+            IPermissionComparer permissionComparer)
         {
             this.namedItemFinder = namedItemFinder;
             this.collationComparer = collationComparer;
+            this.permissionComparer = permissionComparer;
         }
 
         public IEnumerable<ColumnDifference> GetDifferentColumns(
@@ -46,7 +50,11 @@ namespace vcdb.Scripting.Column
                         RequiredColumn = requiredColumn.AsNamedItem(),
                         ColumnRenamedTo = !currentColumn.Key.Equals(requiredColumn.Key)
                             ? requiredColumn.Key
-                            : null
+                            : null,
+                        PermissionDifferences = permissionComparer.GetPermissionDifferences(
+                            context,
+                            currentColumn.Value.Permissions,
+                            requiredColumn.Value.Permissions)
                     };
 
                     var columnDetailDifferences = ColumnsAreIdentical(context, currentColumn.Value, requiredColumn.Value);

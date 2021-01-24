@@ -35,5 +35,10 @@ namespace vcdb.Models
         /// The users permitted to access this database
         /// </summary>
         public Dictionary<string, UserDetails> Users { get; set; }
+
+        /// <summary>
+        /// The permissions assigned to users in this database
+        /// </summary>
+        public Permissions Permissions { get; set; }
     }
 }

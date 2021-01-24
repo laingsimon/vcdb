@@ -13,7 +13,7 @@ namespace vcdb.Models
     [TypeConverter(typeof(TypeConverter))]
     public class PermissionName
     {
-        private readonly string name;
+        internal readonly string name;
 
         public PermissionName(string name)
         {

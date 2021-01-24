@@ -17,5 +17,14 @@
 			"UniqueId": { "type": "uniqueidentifier", "primaryKey": false } 
 		}
 	}
+  },
+  "permissions": {
+    "grant": {
+      "CONNECT": {
+        "dbo": {
+          "WithGrant": false
+        }
+      }
+    }
   }
 }

@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using vcdb.Models;
 
 namespace vcdb.SqlServer
 {
@@ -25,6 +26,16 @@ namespace vcdb.SqlServer
         public static string SqlSafeName<TValue>(this KeyValuePair<string, TValue> namedItem)
         {
             return namedItem.Key.SqlSafeName();
+        }
+
+        public static string SqlSafeName(this UserPrincipal userPrincipal)
+        {
+            return $"[{userPrincipal.name}]";
+        }
+
+        public static string SqlSafeName(this PermissionName permissionName)
+        {
+            return permissionName.name;
         }
     }
 }

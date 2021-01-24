@@ -66,7 +66,7 @@ exec sp_columns
                                     ? null
                                     : columnCollations.ItemOrDefault(column.COLUMN_NAME),
                                 PrimaryKey = columnsInPrimaryKey.Contains(column.COLUMN_NAME),
-                                Permissions = tablePermissions.SubEntityPermissions.ItemOrDefault(column.COLUMN_NAME)
+                                Permissions = tablePermissions?.SubEntityPermissions?.ItemOrDefault(column.COLUMN_NAME)
                             };
                         });
         }

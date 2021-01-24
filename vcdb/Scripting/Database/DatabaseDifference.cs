@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using vcdb.Scripting.Permission;
 using vcdb.Scripting.Schema;
 using vcdb.Scripting.Table;
 using vcdb.Scripting.User;
@@ -13,5 +14,6 @@ namespace vcdb.Scripting.Database
 
         public Change<string> DescriptionChangedTo { get; set; }
         public string CollationChangedTo { get; set; }
+        public PermissionDifferences PermissionDifferences { get; set; }
     }
 }

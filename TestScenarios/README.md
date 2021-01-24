@@ -50,3 +50,7 @@ The following database entities are tested in the scenarios below.
 |User|Change|[Deploy_ChangeUser](Deploy_ChangeUser)|
 |User|Rename|[Deploy_RenameUser](Deploy_RenameUser)|
 |User|Drop|[Deploy_DropUser](Deploy_DropUser)|
+|Permissions|Read|[Read_TablePermissions](Read_TablePermissions)<br/>[Read_CustomSchemaPermissions](Read_CustomSchemaPermissions)|
+|Permissions|Grant|[Deploy_ChangeSchemaPermissions](Deploy_ChangeSchemaPermissions)<br/>[Deploy_ChangeTablePermissions](Deploy_ChangeTablePermissions)|
+|Permissions|Change|[Deploy_ChangeSchemaPermissions](Deploy_ChangeSchemaPermissions)<br/>[Deploy_ChangeTablePermissions](Deploy_ChangeTablePermissions)|
+|Permissions|Revoke|[Deploy_ChangeSchemaPermissions](Deploy_ChangeSchemaPermissions)<br/>[Deploy_ChangeTablePermissions](Deploy_ChangeTablePermissions)|

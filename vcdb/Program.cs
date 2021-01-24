@@ -17,6 +17,7 @@ using vcdb.Scripting.Collation;
 using vcdb.Scripting.Column;
 using vcdb.Scripting.Database;
 using vcdb.Scripting.Index;
+using vcdb.Scripting.Permission;
 using vcdb.Scripting.PrimaryKey;
 using vcdb.Scripting.Schema;
 using vcdb.Scripting.Table;
@@ -116,6 +117,7 @@ namespace vcdb
             services.InNamespace<ITableComparer>().AddAsSingleton();
             services.InNamespace<IUserComparer>().AddAsSingleton();
             services.InNamespace<INamedItemFinder>().AddAsSingleton();
+            services.InNamespace<IPermissionComparer>().AddAsSingleton();
 
             services.InNamespace<IExecutor>().AddAsSingleton();
 

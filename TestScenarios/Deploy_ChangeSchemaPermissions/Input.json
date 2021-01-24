@@ -1,0 +1,37 @@
+{
+  "schemas": {
+	"MySchema": {
+        "permissions": {
+            "grant": { "CONTROL": { "MyUser_Grant": { "withGrant": true }, "MyUser_Change": { "withGrant": false } } },
+            "deny": { "CONTROL": [ "MyUser_Deny" ] }
+        }
+    }
+  },
+  "users": {
+    "MyUser_Grant": {
+        "type": "DatabaseAuthority",
+        "enabled": true,
+        "loginName": "MyLogin_ChangeSchemaPermissions_Grant"
+    },
+    "MyUser_Deny": {
+        "type": "DatabaseAuthority",
+        "enabled": true,
+        "loginName": "MyLogin_ChangeSchemaPermissions_Deny"
+    },
+    "MyUser_Change": {
+        "type": "DatabaseAuthority",
+        "enabled": true,
+        "loginName": "MyLogin_ChangeSchemaPermissions_Change"
+    }
+  },
+  "permissions": {
+        "grant": {
+            "CONNECT": {
+                "dbo": {},
+                "MyUser_Change": {},
+                "MyUser_Deny": {},
+                "MyUser_Grant": {}
+            }
+        }
+  }
+}

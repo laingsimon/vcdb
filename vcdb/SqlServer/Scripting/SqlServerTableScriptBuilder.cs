@@ -7,6 +7,7 @@ using vcdb.Scripting;
 using vcdb.Scripting.CheckConstraint;
 using vcdb.Scripting.Column;
 using vcdb.Scripting.Index;
+using vcdb.Scripting.Permission;
 using vcdb.Scripting.PrimaryKey;
 using vcdb.Scripting.Table;
 
@@ -19,19 +20,22 @@ namespace vcdb.SqlServer.Scripting
         private readonly IDefaultConstraintScriptBuilder defaultConstraintScriptBuilder;
         private readonly ICheckConstraintScriptBuilder checkConstraintScriptBuilder;
         private readonly IPrimaryKeyScriptBuilder primaryKeyScriptBuilder;
+        private readonly IPermissionScriptBuilder permissionScriptBuilder;
 
         public SqlServerTableScriptBuilder(
             IDescriptionScriptBuilder descriptionScriptBuilder,
             IIndexScriptBuilder indexScriptBuilder,
             IDefaultConstraintScriptBuilder defaultConstraintScriptBuilder,
             ICheckConstraintScriptBuilder checkConstraintScriptBuilder,
-            IPrimaryKeyScriptBuilder primaryKeyScriptBuilder)
+            IPrimaryKeyScriptBuilder primaryKeyScriptBuilder,
+            IPermissionScriptBuilder permissionScriptBuilder)
         {
             this.descriptionScriptBuilder = descriptionScriptBuilder;
             this.indexScriptBuilder = indexScriptBuilder;
             this.defaultConstraintScriptBuilder = defaultConstraintScriptBuilder;
             this.checkConstraintScriptBuilder = checkConstraintScriptBuilder;
             this.primaryKeyScriptBuilder = primaryKeyScriptBuilder;
+            this.permissionScriptBuilder = permissionScriptBuilder;
         }
 
         public IEnumerable<SqlScript> CreateUpgradeScripts(IReadOnlyCollection<TableDifference> tableDifferences)
@@ -64,6 +68,13 @@ namespace vcdb.SqlServer.Scripting
                     }
 
                     foreach (var script in primaryKeyScriptBuilder.CreateUpgradeScripts(requiredTable.Key, tableDifference.PrimaryKeyDifference))
+                    {
+                        yield return script;
+                    }
+
+                    foreach (var script in permissionScriptBuilder.CreateTablePermissionScripts(
+                        requiredTable.Key,
+                        PermissionDifferences.From(requiredTable.Value.Permissions)))
                     {
                         yield return script;
                     }
@@ -114,6 +125,13 @@ namespace vcdb.SqlServer.Scripting
                         tableDifference.RequiredTable.Key,
                         tableDifference.CurrentTable.Value.Description,
                         tableDifference.DescriptionChangedTo.Value);
+                }
+
+                foreach (var script in permissionScriptBuilder.CreateTablePermissionScripts(
+                    requiredTable.Key,
+                    tableDifference.PermissionDifferences))
+                {
+                    yield return script;
                 }
             }
         }
@@ -166,6 +184,14 @@ GO");
                         null,
                         add.DescriptionChangedTo.Value);
                 }
+
+                foreach (var script in permissionScriptBuilder.CreateColumnPermissionScripts(
+                    requiredTableName,
+                    add.RequiredColumn.Key,
+                    PermissionDifferences.From(add.RequiredColumn.Value.Permissions)))
+                {
+                    yield return script;
+                }
             }
 
             var alterations = columnDifferences.Where(IsAlteration);
@@ -209,6 +235,14 @@ GO");
                     columnName, 
                     columnDifference.CurrentColumn.Value.Description, 
                     columnDifference.DescriptionChangedTo.Value);
+            }
+
+            foreach (var script in permissionScriptBuilder.CreateColumnPermissionScripts(
+                tableName,
+                columnName,
+                columnDifference.PermissionDifferences))
+            {
+                yield return script;
             }
         }
 
@@ -256,13 +290,27 @@ GO");
                     requiredTable.Description);
             }
 
-            foreach (var column in requiredTable.Columns.Where(column => column.Value.Description != null))
+            foreach (var column in requiredTable.Columns)
             {
-                yield return descriptionScriptBuilder.ChangeColumnDescription(
-                    tableName, 
-                    column.Key, 
-                    null, 
-                    column.Value.Description);
+                if (column.Value.Description != null)
+                {
+                    yield return descriptionScriptBuilder.ChangeColumnDescription(
+                        tableName,
+                        column.Key,
+                        null,
+                        column.Value.Description);
+                }
+
+                if (column.Value.Permissions != null)
+                {
+                    foreach (var script in permissionScriptBuilder.CreateColumnPermissionScripts(
+                        tableName,
+                        column.Key,
+                        PermissionDifferences.From(column.Value.Permissions)))
+                    {
+                        yield return script;
+                    }
+                }
             }
         }
 

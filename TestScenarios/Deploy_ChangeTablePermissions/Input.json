@@ -24,24 +24,21 @@
     "MyUser_Grant": {
         "type": "DatabaseAuthority",
         "enabled": true,
-        "loginName": "MyLogin_TablePermissions_Grant"
+        "loginName": "MyLogin_ChangeTablePermissions_Grant"
     },
     "MyUser_Deny": {
         "type": "DatabaseAuthority",
         "enabled": true,
-        "loginName": "MyLogin_TablePermissions_Deny"
+        "loginName": "MyLogin_ChangeTablePermissions_Deny"
     }
   },
-  "Permissions": {
-    "Grant": {
-      "CONNECT": {
-        "dbo": {
-          "WithGrant": false
-        },
-        "MyUser_Deny": {
-          "WithGrant": false
+  "permissions": {
+        "grant": {
+            "CONNECT": {
+                "dbo": {},
+                "MyUser_Deny": {},
+                "MyUser_Grant": {}
+            }
         }
-      }
-    }
   }
 }

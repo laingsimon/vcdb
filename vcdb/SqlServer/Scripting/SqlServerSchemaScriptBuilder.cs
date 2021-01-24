@@ -3,6 +3,7 @@ using System.Linq;
 using vcdb.Models;
 using vcdb.Output;
 using vcdb.Scripting;
+using vcdb.Scripting.Permission;
 using vcdb.Scripting.Schema;
 using vcdb.Scripting.Table;
 
@@ -11,10 +12,14 @@ namespace vcdb.SqlServer.Scripting
     public class SqlServerSchemaScriptBuilder : ISchemaScriptBuilder
     {
         private readonly IDescriptionScriptBuilder descriptionScriptBuilder;
+        private readonly IPermissionScriptBuilder permissionScriptBuilder;
 
-        public SqlServerSchemaScriptBuilder(IDescriptionScriptBuilder descriptionScriptBuilder)
+        public SqlServerSchemaScriptBuilder(
+            IDescriptionScriptBuilder descriptionScriptBuilder,
+            IPermissionScriptBuilder permissionScriptBuilder)
         {
             this.descriptionScriptBuilder = descriptionScriptBuilder;
+            this.permissionScriptBuilder = permissionScriptBuilder;
         }
 
         public IEnumerable<SqlScript> CreateUpgradeScripts(IReadOnlyCollection<SchemaDifference> schemaDifferences, IReadOnlyCollection<TableDifference> tableDifferences)
@@ -32,6 +37,14 @@ namespace vcdb.SqlServer.Scripting
                         processedTableTransfers.Add(transfer.TableDifference);
                         yield return transfer.SqlScript;
                     }
+
+                    foreach (var script in permissionScriptBuilder.CreateSchemaPermissionScripts(
+                        difference.RequiredSchema.Key,
+                        PermissionDifferences.From(difference.RequiredSchema.Value.Permissions)))
+                    {
+                        yield return script;
+                    }
+
                     continue;
                 }
 
@@ -66,6 +79,13 @@ namespace vcdb.SqlServer.Scripting
                         difference.RequiredSchema.Key, 
                         difference.CurrentSchema.Value.Description, 
                         difference.DescriptionChangedTo.Value);
+                }
+
+                foreach (var script in permissionScriptBuilder.CreateSchemaPermissionScripts(
+                    difference.RequiredSchema.Key,
+                    difference.PermissionDifferences))
+                {
+                    yield return script;
                 }
             }
 

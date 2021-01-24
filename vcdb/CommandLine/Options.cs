@@ -33,6 +33,9 @@ namespace vcdb.CommandLine
         public DefaultValueHandling DefaultValueOutput { get; set; }
 
         [Option("userDefaultSchemaName", Default = "dbo", HelpText = "The name of the schema that users are considered to be set to use if not specified explicitly")]
-        public string UserDefaultSchemaName { get; internal set; }
+        public string UserDefaultSchemaName { get; set; }
+
+        [Option("explicitDatabasePermissions", Default = false, HelpText = "Are database permissions required in the input JSON, if this option isn't set and there are no database permissions in the JSON then no database permission changes will be scripted")]
+        public bool ExplicitDatabasePermissions { get; set; }
     }
 }

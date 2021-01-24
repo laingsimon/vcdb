@@ -39,5 +39,14 @@
 			}
 		}
 	}
+  },
+  "permissions": {
+    "grant": {
+      "CONNECT": {
+        "dbo": {
+          "WithGrant": false
+        }
+      }
+    }
   }
 }

@@ -20,5 +20,14 @@
               "check": "len([Name])>(3)"
             } ]
 	}
+  },
+  "permissions": {
+    "grant": {
+      "CONNECT": {
+        "dbo": {
+          "WithGrant": false
+        }
+      }
+    }
   }
 }

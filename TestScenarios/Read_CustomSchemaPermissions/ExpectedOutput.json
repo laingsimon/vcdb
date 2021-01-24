@@ -18,5 +18,17 @@
         "enabled": true,
         "loginName": "MyLogin_SchemaPermissions_Deny"
     }
+  },
+  "permissions": {
+    "Grant": {
+      "CONNECT": {
+        "dbo": {
+          "WithGrant": false
+        },
+        "MyUser_Deny": {
+          "WithGrant": false
+        }
+      }
+    }
   }
 }

@@ -18,5 +18,14 @@
             "name": "PK_Car_IdAndName"
         }
 	}
+  },
+  "permissions": {
+    "grant": {
+      "CONNECT": {
+        "dbo": {
+          "WithGrant": false
+        }
+      }
+    }
   }
 }
