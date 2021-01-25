@@ -131,7 +131,8 @@ namespace vcdb
             {
                 Converters =
                 {
-                    new StringEnumConverter()
+                    new StringEnumConverter(),
+                    new ReferencedSubJsonConverter(options.WorkingDirectory)
                 },
                 ContractResolver = new MultipleJsonContractResolver(new JsonOutputContractResolver(), new OptOut.OptOutContractResover()),
                 Formatting = Formatting.Indented,
