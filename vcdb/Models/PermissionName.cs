@@ -11,14 +11,16 @@ namespace vcdb.Models
     /// </summary>
     [DebuggerDisplay("{name,nq}")]
     [TypeConverter(typeof(TypeConverter))]
-    public class PermissionName
+    public class PermissionName : IEntityName
     {
-        internal readonly string name;
+        private readonly string name;
 
         public PermissionName(string name)
         {
             this.name = name;
         }
+
+        string IEntityName.Name => name;
 
         public override bool Equals(object obj)
         {

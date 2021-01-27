@@ -37,5 +37,7 @@ namespace vcdb.CommandLine
 
         [Option("explicitDatabasePermissions", Default = false, HelpText = "Are database permissions required in the input JSON, if this option isn't set and there are no database permissions in the JSON then no database permission changes will be scripted")]
         public bool ExplicitDatabasePermissions { get; set; }
+
+        internal string[] AssemblySearchPaths { get; set; }
     }
 }

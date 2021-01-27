@@ -5,6 +5,7 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 using System;
 using System.IO;
+using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using vcdb.CommandLine;
@@ -22,7 +23,6 @@ using vcdb.Scripting.PrimaryKey;
 using vcdb.Scripting.Schema;
 using vcdb.Scripting.Table;
 using vcdb.Scripting.User;
-using vcdb.SqlServer;
 
 [assembly: InternalsVisibleTo("vcdb.IntegrationTests")]
 
@@ -124,7 +124,9 @@ namespace vcdb
             services.AddSingleton<IOutput, ConsoleOutput>();
             services.AddSingleton<IInput, Input>();
 
-            var databaseServicesInstaller = GetDatabaseServicesInstaller(options);
+            var defaultSearchPaths = new[] { options.WorkingDirectory, Path.GetDirectoryName(typeof(Program).Assembly.Location) };
+            var databaseInferfaceLoader = new DatabaseInterfaceLoader(options.AssemblySearchPaths.OrEmptyCollection().Concat(defaultSearchPaths));
+            var databaseServicesInstaller = databaseInferfaceLoader.GetServicesInstaller(options.DatabaseType);
             databaseServicesInstaller.RegisterServices(services);
 
             services.AddSingleton(new JsonSerializer
@@ -139,17 +141,6 @@ namespace vcdb
                 NullValueHandling = NullValueHandling.Ignore,
                 DefaultValueHandling = options.DefaultValueOutput
             });
-        }
-
-        private static IServicesInstaller GetDatabaseServicesInstaller(Options options)
-        {
-            switch (options.DatabaseType)
-            {
-                case DatabaseType.SqlServer:
-                    return new SqlServerInstaller();
-            }
-
-            throw new NotSupportedException($"Database type {options.DatabaseType} isn't currently supported");
         }
     }
 }

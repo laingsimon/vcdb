@@ -1,6 +1,4 @@
-﻿using System.Collections.Generic;
-
-namespace vcdb.Models
+﻿namespace vcdb.Models
 {
     public class SchemaDetails : INamedItem<string>
     {

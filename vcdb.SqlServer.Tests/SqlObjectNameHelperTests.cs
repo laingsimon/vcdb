@@ -1,7 +1,6 @@
 ﻿using NUnit.Framework;
-using vcdb.SqlServer;
 
-namespace vcdb.Tests.SqlServer
+namespace vcdb.SqlServer.Tests
 {
     [TestFixture]
     public class SqlObjectNameHelperTests

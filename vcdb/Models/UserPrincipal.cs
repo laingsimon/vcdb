@@ -10,9 +10,9 @@ namespace vcdb.Models
     /// </summary>
     [DebuggerDisplay("{name,nq}")]
     [TypeConverter(typeof(TypeConverter))]
-    public class UserPrincipal
+    public class UserPrincipal : IEntityName
     {
-        internal readonly string name;
+        private readonly string name;
 
         public UserPrincipal(string name)
         {
@@ -29,6 +29,8 @@ namespace vcdb.Models
         {
             return HashCode.Combine(name);
         }
+
+        string IEntityName.Name => name;
 
         public class TypeConverter : System.ComponentModel.TypeConverter
         {

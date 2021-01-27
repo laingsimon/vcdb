@@ -30,12 +30,12 @@ namespace vcdb.SqlServer
 
         public static string SqlSafeName(this UserPrincipal userPrincipal)
         {
-            return $"[{userPrincipal.name}]";
+            return $"[{((IEntityName)userPrincipal).Name}]";
         }
 
         public static string SqlSafeName(this PermissionName permissionName)
         {
-            return permissionName.name;
+            return ((IEntityName)permissionName).Name;
         }
     }
 }

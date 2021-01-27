@@ -34,7 +34,7 @@ namespace vcdb.Models
         /// For internal use only, the id of the default constraint - if present
         /// </summary>
         [JsonIgnore]
-        internal int? DefaultObjectId { get; set; }
+        public int? DefaultObjectId { get; set; }
 
         /// <summary>
         /// Any previous names for the column, to indicate whether the column might need to change name

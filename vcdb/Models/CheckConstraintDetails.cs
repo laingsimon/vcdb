@@ -25,19 +25,19 @@ namespace vcdb.Models
         /// For internal use only, the actual name of the constraint
         /// </summary>
         [JsonIgnore]
-        public string SqlName { get; internal set; }
+        public string SqlName { get; set; }
 
         /// <summary>
         /// For internal use only, the id of the default constraint - if present
         /// </summary>
         [JsonIgnore]
-        internal int? CheckObjectId { get; set; }
+        public int? CheckObjectId { get; set; }
 
         /// <summary>
         /// For internal use only, the column the check constraint is bound to (if any)
         /// NOTE: There may be multiple columns
         /// </summary>
         [JsonIgnore]
-        internal string[] ColumnNames { get; set; }
+        public string[] ColumnNames { get; set; }
     }
 }
