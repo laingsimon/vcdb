@@ -126,8 +126,8 @@ namespace vcdb
 
             var defaultSearchPaths = new[] { options.WorkingDirectory, Path.GetDirectoryName(typeof(Program).Assembly.Location) };
             var databaseInferfaceLoader = new DatabaseInterfaceLoader(options.AssemblySearchPaths.OrEmptyCollection().Concat(defaultSearchPaths));
-            var databaseServicesInstaller = databaseInferfaceLoader.GetServicesInstaller(options.DatabaseType);
-            databaseServicesInstaller.RegisterServices(services);
+            var databaseServicesInstaller = databaseInferfaceLoader.GetServicesInstaller(options.GetDatabaseVersion());
+            databaseServicesInstaller.RegisterServices(services, options.GetDatabaseVersion());
 
             services.AddSingleton(new JsonSerializer
             {

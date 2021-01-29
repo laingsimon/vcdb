@@ -4,6 +4,6 @@ namespace vcdb.DependencyInjection
 {
     public interface IServicesInstaller
     {
-        void RegisterServices(IServiceCollection services);
+        void RegisterServices(IServiceCollection services, CommandLine.DatabaseVersion databaseVersion);
     }
 }

@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using vcdb.CommandLine;
 using vcdb.DependencyInjection;
 
 namespace vcdb
@@ -17,9 +18,9 @@ namespace vcdb
             this.searchDirectories = searchDirectories.ToArray();
         }
 
-        public IServicesInstaller GetServicesInstaller(DatabaseType databaseType)
+        public IServicesInstaller GetServicesInstaller(DatabaseVersion databaseVersion)
         {
-            var assemblyFile = $"vcdb.{databaseType}.dll";
+            var assemblyFile = $"vcdb.{databaseVersion.ProductName}.dll";
 
             var assemblyPath = searchDirectories
                 .Select(directory => Path.Combine(directory, assemblyFile))
@@ -61,11 +62,11 @@ namespace vcdb
                 this.installers = installers;
             }
 
-            public void RegisterServices(IServiceCollection services)
+            public void RegisterServices(IServiceCollection services, DatabaseVersion databaseVersion)
             {
                 foreach (var installer in installers)
                 {
-                    installer.RegisterServices(services);
+                    installer.RegisterServices(services, databaseVersion);
                 }
             }
         }
