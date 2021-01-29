@@ -40,6 +40,9 @@ namespace vcdb.CommandLine
 
         internal string[] AssemblySearchPaths { get; set; }
 
+        [Option("simpleHeader", Default = false, HelpText = "Exclude detailed information in the header of generated script files")]
+        public bool ExcludeDetailInScriptHeader { get; set; }
+
         public DatabaseVersion GetDatabaseVersion()
         {
             return DatabaseVersion.Parse(DatabaseType ?? DatabaseVersion.Default);

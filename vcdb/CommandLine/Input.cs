@@ -9,11 +9,22 @@ namespace vcdb.CommandLine
     {
         private readonly Options options;
         private readonly JsonSerializer jsonSerializer;
+        private readonly IHashHelper hashHelper;
+        private string inputCache;
 
-        public Input(Options options, JsonSerializer jsonSerializer)
+        public Input(Options options, JsonSerializer jsonSerializer, IHashHelper hashHelper)
         {
             this.options = options;
             this.jsonSerializer = jsonSerializer;
+            this.hashHelper = hashHelper;
+        }
+
+        public string GetHash(int hashSize)
+        {
+            if (inputCache == null)
+                throw new InvalidOperationException("The input must be read first");
+
+            return hashHelper.GetHash(inputCache, hashSize);
         }
 
         public async Task<T> Read<T>()
@@ -33,7 +44,9 @@ namespace vcdb.CommandLine
         {
             return Task.Run(() =>
             {
-                using (var jsonReader = new JsonTextReader(inputStreamReader))
+                inputCache = inputStreamReader.ReadToEnd();
+
+                using (var jsonReader = new JsonTextReader(new StringReader(inputCache)))
                     return jsonSerializer.Deserialize<T>(jsonReader);
             });
         }

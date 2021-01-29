@@ -1,6 +1,7 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using System.IO;
 using System.Threading.Tasks;
+using TestFramework.Comparison;
 using TestFramework.Execution;
 using TestFramework.Input;
 using TestFramework.Output;
@@ -40,6 +41,8 @@ namespace vcdb.IntegrationTests.Framework
 
             services.ReplaceSingleton<ILogger, IntegrationTestLogger>(new IntegrationTestLogger(outputWriter, errorWriter, minLogLevel));
             services.ReplaceSingleton<IVcdbProcess, VcdbIntegrationTestProcess>();
+            services.ReplaceSingleton<IScriptDiffer, HeaderCommentIgnoringScriptDiffer>();
+            services.AddSingleton<ScriptDiffer>();
         }
     }
 }

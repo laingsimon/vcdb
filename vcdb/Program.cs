@@ -118,6 +118,9 @@ namespace vcdb
             services.InNamespace<IUserComparer>().AddAsSingleton();
             services.InNamespace<INamedItemFinder>().AddAsSingleton();
             services.InNamespace<IPermissionComparer>().AddAsSingleton();
+            var version = options.GetDatabaseVersion();
+            services.AddSingleton(version);
+            services.AddSingleton<IScriptOutputHeader, ScriptOutputHeader>();
 
             services.InNamespace<IExecutor>().AddAsSingleton();
 
@@ -126,8 +129,8 @@ namespace vcdb
 
             var defaultSearchPaths = new[] { options.WorkingDirectory, Path.GetDirectoryName(typeof(Program).Assembly.Location) };
             var databaseInferfaceLoader = new DatabaseInterfaceLoader(options.AssemblySearchPaths.OrEmptyCollection().Concat(defaultSearchPaths));
-            var databaseServicesInstaller = databaseInferfaceLoader.GetServicesInstaller(options.GetDatabaseVersion());
-            databaseServicesInstaller.RegisterServices(services, options.GetDatabaseVersion());
+            var databaseServicesInstaller = databaseInferfaceLoader.GetServicesInstaller(version);
+            databaseServicesInstaller.RegisterServices(services, version);
 
             services.AddSingleton(new JsonSerializer
             {

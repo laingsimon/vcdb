@@ -18,9 +18,9 @@ namespace TestFramework.Comparison
             this.differ = differ;
         }
 
-        public IEnumerable<Difference> CompareScripts(TextReader expected, string actual)
+        public IEnumerable<Difference> CompareScripts(string expected, string actual)
         {
-            var expectedOutput = expected.ReadToEnd().Trim();
+            var expectedOutput = expected.Trim();
             var diffs = differ.BuildDiffModel(
                 expectedOutput,
                 actual?.Trim() ?? "",

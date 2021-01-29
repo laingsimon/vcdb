@@ -18,6 +18,7 @@ namespace vcdb
         private readonly ILogger<Executor> logger;
         private readonly IInput input;
         private readonly IDatabaseScriptBuilder scriptBuilder;
+        private readonly IScriptOutputHeader outputHeader;
 
         public Executor(
             IConnectionFactory connectionFactory,
@@ -26,7 +27,8 @@ namespace vcdb
             IOutput output,
             ILogger<Executor> logger,
             IInput input,
-            IDatabaseScriptBuilder scriptBuilder)
+            IDatabaseScriptBuilder scriptBuilder,
+            IScriptOutputHeader outputHeader)
         {
             this.connectionFactory = connectionFactory;
             this.options = options;
@@ -35,6 +37,7 @@ namespace vcdb
             this.logger = logger;
             this.input = input;
             this.scriptBuilder = scriptBuilder;
+            this.outputHeader = outputHeader;
         }
 
         public async Task Execute()
@@ -69,7 +72,10 @@ namespace vcdb
             var databaseScripts = scriptBuilder.CreateUpgradeScripts(
                 currentDatabaseRepresentation,
                 requiredDatabaseRepresentation);
-            return new EnumerableOutput<SqlScript>(databaseScripts);
+
+            return new OutputtableCollection(
+                outputHeader,
+                new EnumerableOutput<SqlScript>(databaseScripts));
         }
 
         private Task<IOutputable> ConstructRepresentationOutput(DatabaseDetails database)

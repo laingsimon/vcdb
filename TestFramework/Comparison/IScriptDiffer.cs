@@ -5,6 +5,6 @@ namespace TestFramework.Comparison
 {
     internal interface IScriptDiffer
     {
-        IEnumerable<Difference> CompareScripts(TextReader expected, string actual);
+        IEnumerable<Difference> CompareScripts(string expected, string actual);
     }
 }

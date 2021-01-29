@@ -84,7 +84,8 @@ namespace TestFramework
             services.AddSingleton<ILogger, ConsoleLogger>();
             services.AddSingleton<ITaskGate, TaskGate>();
             services.AddSingleton<IVcdbProcess, VcdbProcess>();
-            services.AddSingleton<IScriptDiffer, ScriptDiffer>();
+            services.AddSingleton<IScriptDiffer, HeaderCommentIgnoringScriptDiffer>();
+            services.AddSingleton<ScriptDiffer>();
             services.AddSingleton<IDifferenceFilter, RegexDifferenceFilter>();
 
             services.AddSingleton(new JsonSerializer

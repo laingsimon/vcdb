@@ -125,27 +125,24 @@ namespace TestFramework.Execution
             }
         }
 
-        private Task<bool> CompareSqlScriptResult(ExecutionResult result, DirectoryInfo scenario)
+        private async Task<bool> CompareSqlScriptResult(ExecutionResult result, DirectoryInfo scenario)
         {
-            return Task.Run(() =>
+            using (var expectedReader = new StreamReader(Path.Combine(scenario.FullName, "ExpectedOutput.sql")))
             {
-                using (var expectedReader = new StreamReader(Path.Combine(scenario.FullName, "ExpectedOutput.sql")))
+                var differences = differ.CompareScripts(await expectedReader.ReadToEndAsync(), result.Output);
+                var filteredDifferences = differenceFilter.FilterDifferences(differences).ToArray();
+                var pass = !filteredDifferences.Any();
+
+                if (!pass)
                 {
-                    var differences = differ.CompareScripts(expectedReader, result.Output);
-                    var filteredDifferences = differenceFilter.FilterDifferences(differences).ToArray();
-                    var pass = !filteredDifferences.Any();
-
-                    if (!pass)
-                    {
-                        executionContext.ScenarioComplete(
-                            scenario,
-                            pass,
-                            filteredDifferences.SelectMany(difference => difference.GetLineDifferences()));
-                    }
-
-                    return pass;
+                    executionContext.ScenarioComplete(
+                        scenario,
+                        pass,
+                        filteredDifferences.SelectMany(difference => difference.GetLineDifferences()));
                 }
-            });
+
+                return pass;
+            }
         }
 
         private Task<bool> CompareJsonResult(ScenarioSettings settings, ExecutionResult result, DirectoryInfo scenario)
@@ -215,15 +212,22 @@ CREATE DATABASE [{scenario.Name}]"));
             if (options.KeepDatabases)
                 return;
 
-            try
+            for (var count = 0; count < 3; count++)
             {
-                await sql.ExecuteBatchedSql(new StringReader($@"
+                try
+                {
+                    await sql.ExecuteBatchedSql(new StringReader($@"
 DROP DATABASE IF EXISTS [{scenario.Name}]
 GO"), "master");
-            }
-            catch (Exception exc)
-            {
-                log.LogDebug(exc.Message);
+
+                    return;
+                }
+                catch (Exception exc)
+                {
+                    log.LogDebug(exc.Message);
+
+                    await Task.Delay(TimeSpan.FromSeconds(0.5));
+                }
             }
         }
     }
