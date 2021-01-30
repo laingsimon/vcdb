@@ -1,0 +1,12 @@
+{
+  "procedures": {
+    "[dbo].[RegularProcedure]": {
+      "definition": "CREATE OR ALTER PROCEDURE [dbo].[RegularProcedure]\r\n(\r\n    @name varchar(255)\r\n)\r\nAS\r\nBEGIN\r\n    SELECT @name\r\nEND\r\n",
+      "description": "changed procedure description"
+    },
+    "[dbo].[EncryptedProcedure]": {
+      "encrypted": true,
+      "definition": "CREATE OR ALTER PROCEDURE [dbo].[EncryptedProcedure]\r\n(\r\n    @name varchar(255)\r\n)\r\nWITH ENCRYPTION\r\nAS\r\nBEGIN\r\n    SELECT @name\r\nEND\r\n",
+    }
+  }
+}

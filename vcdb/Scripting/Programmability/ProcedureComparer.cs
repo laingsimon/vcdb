@@ -11,15 +11,18 @@ namespace vcdb.Scripting.Programmability
         private readonly INamedItemFinder namedItemFinder;
         private readonly IPermissionComparer permissionComparer;
         private readonly IInput input;
+        private readonly IProcedureDefinitionValidator definitionValidator;
 
         public ProcedureComparer(
             INamedItemFinder namedItemFinder,
             IPermissionComparer permissionComparer,
-            IInput input)
+            IInput input,
+            IProcedureDefinitionValidator definitionValidator)
         {
             this.namedItemFinder = namedItemFinder;
             this.permissionComparer = permissionComparer;
             this.input = input;
+            this.definitionValidator = definitionValidator;
         }
 
         public IEnumerable<ProcedureDifference> GetProcedureDifferences(
@@ -37,6 +40,7 @@ namespace vcdb.Scripting.Programmability
                     yield return new ProcedureDifference
                     {
                         RequiredProcedure = requiredProcedure.AsNamedItem(),
+                        DefinitionChangedTo = GetDefinition(requiredProcedure.AsNamedItem()),
                         ProcedureAdded = true
                     };
                 }
@@ -54,9 +58,7 @@ namespace vcdb.Scripting.Programmability
                         SchemaBoundChangedTo = currentProcedure.Value.SchemaBound != requiredProcedure.Value.SchemaBound
                             ? requiredProcedure.Value.SchemaBound.AsChange()
                             : null,
-                        DefinitionChangedTo = DefinitionHasChanged(currentProcedure.Value.Definition, GetDefinition(requiredProcedure.Value))
-                            ? GetDefinition(requiredProcedure.Value)
-                            : null,
+                        DefinitionChangedTo = GetDefinitionChangedTo(currentProcedure, requiredProcedure.AsNamedItem()),
                         ProcedureRenamedTo = !currentProcedure.Key.Equals(requiredProcedure.Key)
                             ? requiredProcedure.Key
                             : null,
@@ -86,20 +88,37 @@ namespace vcdb.Scripting.Programmability
             }
         }
 
-        private bool DefinitionHasChanged(string currentDefinition, string requiredDefinition)
+        private string GetDefinitionChangedTo(
+            NamedItem<ObjectName, ProcedureDetails> currentProcedure,
+            NamedItem<ObjectName, ProcedureDetails> requiredProcedure)
         {
-            return currentDefinition != requiredDefinition;
+            var currentDefinition = currentProcedure.Value.Definition;
+            var requiredDefinition = GetDefinition(requiredProcedure);
+
+            var definitionChanged = currentDefinition != requiredDefinition;
+
+            return definitionChanged && !definitionValidator.IsRenamedDefinitionOnly(currentDefinition, requiredDefinition, currentProcedure.Key, requiredProcedure.Key)
+                ? requiredDefinition
+                : null;
         }
 
-        private string GetDefinition(ProcedureDetails procedure)
+        private string GetDefinition(NamedItem<ObjectName, ProcedureDetails> procedure)
         {
-            if (!string.IsNullOrEmpty(procedure.Definition))
+            var definition = string.IsNullOrEmpty(procedure.Value.Definition) && !string.IsNullOrEmpty(procedure.Value.FileDefinition)
+                ? input.GetSiblingContent(procedure.Value.FileDefinition).ReadToEnd()
+                : procedure.Value.Definition;
+
+            if (string.IsNullOrEmpty(definition))
+                throw new InvalidDefinitionException($"Definition could not be read/found for {procedure.Key.Schema}.{procedure.Key.Name}");
+
+            var validationErrors = definitionValidator.ValidateDefinition(definition, procedure).ToArray();
+            if (validationErrors.Any())
             {
-                return procedure.Definition;
+                throw new InvalidDefinitionException(@$"Procedure definition for {procedure.Key.Schema}.{procedure.Key.Name} is invalid
+{string.Join(",", validationErrors)}");
             }
 
-            return input.GetSiblingContent(procedure.FileDefinition)
-                .ReadToEnd();
+            return definition;
         }
     }
 }

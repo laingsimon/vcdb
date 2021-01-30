@@ -1,0 +1,12 @@
+{
+  "procedures": {
+    "[dbo].[RegularProcedure]": {
+      "fileDefinition": "dbo.RegularProcedure.sql",
+      "description": "changed procedure description"
+    },
+    "[dbo].[EncryptedProcedure]": {
+      "encrypted": true,
+      "fileDefinition": "dbo.EncryptedProcedure.sql",
+    }
+  }
+}

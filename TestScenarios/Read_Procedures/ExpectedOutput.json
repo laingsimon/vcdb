@@ -9,7 +9,14 @@
   "procedures": {
     "[dbo].[RegularProcedure]": {
       "definition": "CREATE PROCEDURE [dbo].[RegularProcedure]\r\n(\r\n    @id int\r\n)\r\nAS\r\nBEGIN\r\n    SELECT @id * 3\r\nEND\r\n",
-      "description": "procedure description"
+      "description": "procedure description",
+      "permissions": {
+        "grant": {
+            "EXECUTE": {
+                "MyUser": { "WithGrant": false }
+            }
+        }
+      }
     },
     "[dbo].[EncryptedProcedure]": {
       "encrypted": true
@@ -19,9 +26,6 @@
     "grant": {
       "CONNECT": {
         "dbo": {
-          "WithGrant": false
-        },
-        "MyUser": {
           "WithGrant": false
         }
       }

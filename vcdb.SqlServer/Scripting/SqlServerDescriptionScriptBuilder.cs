@@ -35,20 +35,26 @@ namespace vcdb.SqlServer.Scripting
             return GetChangeDescriptionScript(requiredTableName.Schema, requiredTableName.Name, "CONSTRAINT", requiredKeyName, current, required);
         }
 
+        public SqlScript ChangeProcedureDescription(ObjectName requiredProcedureName, string current, string required)
+        {
+            return GetChangeDescriptionScript(requiredProcedureName.Schema, requiredProcedureName.Name, null, null, current, required, objectType: "PROCEDURE");
+        }
+
         private SqlScript GetChangeDescriptionScript(
             string schemaName,
-            string tableName,
+            string objectName,
             string level2Type,
             string level2Name,
             string currentDescription,
-            string requiredDescription)
+            string requiredDescription,
+            string objectType = "TABLE")
         {
             if (currentDescription == null && requiredDescription != null)
             {
                 return new SqlScript($@"EXEC sp_addextendedproperty 
 @name = N'MS_Description', @value = '{requiredDescription}',
 @level0type = {GetQuotedValueOrNull(schemaName, "SCHEMA")}, @level0name = {GetQuotedValueOrNull(schemaName)}, 
-@level1type = {GetQuotedValueOrNull(tableName, "TABLE")},  @level1name = {GetQuotedValueOrNull(tableName)},
+@level1type = {GetQuotedValueOrNull(objectName, objectType)},  @level1name = {GetQuotedValueOrNull(objectName)},
 @level2type = {GetQuotedValueOrNull(level2Type)}, @level2name = {GetQuotedValueOrNull(level2Name)}
 GO");
             }
@@ -58,7 +64,7 @@ GO");
                 return new SqlScript($@"EXEC sp_dropextendedproperty 
 @name = N'MS_Description',
 @level0type = {GetQuotedValueOrNull(schemaName, "SCHEMA")}, @level0name = {GetQuotedValueOrNull(schemaName)}, 
-@level1type = {GetQuotedValueOrNull(tableName, "TABLE")},  @level1name = {GetQuotedValueOrNull(tableName)},
+@level1type = {GetQuotedValueOrNull(objectName, objectType)},  @level1name = {GetQuotedValueOrNull(objectName)},
 @level2type = {GetQuotedValueOrNull(level2Type)}, @level2name = {GetQuotedValueOrNull(level2Name)}
 GO");
             }
@@ -66,7 +72,7 @@ GO");
             return new SqlScript($@"EXEC sp_updateextendedproperty 
 @name = N'MS_Description', @value = '{requiredDescription}',
 @level0type = {GetQuotedValueOrNull(schemaName, "SCHEMA")}, @level0name = {GetQuotedValueOrNull(schemaName)}, 
-@level1type = {GetQuotedValueOrNull(tableName, "TABLE")},  @level1name = {GetQuotedValueOrNull(tableName)},
+@level1type = {GetQuotedValueOrNull(objectName, objectType)},  @level1name = {GetQuotedValueOrNull(objectName)},
 @level2type = {GetQuotedValueOrNull(level2Type)}, @level2name = {GetQuotedValueOrNull(level2Name)}
 GO");
         }

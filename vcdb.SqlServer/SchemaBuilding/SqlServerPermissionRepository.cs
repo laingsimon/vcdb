@@ -21,7 +21,7 @@ namespace vcdb.SqlServer.SchemaBuilding
             var permissionRecords = await connection.QueryAsync<PermissionRecord>(@"
 select  class_desc,
         major_id,
-        schema_name(major_id) as major_name,
+        schema_name(major_id) as object_name,
         minor_id,
         null as minor_name,
         USER_NAME(grantee_principal_id) as grantee_principal,
@@ -51,7 +51,7 @@ and permission_name not in ('VIEW ANY COLUMN MASTER KEY DEFINITION', 'VIEW ANY C
             var permissionRecords = await connection.QueryAsync<PermissionRecord>(@"
 select  class_desc,
         major_id,
-        schema_name(major_id) as major_name,
+        schema_name(major_id) as object_name,
         minor_id,
         null as minor_name,
         USER_NAME(grantee_principal_id) as grantee_principal,
@@ -64,7 +64,7 @@ and class_desc = 'SCHEMA'");
 
             return BuildPermissions(
                 permissionRecords.ToArray(),
-                r => r.major_name,
+                r => r.object_name,
                 GetEntityPermissions);
         }
 
@@ -73,7 +73,7 @@ and class_desc = 'SCHEMA'");
             var permissionRecords = await connection.QueryAsync<PermissionRecord>(@"
 select  perm.class_desc,
         perm.major_id,
-        schema_name(tab.schema_id) + '.' + tab.name as major_name,
+        schema_name(tab.schema_id) + '.' + tab.name as object_name,
         col.name as minor_name,
         USER_NAME(perm.grantee_principal_id) as grantee_principal,
         USER_NAME(perm.grantor_principal_id) as grantor_principal,
@@ -90,7 +90,7 @@ and perm.class_desc = 'OBJECT_OR_COLUMN'");
 
             return BuildPermissions(
                 permissionRecords.ToArray(),
-                r => ObjectName.Parse(r.major_name),
+                r => ObjectName.Parse(r.object_name),
                 GetEntityAndSubEntityPermissions);
         }
 
@@ -150,7 +150,7 @@ and perm.class_desc = 'OBJECT_OR_COLUMN'");
             var permissionRecords = await connection.QueryAsync<PermissionRecord>(@"
 select  perm.class_desc,
         perm.major_id,
-        schema_name(p.schema_id) + '.' + p.name as major_name,
+        schema_name(p.schema_id) + '.' + p.name as object_name,
         null as minor_name,
         USER_NAME(perm.grantee_principal_id) as grantee_principal,
         USER_NAME(perm.grantor_principal_id) as grantor_principal,
@@ -160,11 +160,11 @@ from sys.database_permissions perm
 inner join sys.procedures p
 on p.object_id = perm.major_id
 where perm.major_id > 0
-and perm.class_desc = 'PROCEDURE'");
+and perm.class_desc = 'OBJECT_OR_COLUMN'");
 
             return BuildPermissions(
                 permissionRecords.ToArray(),
-                r => ObjectName.Parse(r.major_name),
+                r => ObjectName.Parse(r.object_name),
                 GetEntityPermissions);
         }
     }

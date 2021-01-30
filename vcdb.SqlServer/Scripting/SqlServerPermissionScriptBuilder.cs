@@ -122,6 +122,38 @@ namespace vcdb.SqlServer.Scripting
             }
         }
 
+        public IEnumerable<SqlScript> CreateProcedurePermissionScripts(ObjectName procedureName, PermissionDifferences permissionDifferences)
+        {
+            if (permissionDifferences == null)
+            {
+                yield break;
+            }
+
+            foreach (var denyPermission in permissionDifferences.DenyChanges.OrEmptyCollection())
+            {
+                foreach (var script in CreateProcedureDenyScripts(procedureName, denyPermission))
+                {
+                    yield return script;
+                }
+            }
+
+            foreach (var grantPermission in permissionDifferences.GrantChanges.OrEmptyCollection())
+            {
+                foreach (var script in CreateProcedureGrantScripts(procedureName, grantPermission))
+                {
+                    yield return script;
+                }
+            }
+
+            foreach (var revokePermission in permissionDifferences.RevokeChanges.OrEmptyCollection())
+            {
+                foreach (var script in CreateProcedureRevokeScripts(procedureName, revokePermission))
+                {
+                    yield return script;
+                }
+            }
+        }
+        
         private IEnumerable<SqlScript> CreateDatabaseDenyScripts(PermissionNameDifference<HashSet<UserPrincipal>> deny)
         {
             return DenyOrRevoke(
@@ -201,6 +233,31 @@ namespace vcdb.SqlServer.Scripting
                 (permission, user) => ApplyColumnPermission("REVOKE", permission, tableName, columnName, user),
                 (permission, user) => throw new NotImplementedException($"Dont know how to revoke a revoke!"));
         }
+
+        private IEnumerable<SqlScript> CreateProcedureDenyScripts(ObjectName objectName, PermissionNameDifference<HashSet<UserPrincipal>> deny)
+        {
+            return DenyOrRevoke(
+                deny,
+                (permission, user) => ApplyObjectPermission("DENY", permission, objectName.SqlSafeName(), user, cascade: true),
+                (permission, user) => ApplyObjectPermission("REVOKE", permission, objectName.SqlSafeName(), user));
+        }
+
+        private IEnumerable<SqlScript> CreateProcedureGrantScripts(ObjectName objectName, PermissionNameDifference<Dictionary<UserPrincipal, PermissionDetails>> grant)
+        {
+            return GrantOrRevoke(
+                grant,
+                (permission, user, withGrantOption) => ApplyObjectPermission("GRANT", permission, objectName.SqlSafeName(), user, withGrantOption),
+                (permission, user) => ApplyObjectPermission("REVOKE", permission, objectName.SqlSafeName(), user, cascade: true));
+        }
+
+        private IEnumerable<SqlScript> CreateProcedureRevokeScripts(ObjectName objectName, PermissionNameDifference<HashSet<UserPrincipal>> revoke)
+        {
+            return DenyOrRevoke(
+                revoke,
+                (permission, user) => ApplyObjectPermission("REVOKE", permission, objectName.SqlSafeName(), user),
+                (permission, user) => throw new NotSupportedException("How to revoke a revoke"));
+        }
+
 
         private static IEnumerable<SqlScript> DenyOrRevoke(
             PermissionNameDifference<HashSet<UserPrincipal>> permissions,

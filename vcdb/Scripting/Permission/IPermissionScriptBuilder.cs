@@ -9,5 +9,6 @@ namespace vcdb.Scripting.Permission
         IEnumerable<SqlScript> CreateSchemaPermissionScripts(string schemaName, PermissionDifferences permissionDifferences);
         IEnumerable<SqlScript> CreateColumnPermissionScripts(ObjectName tableName, string columnName, PermissionDifferences permissionDifferences);
         IEnumerable<SqlScript> CreateDatabasePermissionScripts(PermissionDifferences permissionDifferences);
+        IEnumerable<SqlScript> CreateProcedurePermissionScripts(ObjectName procedureName, PermissionDifferences permissionDifferences);
     }
 }

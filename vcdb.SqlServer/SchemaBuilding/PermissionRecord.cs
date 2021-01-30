@@ -7,7 +7,7 @@ namespace vcdb.SqlServer.SchemaBuilding
     {
         public string class_desc { get; set; }
         public string major_id { get; set; }
-        public string major_name { get; set; }
+        public string object_name { get; set; }
         public string minor_id { get; set; }
         public string minor_name { get; set; }
 

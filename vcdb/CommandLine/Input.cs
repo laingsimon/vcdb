@@ -42,6 +42,9 @@ namespace vcdb.CommandLine
 
         public TextReader GetSiblingContent(string fileName)
         {
+            if (string.IsNullOrEmpty(fileName))
+                throw new ArgumentNullException(nameof(fileName));
+
             if (Console.IsInputRedirected)
             {
                 return ReadContentFromFileInWorkingDirectory(fileName)
@@ -55,6 +58,9 @@ namespace vcdb.CommandLine
 
         private TextReader ReadContentFromFileInSameDirectoryAsInputFile(string fileName)
         {
+            if (string.IsNullOrEmpty(fileName))
+                return null;
+
             var fullInputFilePath = Path.GetFullPath(options.InputFile);
             var inputPathDirectory = Path.GetDirectoryName(fullInputFilePath);
             return ReadContentFromFileIfExists(Path.Combine(inputPathDirectory, fileName));
@@ -62,6 +68,9 @@ namespace vcdb.CommandLine
 
         private TextReader ReadContentFromFileInWorkingDirectory(string fileName)
         {
+            if (string.IsNullOrEmpty(fileName))
+                return null;
+
             return ReadContentFromFileIfExists(Path.Combine(options.WorkingDirectory, fileName));
         }
 

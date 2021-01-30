@@ -15,7 +15,7 @@ namespace vcdb.Scripting.Programmability
         public PermissionDifferences PermissionDifferences { get; set; }
         public Change<bool> EncryptedChangedTo { get; set; }
         public Change<bool> SchemaBoundChangedTo { get; set; }
-        public object DefinitionChangedTo { get; set; }
+        public string DefinitionChangedTo { get; set; }
 
         public bool IsChanged
         {
@@ -27,7 +27,8 @@ namespace vcdb.Scripting.Programmability
                     || PermissionDifferences != null
                     || EncryptedChangedTo != null
                     || SchemaBoundChangedTo != null
-                    || DescriptionChangedTo != null;
+                    || DescriptionChangedTo != null
+                    || DefinitionChangedTo != null;
             }
         }
     }

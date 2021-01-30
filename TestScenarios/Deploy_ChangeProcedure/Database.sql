@@ -22,16 +22,3 @@ exec sp_addextendedproperty
 		@level0type = N'SCHEMA', @level0name = 'dbo', 
 		@level1type = N'PROCEDURE',  @level1name = 'RegularProcedure'
 GO
-IF EXISTS (SELECT * FROM sys.server_principals WHERE name = N'MyLogin_Procedure')
-BEGIN
-    DROP LOGIN MyLogin_Procedure
-END    
-GO
-CREATE LOGIN MyLogin_Procedure WITH PASSWORD = '123__aBC'
-GO
-CREATE USER MyUser FOR LOGIN MyLogin_Procedure
-GO
-REVOKE CONNECT TO MyUser AS dbo
-GO
-GRANT EXECUTE ON [dbo].[RegularProcedure] TO [MyUser]
-GO

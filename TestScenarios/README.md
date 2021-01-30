@@ -54,3 +54,8 @@ The following database entities are tested in the scenarios below.
 |Permissions|Grant|[Deploy_ChangeSchemaPermissions](Deploy_ChangeSchemaPermissions)<br/>[Deploy_ChangeTablePermissions](Deploy_ChangeTablePermissions)|
 |Permissions|Change|[Deploy_ChangeSchemaPermissions](Deploy_ChangeSchemaPermissions)<br/>[Deploy_ChangeTablePermissions](Deploy_ChangeTablePermissions)|
 |Permissions|Revoke|[Deploy_ChangeSchemaPermissions](Deploy_ChangeSchemaPermissions)<br/>[Deploy_ChangeTablePermissions](Deploy_ChangeTablePermissions)|
+|Procedure|Read|[Read_Procedures](Read_Procedures)|
+|Permissions|Add|[Deploy_AddProcedure](Deploy_AddProcedure)|
+|Permissions|Change|[Deploy_ChangeProcedure](Deploy_ChangeProcedure)<br />[Deploy_ChangeProcedureFromFile](Deploy_ChangeProcedureFromFile)|
+|Permissions|Drop|[Deploy_DropProcedure](Deploy_DropProcedure)|
+|Permissions|Rename|[Deploy_RenameProcedure](Deploy_RenameProcedure)|
