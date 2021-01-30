@@ -20,6 +20,7 @@ using vcdb.Scripting.Database;
 using vcdb.Scripting.Index;
 using vcdb.Scripting.Permission;
 using vcdb.Scripting.PrimaryKey;
+using vcdb.Scripting.Programmability;
 using vcdb.Scripting.Schema;
 using vcdb.Scripting.Table;
 using vcdb.Scripting.User;
@@ -116,6 +117,7 @@ namespace vcdb
             services.InNamespace<ISchemaComparer>().AddAsSingleton();
             services.InNamespace<ITableComparer>().AddAsSingleton();
             services.InNamespace<IUserComparer>().AddAsSingleton();
+            services.InNamespace<IProcedureComparer>().AddAsSingleton();
             services.InNamespace<INamedItemFinder>().AddAsSingleton();
             services.InNamespace<IPermissionComparer>().AddAsSingleton();
             var version = options.GetDatabaseVersion();

@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System.IO;
+using System.Threading.Tasks;
 
 namespace vcdb.CommandLine
 {
@@ -6,5 +7,6 @@ namespace vcdb.CommandLine
     {
         Task<T> Read<T>();
         string GetHash(int hashSize);
+        TextReader GetSiblingContent(string fileName);
     }
 }

@@ -3,6 +3,7 @@ using vcdb.CommandLine;
 using vcdb.Models;
 using vcdb.Scripting.Collation;
 using vcdb.Scripting.Permission;
+using vcdb.Scripting.Programmability;
 using vcdb.Scripting.Schema;
 using vcdb.Scripting.Table;
 using vcdb.Scripting.User;
@@ -16,6 +17,7 @@ namespace vcdb.Scripting.Database
         private readonly ICollationComparer collationComparer;
         private readonly IUserComparer userComparer;
         private readonly IPermissionComparer permissionComparer;
+        private readonly IProcedureComparer procedureComparer;
         private readonly Options options;
 
         public DatabaseComparer(
@@ -24,6 +26,7 @@ namespace vcdb.Scripting.Database
             ICollationComparer collationComparer,
             IUserComparer userComparer,
             IPermissionComparer permissionComparer,
+            IProcedureComparer procedureComparer,
             Options options)
         {
             this.tableComparer = tableComparer;
@@ -31,6 +34,7 @@ namespace vcdb.Scripting.Database
             this.collationComparer = collationComparer;
             this.userComparer = userComparer;
             this.permissionComparer = permissionComparer;
+            this.procedureComparer = procedureComparer;
             this.options = options;
         }
 
@@ -41,7 +45,7 @@ namespace vcdb.Scripting.Database
         {
             return new DatabaseDifference
             {
-                TableDifferences = tableComparer.GetDifferentTables(
+                TableDifferences = tableComparer.GetTableDifferences(
                     context.ForDatabase(currentDatabase, requiredDatabase),
                     currentDatabase.Tables.OrEmpty(),
                     requiredDatabase.Tables.OrEmpty()).ToArray(),
@@ -58,7 +62,11 @@ namespace vcdb.Scripting.Database
                 UserDifferences = userComparer.GetUserDifferences(
                     currentDatabase.Users.OrEmpty(),
                     requiredDatabase.Users.OrEmpty()).ToArray(),
-                PermissionDifferences = GetPermissionDifferences(context, currentDatabase, requiredDatabase)
+                PermissionDifferences = GetPermissionDifferences(context, currentDatabase, requiredDatabase),
+                ProcedureDifferences = procedureComparer.GetProcedureDifferences(
+                    context.ForDatabase(currentDatabase, requiredDatabase),
+                    currentDatabase.Procedures.OrEmpty(),
+                    requiredDatabase.Procedures.OrEmpty()).ToArray()
             };
         }
 

@@ -5,7 +5,7 @@ namespace vcdb.Scripting.Table
 {
     public interface ITableComparer
     {
-        IEnumerable<TableDifference> GetDifferentTables(
+        IEnumerable<TableDifference> GetTableDifferences(
             ComparerContext context,
             IDictionary<ObjectName, TableDetails> currentTables,
             IDictionary<ObjectName, TableDetails> requiredTables);

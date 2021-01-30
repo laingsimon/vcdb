@@ -40,6 +40,38 @@ namespace vcdb.CommandLine
             return await ReadFromStream<T>(new StreamReader(Path.Combine(options.WorkingDirectory, options.InputFile)));
         }
 
+        public TextReader GetSiblingContent(string fileName)
+        {
+            if (Console.IsInputRedirected)
+            {
+                return ReadContentFromFileInWorkingDirectory(fileName)
+                    ?? throw new FileNotFoundException($"Requested file could not be found in working directory ({options.WorkingDirectory})", fileName);
+            }
+
+            return ReadContentFromFileInSameDirectoryAsInputFile(fileName)
+                ?? ReadContentFromFileInWorkingDirectory(fileName)
+                ?? throw new FileNotFoundException($"Requested file could not be found as a sibling of the input json ({Path.GetFullPath(options.InputFile)}) or in the working directory ({options.WorkingDirectory})", fileName);
+        }
+
+        private TextReader ReadContentFromFileInSameDirectoryAsInputFile(string fileName)
+        {
+            var fullInputFilePath = Path.GetFullPath(options.InputFile);
+            var inputPathDirectory = Path.GetDirectoryName(fullInputFilePath);
+            return ReadContentFromFileIfExists(Path.Combine(inputPathDirectory, fileName));
+        }
+
+        private TextReader ReadContentFromFileInWorkingDirectory(string fileName)
+        {
+            return ReadContentFromFileIfExists(Path.Combine(options.WorkingDirectory, fileName));
+        }
+
+        private TextReader ReadContentFromFileIfExists(string filePath)
+        {
+            return File.Exists(filePath)
+                ? new StreamReader(filePath)
+                : null;
+        }
+
         private Task<T> ReadFromStream<T>(TextReader inputStreamReader)
         {
             return Task.Run(() =>

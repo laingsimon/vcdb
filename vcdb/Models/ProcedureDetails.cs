@@ -3,12 +3,13 @@
     /// <summary>
     /// Represents a procedure that can be executed within the database
     /// </summary>
-    public class ProcedureDetails : INamedItem<string>
+    public class ProcedureDetails : INamedItem<ObjectName>
     {
-        public string[] PreviousNames { get; set; }
+        public ObjectName[] PreviousNames { get; set; }
 
         /// <summary>
         /// The definition of the stored procedure
+        /// This takes precedence over the <seealso cref="FileDefinition"/>
         /// </summary>
         public string Definition { get; set; }
 

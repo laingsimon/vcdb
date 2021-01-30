@@ -34,7 +34,7 @@ namespace vcdb.Scripting.Table
             this.permissionComparer = permissionComparer;
         }
 
-        public IEnumerable<TableDifference> GetDifferentTables(
+        public IEnumerable<TableDifference> GetTableDifferences(
             ComparerContext context,
             IDictionary<ObjectName, TableDetails> currentTables,
             IDictionary<ObjectName, TableDetails> requiredTables)
