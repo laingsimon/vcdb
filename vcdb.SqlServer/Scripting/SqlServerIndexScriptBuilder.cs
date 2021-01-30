@@ -16,13 +16,13 @@ namespace vcdb.SqlServer.Scripting
             this.descriptionScriptBuilder = descriptionScriptBuilder;
         }
 
-        private SqlScript GetDropIndexScript(TableName requiredTableName, string indexName)
+        private SqlScript GetDropIndexScript(ObjectName requiredTableName, string indexName)
         {
             return new SqlScript($@"DROP INDEX {indexName.SqlSafeName()} ON {requiredTableName.SqlSafeName()}
 GO");
         }
 
-        public IEnumerable<SqlScript> CreateUpgradeScripts(TableName requiredTableName, IReadOnlyCollection<IndexDifference> indexDifferences)
+        public IEnumerable<SqlScript> CreateUpgradeScripts(ObjectName requiredTableName, IReadOnlyCollection<IndexDifference> indexDifferences)
         {
             foreach (var indexDifference in indexDifferences)
             {
@@ -66,7 +66,7 @@ GO");
             }
         }
 
-        private IEnumerable<SqlScript> GetAddIndexScript(TableName tableName, string indexName, IndexDetails index)
+        private IEnumerable<SqlScript> GetAddIndexScript(ObjectName tableName, string indexName, IndexDetails index)
         {
             var uniqueClause = index.Unique
                 ? "UNIQUE "
@@ -102,10 +102,10 @@ GO");
             }
         }
 
-        private SqlScript GetRenameIndexScript(TableName tableName, string currentName, string requiredName)
+        private SqlScript GetRenameIndexScript(ObjectName tableName, string currentName, string requiredName)
         {
             return new SqlScript(@$"EXEC sp_rename
-    @objname = '{tableName.Schema}.{tableName.Table}.{currentName}',
+    @objname = '{tableName.Schema}.{tableName.Name}.{currentName}',
     @newname = '{requiredName}',
     @objtype = 'INDEX'
 GO");

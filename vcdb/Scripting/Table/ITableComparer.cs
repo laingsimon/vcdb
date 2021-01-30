@@ -7,7 +7,7 @@ namespace vcdb.Scripting.Table
     {
         IEnumerable<TableDifference> GetDifferentTables(
             ComparerContext context,
-            IDictionary<TableName, TableDetails> currentTables,
-            IDictionary<TableName, TableDetails> requiredTables);
+            IDictionary<ObjectName, TableDetails> currentTables,
+            IDictionary<ObjectName, TableDetails> requiredTables);
     }
 }

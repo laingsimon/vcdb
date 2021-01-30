@@ -10,7 +10,7 @@ namespace vcdb.SqlServer.SchemaBuilding
 {
     public class SqlServerCheckConstraintsRepository : ICheckConstraintRepository
     {
-        public async Task<CheckConstraintDetails[]> GetCheckConstraints(DbConnection connection, TableName tableName)
+        public async Task<CheckConstraintDetails[]> GetCheckConstraints(DbConnection connection, ObjectName tableName)
         {
             var checkConstraints = await connection.QueryAsync<CheckConstraint>(@"
 select chk.name, column_usage.COLUMN_NAME, chk.object_id, chk.definition, chk.is_system_named
@@ -26,7 +26,7 @@ where tab.name = @table_name
 and SCHEMA_NAME(tab.schema_id) = @table_owner",
 new
 {
-    table_name = tableName.Table,
+    table_name = tableName.Name,
     table_owner = tableName.Schema
 });
 

@@ -15,24 +15,24 @@ namespace vcdb.SqlServer.Scripting
             return GetChangeDescriptionScript(requiredSchemaName, null, null, null, current, required);
         }
 
-        public SqlScript ChangeTableDescription(TableName requiredTableName, string current, string required)
+        public SqlScript ChangeTableDescription(ObjectName requiredTableName, string current, string required)
         {
-            return GetChangeDescriptionScript(requiredTableName.Schema, requiredTableName.Table, null, null, current, required);
+            return GetChangeDescriptionScript(requiredTableName.Schema, requiredTableName.Name, null, null, current, required);
         }
 
-        public SqlScript ChangeColumnDescription(TableName requiredTableName, string requiredColumnName, string current, string required)
+        public SqlScript ChangeColumnDescription(ObjectName requiredTableName, string requiredColumnName, string current, string required)
         {
-            return GetChangeDescriptionScript(requiredTableName.Schema, requiredTableName.Table, "COLUMN", requiredColumnName, current, required);
+            return GetChangeDescriptionScript(requiredTableName.Schema, requiredTableName.Name, "COLUMN", requiredColumnName, current, required);
         }
 
-        public SqlScript ChangeIndexDescription(TableName requiredTableName, string requiredIndexName, string current, string required)
+        public SqlScript ChangeIndexDescription(ObjectName requiredTableName, string requiredIndexName, string current, string required)
         {
-            return GetChangeDescriptionScript(requiredTableName.Schema, requiredTableName.Table, "INDEX", requiredIndexName, current, required);
+            return GetChangeDescriptionScript(requiredTableName.Schema, requiredTableName.Name, "INDEX", requiredIndexName, current, required);
         }
 
-        public SqlScript ChangePrimaryKeyDescription(TableName requiredTableName, string requiredKeyName, string current, string required)
+        public SqlScript ChangePrimaryKeyDescription(ObjectName requiredTableName, string requiredKeyName, string current, string required)
         {
-            return GetChangeDescriptionScript(requiredTableName.Schema, requiredTableName.Table, "CONSTRAINT", requiredKeyName, current, required);
+            return GetChangeDescriptionScript(requiredTableName.Schema, requiredTableName.Name, "CONSTRAINT", requiredKeyName, current, required);
         }
 
         private SqlScript GetChangeDescriptionScript(

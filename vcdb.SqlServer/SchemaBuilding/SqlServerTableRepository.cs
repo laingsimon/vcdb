@@ -33,10 +33,10 @@ namespace vcdb.SqlServer.SchemaBuilding
             this.permissionRepository = permissionRepository;
         }
 
-        public async Task<Dictionary<TableName, TableDetails>> GetTables(DbConnection connection)
+        public async Task<Dictionary<ObjectName, TableDetails>> GetTables(DbConnection connection)
         {
-            var tables = await connection.QueryAsync<TableName>(@"
-select TABLE_NAME as [Table], TABLE_SCHEMA as [Schema]
+            var tables = await connection.QueryAsync<ObjectName>($@"
+select TABLE_NAME as [{nameof(ObjectName.Name)}], TABLE_SCHEMA as [{nameof(ObjectName.Schema)}]
 from INFORMATION_SCHEMA.TABLES
 where TABLE_TYPE = 'BASE TABLE'");
 

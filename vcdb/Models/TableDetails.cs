@@ -2,7 +2,7 @@
 
 namespace vcdb.Models
 {
-    public class TableDetails : INamedItem<TableName>
+    public class TableDetails : INamedItem<ObjectName>
     {
         /// <summary>
         /// The columns in the table
@@ -22,7 +22,7 @@ namespace vcdb.Models
         /// <summary>
         /// Any previous names for the table, to indicate whether the table might need to change name
         /// </summary>
-        public TableName[] PreviousNames { get; set; }
+        public ObjectName[] PreviousNames { get; set; }
 
         /// <summary>
         /// A description for the table

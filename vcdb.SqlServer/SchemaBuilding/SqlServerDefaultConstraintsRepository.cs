@@ -10,7 +10,7 @@ namespace vcdb.SqlServer.SchemaBuilding
 {
     public class SqlServerDefaultConstraintsRepository : IDefaultConstraintRepository
     {
-        public async Task<IDictionary<string, ColumnDefault>> GetColumnDefaults(DbConnection connection, TableName tableName)
+        public async Task<IDictionary<string, ColumnDefault>> GetColumnDefaults(DbConnection connection, ObjectName tableName)
         {
             var defaultColumns = connection.QueryAsync<SqlServerColumnDefault>($@"
 select  def.name,
@@ -28,7 +28,7 @@ where tab.name = @table_name
 and SCHEMA_NAME(tab.schema_id) = @table_owner",
             new
             {
-                table_name = tableName.Table,
+                table_name = tableName.Name,
                 table_owner = tableName.Schema
             });
 

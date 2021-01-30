@@ -8,8 +8,8 @@ namespace vcdb.Scripting
     {
         public DatabaseDetails CurrentDatabase { get; }
         public DatabaseDetails RequiredDatabase { get; }
-        public NamedItem<TableName, TableDetails> CurrentTable { get; }
-        public NamedItem<TableName, TableDetails> RequiredTable { get; }
+        public NamedItem<ObjectName, TableDetails> CurrentTable { get; }
+        public NamedItem<ObjectName, TableDetails> RequiredTable { get; }
         public IReadOnlyCollection<ColumnDifference> ColumnDifferences { get; }
 
         public ComparerContext()
@@ -33,8 +33,8 @@ namespace vcdb.Scripting
 
         private ComparerContext(
             ComparerContext rootContext,
-            NamedItem<TableName, TableDetails> currentTable,
-            NamedItem<TableName, TableDetails> requiredTable,
+            NamedItem<ObjectName, TableDetails> currentTable,
+            NamedItem<ObjectName, TableDetails> requiredTable,
             IReadOnlyCollection<ColumnDifference> columnDifferences = null)
             :this(rootContext)
         {
@@ -51,8 +51,8 @@ namespace vcdb.Scripting
         }
 
         public ComparerContext ForTable(
-            NamedItem<TableName, TableDetails> currentTable,
-            NamedItem<TableName, TableDetails> requiredTable,
+            NamedItem<ObjectName, TableDetails> currentTable,
+            NamedItem<ObjectName, TableDetails> requiredTable,
             IReadOnlyCollection<ColumnDifference> columnDifferences = null)
         {
             return new ComparerContext(this, currentTable, requiredTable, columnDifferences);

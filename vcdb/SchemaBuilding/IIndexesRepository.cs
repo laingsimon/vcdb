@@ -7,6 +7,6 @@ namespace vcdb.SchemaBuilding
 {
     public interface IIndexesRepository
     {
-        Task<Dictionary<string, IndexDetails>> GetIndexes(DbConnection connection, TableName tableName);
+        Task<Dictionary<string, IndexDetails>> GetIndexes(DbConnection connection, ObjectName tableName);
     }
 }

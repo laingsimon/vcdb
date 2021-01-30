@@ -45,7 +45,7 @@ namespace vcdb.SqlServer.Scripting
             }
         }
 
-        private SqlScript DropCheckConstraint(TableName tableName, CheckConstraintDetails checkConstraint)
+        private SqlScript DropCheckConstraint(ObjectName tableName, CheckConstraintDetails checkConstraint)
         {
             return new SqlScript($@"ALTER TABLE {tableName.SqlSafeName()}
 DROP CONSTRAINT {checkConstraint.SqlName.SqlSafeName()}
@@ -205,7 +205,7 @@ GO");
                 var currentConstraint = tableDifference.CurrentTable.Value.Checks.SingleOrDefault(check => check.Check == checkConstraint.Check);
                 var newAutomaticName = objectNameHelper.GetAutomaticConstraintName(
                     "CK",
-                    tableDifference.RequiredTable.Key.Table,
+                    tableDifference.RequiredTable.Key.Name,
                     currentConstraint.ColumnNames.Length == 1
                         ? currentConstraint.ColumnNames.Single()
                         : null,
@@ -239,13 +239,13 @@ GO");
             }
         }
 
-        private IEnumerable<SqlScript> AddCheckConstraint(TableName tableName, CheckConstraintDifference checkDifference)
+        private IEnumerable<SqlScript> AddCheckConstraint(ObjectName tableName, CheckConstraintDifference checkDifference)
         {
             return AddCheckConstraint(tableName, checkDifference.RequiredConstraint);
         }
 
         private IEnumerable<SqlScript> AddCheckConstraint(
-            TableName tableName,
+            ObjectName tableName,
             CheckConstraintDetails checkConstraint)
         {
             var unnamedCheckConstraint = GetNameForCheckConstraint(tableName, checkConstraint);
@@ -258,14 +258,14 @@ GO");
             if (checkConstraint.Name == null)
             {
                 yield return new SqlScript(@$"DECLARE @newName VARCHAR(1024)
-SELECT @newName = 'CK__{tableName.Table}__' + col.name + '__' + FORMAT(chk.OBJECT_ID, 'X')
+SELECT @newName = 'CK__{tableName.Name}__' + col.name + '__' + FORMAT(chk.OBJECT_ID, 'X')
 FROM sys.check_constraints chk
 INNER JOIN sys.columns col
 ON col.column_id = chk.parent_column_id
 AND col.object_id = chk.parent_object_id
 INNER JOIN sys.tables tab
 ON tab.object_id = chk.parent_object_id
-WHERE tab.name = '{tableName.Table}'
+WHERE tab.name = '{tableName.Name}'
 AND SCHEMA_NAME(tab.schema_id) = '{tableName.Schema}'
 AND chk.name = '{unnamedCheckConstraint}'
 
@@ -278,7 +278,7 @@ GO");
         }
 
         private string GetNameForCheckConstraint(
-            TableName tableName, 
+            ObjectName tableName, 
             CheckConstraintDetails checkConstraint)
         {
             if (!string.IsNullOrEmpty(checkConstraint.Name))
@@ -286,7 +286,7 @@ GO");
 
             return objectNameHelper.GetAutomaticConstraintName(
                 "CK",
-                tableName.Table,
+                tableName.Name,
                 GetDeterministicIdentifierForNewCheckConstraint(checkConstraint),
                 checkConstraint.CheckObjectId ?? 0);
         }

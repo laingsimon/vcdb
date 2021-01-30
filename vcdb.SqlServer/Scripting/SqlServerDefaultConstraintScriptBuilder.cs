@@ -88,7 +88,7 @@ namespace vcdb.SqlServer.Scripting
             }
         }
 
-        public IEnumerable<SqlScript> CreateUpgradeScripts(TableName tableName, ColumnDifference columnDifference)
+        public IEnumerable<SqlScript> CreateUpgradeScripts(ObjectName tableName, ColumnDifference columnDifference)
         {
             if (columnDifference.DefaultChangedTo != null)
             {
@@ -155,19 +155,19 @@ namespace vcdb.SqlServer.Scripting
             }
         }
 
-        private string GetNameForColumnDefault(TableName tableName, NamedItem<string, ColumnDetails> column)
+        private string GetNameForColumnDefault(ObjectName tableName, NamedItem<string, ColumnDetails> column)
         {
-            return objectNameHelper.GetAutomaticConstraintName("DF", tableName.Table, column.Key, column.Value.DefaultObjectId ?? 0);
+            return objectNameHelper.GetAutomaticConstraintName("DF", tableName.Name, column.Key, column.Value.DefaultObjectId ?? 0);
         }
 
-        private SqlScript GetDropDefaultScript(TableName tableName, string constraintName)
+        private SqlScript GetDropDefaultScript(ObjectName tableName, string constraintName)
         {
             return new SqlScript($@"ALTER TABLE {tableName.SqlSafeName()}
 DROP CONSTRAINT {constraintName.SqlSafeName()}
 GO");
         }
 
-        private IEnumerable<SqlScript> GetAlterDefaultScript(TableName tableName, NamedItem<string, ColumnDetails> columnDetails, string currentConstraintName)
+        private IEnumerable<SqlScript> GetAlterDefaultScript(ObjectName tableName, NamedItem<string, ColumnDetails> columnDetails, string currentConstraintName)
         {
             var columnName = columnDetails.Key;
             var column = columnDetails.Value;
@@ -178,7 +178,7 @@ GO");
             }
         }
 
-        private IEnumerable<SqlScript> GetAddDefaultScript(TableName tableName, string columnName, ColumnDetails column)
+        private IEnumerable<SqlScript> GetAddDefaultScript(ObjectName tableName, string columnName, ColumnDetails column)
         {
             if (column.Default == null)
                 yield break;
@@ -193,14 +193,14 @@ GO");
             if (column.DefaultName == null)
             {
                 yield return new SqlScript(@$"DECLARE @newName VARCHAR(1024)
-SELECT @newName = 'DF__{tableName.Table}__{columnName}__' + FORMAT(def.OBJECT_ID, 'X')
+SELECT @newName = 'DF__{tableName.Name}__{columnName}__' + FORMAT(def.OBJECT_ID, 'X')
 FROM sys.default_constraints def
 INNER JOIN sys.columns col
 ON col.column_id = def.parent_column_id
 AND col.object_id = def.parent_object_id
 INNER JOIN sys.tables tab
 ON tab.object_id = col.object_id
-WHERE tab.name = '{tableName.Table}'
+WHERE tab.name = '{tableName.Name}'
 AND SCHEMA_NAME(tab.schema_id) = '{tableName.Schema}'
 AND def.name = '{unnamedDefaultConstraint}'
 
@@ -221,8 +221,8 @@ GO");
         }
 
         private SqlScript GetRenameDefaultScript(
-            TableName currentTableName,
-            TableName requiredTableName,
+            ObjectName currentTableName,
+            ObjectName requiredTableName,
             NamedItem<string, ColumnDetails> currentColumn,
             string currentConstraintName,
             NamedItem<string, ColumnDetails> requiredColumn,
@@ -230,7 +230,7 @@ GO");
         {
             var requiredAutomaticConstraintName = objectNameHelper.GetAutomaticConstraintName(
                 "DF",
-                requiredTableName.Table,
+                requiredTableName.Name,
                 requiredColumn.Key,
                 currentColumn.Value.DefaultObjectId ?? 0);
 

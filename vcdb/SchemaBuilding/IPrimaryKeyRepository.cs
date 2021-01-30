@@ -9,10 +9,10 @@ namespace vcdb.SchemaBuilding
     {
         Task<PrimaryKeyDetails> GetPrimaryKeyDetails(
             DbConnection connection,
-            TableName tableName);
+            ObjectName tableName);
 
         Task<HashSet<string>> GetColumnsInPrimaryKey(
             DbConnection connection,
-            TableName tableName);
+            ObjectName tableName);
     }
 }

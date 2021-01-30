@@ -28,7 +28,7 @@ namespace vcdb.SqlServer.SchemaBuilding
 
         public async Task<Dictionary<string, ColumnDetails>> GetColumns(
             DbConnection connection,
-            TableName tableName,
+            ObjectName tableName,
             Permissions tablePermissions)
         {
             var databaseCollation = await collationRepository.GetDatabaseCollation(connection);
@@ -43,7 +43,7 @@ exec sp_columns
     @table_owner = @table_owner",
                 new
                 {
-                    table_name = tableName.Table,
+                    table_name = tableName.Name,
                     table_owner = tableName.Schema
                 }).ToDictionaryAsync(
                         column => column.COLUMN_NAME,

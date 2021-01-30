@@ -13,6 +13,7 @@ namespace vcdb.SqlServer.SchemaBuilding
         private readonly ICollationRepository collationRepository;
         private readonly IUserRepository userRepository;
         private readonly IPermissionRepository permissionRepository;
+        private readonly IProcedureRepository procedureRepository;
 
         public SqlServerDatabaseRepository(
             ITableRepository tableRepository,
@@ -20,7 +21,8 @@ namespace vcdb.SqlServer.SchemaBuilding
             IDescriptionRepository descriptionRepository,
             ICollationRepository collationRepository,
             IUserRepository loginRepository,
-            IPermissionRepository permissionRepository)
+            IPermissionRepository permissionRepository,
+            IProcedureRepository procedureRepository)
         {
             this.tableRepository = tableRepository;
             this.schemaRepository = schemaRepository;
@@ -28,6 +30,7 @@ namespace vcdb.SqlServer.SchemaBuilding
             this.collationRepository = collationRepository;
             this.userRepository = loginRepository;
             this.permissionRepository = permissionRepository;
+            this.procedureRepository = procedureRepository;
         }
 
         public async Task<DatabaseDetails> GetDatabaseDetails(DbConnection connection)
@@ -45,7 +48,8 @@ namespace vcdb.SqlServer.SchemaBuilding
                     : databaseCollation,
                 ServerCollation = serverCollation,
                 Users = await userRepository.GetUsers(connection),
-                Permissions = await permissionRepository.GetDatabasePermissions(connection)
+                Permissions = await permissionRepository.GetDatabasePermissions(connection),
+                Procedures = await procedureRepository.GetProcedures(connection)
             };
         }
     }

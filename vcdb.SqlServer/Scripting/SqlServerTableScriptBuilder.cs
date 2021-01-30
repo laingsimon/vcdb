@@ -136,7 +136,7 @@ namespace vcdb.SqlServer.Scripting
             }
         }
 
-        private SqlScript GetDropTableScript(TableName table)
+        private SqlScript GetDropTableScript(ObjectName table)
         {
             return new SqlScript(@$"
 DROP TABLE {table.SqlSafeName()}
@@ -210,7 +210,7 @@ GO");
         }
 
         private IEnumerable<SqlScript> GetAlterColumnScript(
-            TableName tableName, 
+            ObjectName tableName, 
             ColumnDifference columnDifference)
         {
             var column = columnDifference.RequiredColumn.Value;
@@ -247,34 +247,34 @@ GO");
         }
 
         private IEnumerable<SqlScript> GetRenameColumnScript(
-            TableName tableName,
+            ObjectName tableName,
             string currentColumnName,
             string requiredColumnName)
         {
             //TODO: If there are anly check constraints bound to this column, drop it first.
 
             yield return new SqlScript(@$"EXEC sp_rename
-    @objname = '{tableName.Schema}.{tableName.Table}.{currentColumnName}',
+    @objname = '{tableName.Schema}.{tableName.Name}.{currentColumnName}',
     @newname = '{requiredColumnName}',
     @objtype = 'COLUMN'
 GO");
         }
 
-        private IEnumerable<SqlScript> GetRenameTableScript(TableName current, TableName required)
+        private IEnumerable<SqlScript> GetRenameTableScript(ObjectName current, ObjectName required)
         {
-            if (current.Table != required.Table)
+            if (current.Name != required.Name)
             {
                 //NOTE: Required.Schema is used here as the table will have been moved between schemas before any table changes are executed
 
                 yield return new SqlScript(@$"EXEC sp_rename 
-    @objname = '{required.Schema}.{current.Table}', 
-    @newname = '{required.Table}', 
+    @objname = '{required.Schema}.{current.Name}', 
+    @newname = '{required.Name}', 
     @objtype = 'OBJECT'
 GO");
             }
         }
 
-        private IEnumerable<SqlScript> GetCreateTableScript(TableDetails requiredTable, TableName tableName)
+        private IEnumerable<SqlScript> GetCreateTableScript(TableDetails requiredTable, ObjectName tableName)
         {
             var columns = requiredTable.Columns.Select(pair => ColumnClause(pair.Key, pair.Value));
             yield return new SqlScript($@"CREATE TABLE {tableName.SqlSafeName()} (
@@ -314,7 +314,7 @@ GO");
             }
         }
 
-        private IEnumerable<SqlScript> GetAddColumnScript(TableName tableName, string columnName, ColumnDetails column)
+        private IEnumerable<SqlScript> GetAddColumnScript(ObjectName tableName, string columnName, ColumnDetails column)
         {
             yield return new SqlScript($@"ALTER TABLE {tableName.SqlSafeName()}
 ADD {ColumnClause(columnName, column)}

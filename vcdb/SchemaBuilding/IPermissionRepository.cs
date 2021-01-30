@@ -9,6 +9,7 @@ namespace vcdb.SchemaBuilding
     {
         Task<Permissions> GetDatabasePermissions(DbConnection connection);
         Task<Dictionary<string, Permissions>> GetSchemaPermissions(DbConnection connection);
-        Task<Dictionary<TableName, Permissions>> GetTablePermissions(DbConnection connection);
+        Task<Dictionary<ObjectName, Permissions>> GetTablePermissions(DbConnection connection);
+        Task<Dictionary<ObjectName, Permissions>> GetProcedurePermissions(DbConnection connection);
     }
 }

@@ -5,9 +5,9 @@ namespace vcdb.SqlServer
 {
     public static class SqlServerExtensions
     {
-        public static string SqlSafeName(this TableName tableName)
+        public static string SqlSafeName(this ObjectName tableName)
         {
-            return $"{tableName.Schema.SqlSafeName()}.{tableName.Table.SqlSafeName()}";
+            return $"{tableName.Schema.SqlSafeName()}.{tableName.Name.SqlSafeName()}";
         }
 
         public static string SqlSafeName(this string columnName)

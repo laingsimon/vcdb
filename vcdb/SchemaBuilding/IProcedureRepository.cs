@@ -5,8 +5,8 @@ using vcdb.Models;
 
 namespace vcdb.SchemaBuilding
 {
-    public interface ITableRepository
+    public interface IProcedureRepository
     {
-        Task<Dictionary<ObjectName, TableDetails>> GetTables(DbConnection connection);
+        Task<Dictionary<ObjectName, ProcedureDetails>> GetProcedures(DbConnection connection);
     }
 }

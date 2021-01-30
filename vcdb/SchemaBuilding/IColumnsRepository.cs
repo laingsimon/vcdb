@@ -9,7 +9,7 @@ namespace vcdb.SchemaBuilding
     {
         Task<Dictionary<string, ColumnDetails>> GetColumns(
             DbConnection connection,
-            TableName tableName,
+            ObjectName tableName,
             Permissions tablePermissions);
     }
 }

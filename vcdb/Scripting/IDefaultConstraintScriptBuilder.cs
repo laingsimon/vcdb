@@ -8,6 +8,6 @@ namespace vcdb.Scripting
     public interface IDefaultConstraintScriptBuilder
     {
         IEnumerable<SqlScript> CreateUpgradeScripts(TableDifference tableDifference);
-        IEnumerable<SqlScript> CreateUpgradeScripts(TableName requiredTableName, ColumnDifference columnDifference);
+        IEnumerable<SqlScript> CreateUpgradeScripts(ObjectName requiredTableName, ColumnDifference columnDifference);
     }
 }

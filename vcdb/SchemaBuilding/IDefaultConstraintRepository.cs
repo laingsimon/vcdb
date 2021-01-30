@@ -6,6 +6,6 @@ namespace vcdb.SchemaBuilding
 {
     public interface IDefaultConstraintRepository
     {
-        Task<IDictionary<string, ColumnDefault>> GetColumnDefaults(DbConnection connection, TableName tableName);
+        Task<IDictionary<string, ColumnDefault>> GetColumnDefaults(DbConnection connection, ObjectName tableName);
     }
 }

@@ -68,7 +68,7 @@ and class_desc = 'SCHEMA'");
                 GetEntityPermissions);
         }
 
-        public async Task<Dictionary<TableName, Permissions>> GetTablePermissions(DbConnection connection)
+        public async Task<Dictionary<ObjectName, Permissions>> GetTablePermissions(DbConnection connection)
         {
             var permissionRecords = await connection.QueryAsync<PermissionRecord>(@"
 select  perm.class_desc,
@@ -90,7 +90,7 @@ and perm.class_desc = 'OBJECT_OR_COLUMN'");
 
             return BuildPermissions(
                 permissionRecords.ToArray(),
-                r => TableName.Parse(r.major_name),
+                r => ObjectName.Parse(r.major_name),
                 GetEntityAndSubEntityPermissions);
         }
 
@@ -143,6 +143,29 @@ and perm.class_desc = 'OBJECT_OR_COLUMN'");
                     .ToPermissionNameThenGranteeHashSet(),
                 SubEntityPermissions = subEntityPermissions
             };
+        }
+
+        public async Task<Dictionary<ObjectName, Permissions>> GetProcedurePermissions(DbConnection connection)
+        {
+            var permissionRecords = await connection.QueryAsync<PermissionRecord>(@"
+select  perm.class_desc,
+        perm.major_id,
+        schema_name(p.schema_id) + '.' + p.name as major_name,
+        null as minor_name,
+        USER_NAME(perm.grantee_principal_id) as grantee_principal,
+        USER_NAME(perm.grantor_principal_id) as grantor_principal,
+        perm.permission_name,
+        perm.state_desc
+from sys.database_permissions perm
+inner join sys.procedures p
+on p.object_id = perm.major_id
+where perm.major_id > 0
+and perm.class_desc = 'PROCEDURE'");
+
+            return BuildPermissions(
+                permissionRecords.ToArray(),
+                r => ObjectName.Parse(r.major_name),
+                GetEntityPermissions);
         }
     }
 }

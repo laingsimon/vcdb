@@ -25,7 +25,7 @@ namespace vcdb.SqlServer.Scripting
             this.hashHelper = hashHelper;
         }
 
-        public IEnumerable<SqlScript> CreateUpgradeScripts(TableName tableName, PrimaryKeyDifference primaryKeyDifference)
+        public IEnumerable<SqlScript> CreateUpgradeScripts(ObjectName tableName, PrimaryKeyDifference primaryKeyDifference)
         {
             if (primaryKeyDifference == null)
             {
@@ -78,7 +78,7 @@ namespace vcdb.SqlServer.Scripting
             }
         }
 
-        private IEnumerable<SqlScript> GetAddPrimaryKeyScripts(TableName tableName, PrimaryKeyDifference primaryKeyDifference)
+        private IEnumerable<SqlScript> GetAddPrimaryKeyScripts(ObjectName tableName, PrimaryKeyDifference primaryKeyDifference)
         {
             var requiredPrimaryKey = primaryKeyDifference.RequiredPrimaryKey;
             var primaryKeyName = requiredPrimaryKey?.Name ?? GetNameForPrimaryKey(tableName, primaryKeyDifference.RequiredPrimaryKey, primaryKeyDifference.RequiredColumns);
@@ -102,7 +102,7 @@ GO");
         }
 
         private string GetNameForPrimaryKey(
-            TableName tableName,
+            ObjectName tableName,
             PrimaryKeyDetails primaryKeyDetails,
             string[] requiredColumns)
         {
@@ -113,19 +113,19 @@ GO");
 
             return objectNameHelper.GetAutomaticConstraintName(
                 "PK",
-                tableName.Table,
+                tableName.Name,
                 null,
                 PrimaryKeyObjectIdPrefix + hashOfRequiredColumns);
         }
 
-        private IEnumerable<SqlScript> GetDropPrimaryKeyScripts(TableName tableName, PrimaryKeyDetails currentPrimaryKey)
+        private IEnumerable<SqlScript> GetDropPrimaryKeyScripts(ObjectName tableName, PrimaryKeyDetails currentPrimaryKey)
         {
             yield return new SqlScript($@"ALTER TABLE {tableName.SqlSafeName()}
 DROP CONSTRAINT {currentPrimaryKey.SqlName.SqlSafeName()}
 GO");
         }
 
-        private SqlScript GetRenamePrimaryKeyScript(TableName tableName, PrimaryKeyDifference primaryKeyDifference)
+        private SqlScript GetRenamePrimaryKeyScript(ObjectName tableName, PrimaryKeyDifference primaryKeyDifference)
         {
             if (string.IsNullOrEmpty(primaryKeyDifference.RequiredPrimaryKey?.Name))
             {

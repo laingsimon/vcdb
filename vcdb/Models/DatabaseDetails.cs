@@ -8,7 +8,7 @@ namespace vcdb.Models
         /// <summary>
         /// The tables in the database
         /// </summary>
-        public Dictionary<TableName, TableDetails> Tables { get; set; }
+        public Dictionary<ObjectName, TableDetails> Tables { get; set; }
 
         /// <summary>
         /// The tables in the database
@@ -40,5 +40,10 @@ namespace vcdb.Models
         /// The permissions assigned to users in this database
         /// </summary>
         public Permissions Permissions { get; set; }
+
+        /// <summary>
+        /// The procedures that have been created within the database
+        /// </summary>
+        public Dictionary<ObjectName, ProcedureDetails> Procedures { get; set; }
     }
 }

@@ -6,6 +6,6 @@ namespace vcdb.SchemaBuilding
 {
     public interface ICheckConstraintRepository
     {
-        Task<CheckConstraintDetails[]> GetCheckConstraints(DbConnection connection, TableName tableName);
+        Task<CheckConstraintDetails[]> GetCheckConstraints(DbConnection connection, ObjectName tableName);
     }
 }

@@ -11,10 +11,10 @@ namespace vcdb.Scripting.Table
 {
     public class TableDifference
     {
-        public NamedItem<TableName, TableDetails> CurrentTable { get; set; }
-        public NamedItem<TableName, TableDetails> RequiredTable { get; set; }
+        public NamedItem<ObjectName, TableDetails> CurrentTable { get; set; }
+        public NamedItem<ObjectName, TableDetails> RequiredTable { get; set; }
 
-        public TableName TableRenamedTo { get; set; }
+        public ObjectName TableRenamedTo { get; set; }
         public bool TableAdded { get; set; }
         public bool TableDeleted { get; set; }
         public Change<string> DescriptionChangedTo { get; set; }

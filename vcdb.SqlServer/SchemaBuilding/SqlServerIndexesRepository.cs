@@ -21,7 +21,7 @@ namespace vcdb.SqlServer.SchemaBuilding
             this.primaryKeyRepository = primaryKeyRepository;
         }
 
-        public async Task<Dictionary<string, IndexDetails>> GetIndexes(DbConnection connection, TableName tableName)
+        public async Task<Dictionary<string, IndexDetails>> GetIndexes(DbConnection connection, ObjectName tableName)
         {
             var sql = @"select ix.name as index_name, ix.type_desc, ix.is_unique, ixc.is_descending_key, ixc.is_included_column, col.name as column_name
 from sys.indexes ix
@@ -38,7 +38,7 @@ and schema_name(t.schema_id) = @schemaName";
                 sql,
                 new
                 {
-                    tableName = tableName.Table,
+                    tableName = tableName.Name,
                     schemaName = tableName.Schema
                 });
 

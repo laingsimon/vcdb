@@ -17,7 +17,7 @@ namespace vcdb.SqlServer.SchemaBuilding
             this.descriptionRepository = descriptionRepository;
         }
 
-        public async Task<HashSet<string>> GetColumnsInPrimaryKey(DbConnection connection, TableName tableName)
+        public async Task<HashSet<string>> GetColumnsInPrimaryKey(DbConnection connection, ObjectName tableName)
         {
             var columns = await connection.QueryAsync<SqlIndexDetails>(@"select ind.name as index_name, ind.type_desc, ind.is_unique, ic.is_descending_key, ic.is_included_column, col.name as column_name
 from sys.key_constraints k
@@ -36,14 +36,14 @@ and ind.type_desc not in ('HEAP')
 and tab.name = @table_name
 and SCHEMA_NAME(tab.schema_id) = @table_owner
 order by ic.key_ordinal",
-new { table_name = tableName.Table, table_owner = tableName.Schema });
+new { table_name = tableName.Name, table_owner = tableName.Schema });
 
             return new HashSet<string>(columns.Select(col => col.column_name));
         }
 
         public async Task<PrimaryKeyDetails> GetPrimaryKeyDetails(
             DbConnection connection,
-            TableName tableName)
+            ObjectName tableName)
         {
             var primaryKey = await connection.QuerySingleOrDefaultAsync<PrimaryKey>(@"
 select k.name, k.object_id, k.is_system_named, ind.is_unique, ind.type_desc
@@ -56,7 +56,7 @@ where k.type = 'PK'
 and ind.type_desc not in ('HEAP')
 and tab.name = @table_name
 and SCHEMA_NAME(tab.schema_id) = @table_owner", 
-new { table_name = tableName.Table, table_owner = tableName.Schema });
+new { table_name = tableName.Name, table_owner = tableName.Schema });
 
             if (primaryKey == null)
                 return null;

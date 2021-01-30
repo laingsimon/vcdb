@@ -13,19 +13,19 @@ namespace vcdb.Tests
         {
             var json = $"\"{input}\"";
 
-            var result = JsonConvert.DeserializeObject<TableName>(json);
+            var result = JsonConvert.DeserializeObject<ObjectName>(json);
 
             Assert.That(result.Schema, Is.EqualTo(expectedSchemaName));
-            Assert.That(result.Table, Is.EqualTo(expectedTableName));
+            Assert.That(result.Name, Is.EqualTo(expectedTableName));
         }
 
         [Test]
         public void ConvertTo_ShouldSerialiseCorrectly()
         {
-            var input = new TableName
+            var input = new ObjectName
             {
                 Schema = "dbo",
-                Table = "Table"
+                Name = "Table"
             };
 
             var json = JsonConvert.SerializeObject(input);
