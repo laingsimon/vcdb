@@ -1,0 +1,27 @@
+{
+  "procedures": {
+    "[dbo].[RegularProcedure]": {
+      "definition": "CREATE OR ALTER PROCEDURE [dbo].[RegularProcedure]\r\n(\r\n    @name varchar(255)\r\n)\r\nAS\r\nBEGIN\r\n    SELECT @name\r\nEND\r\n",
+      "permissions": {
+        "grant": {
+            "EXECUTE": {
+                "MyUser_Grant": { "withGrant": false }
+            }
+        },
+        "deny": {
+            "EXECUTE":  [ "MyUser_Deny" ]
+        }
+      }
+    }
+  },
+  "users": {
+    "MyUser_Grant": {
+        "loginName": "MyLogin_ChangeProcedurePermissionsAndRecreate_Grant",
+        "enabled": true
+    },
+    "MyUser_Deny": {
+        "loginName": "MyLogin_ChangeProcedurePermissionsAndRecreate_Deny",
+        "enabled": true
+    }
+  }
+}
