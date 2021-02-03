@@ -21,7 +21,7 @@ namespace vcdb.IntegrationTests
 
             result.WriteStdOutTo(Console.Out);
             result.WriteStdErrTo(Console.Error);
-            Assert.That(result.ExitCode, Is.EqualTo(0), $"{string.Join("\r\n", result.StdOut)}\r\nProcess exited with non-success code");
+            Assert.That(result.ExitCode, Is.EqualTo(0), $"{string.Join("\r\n", result.StdOut)}\r\n{string.Join("\r\n", result.StdErr)}\r\nProcess exited with non-success code");
         }
 
         [Explicit]

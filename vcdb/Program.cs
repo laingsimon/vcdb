@@ -90,6 +90,7 @@ namespace vcdb
 
                         if (isOutputRedirected)
                         {
+                            errorOutput.WriteLine(exc.ToString());
                             standardOutput.WriteLine($"Error executing vcdb process: {exc.Message}");
                         }
 
