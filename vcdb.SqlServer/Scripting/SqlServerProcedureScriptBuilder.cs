@@ -42,37 +42,33 @@ namespace vcdb.SqlServer.Scripting
 
                 if (procedureDifference.ProcedureAdded || changeRequiresProcedureRecreation)
                 {
-                    foreach (var script in GetCreateProcedureScript(procedureDifference, procedureDifference.RequiredProcedure.Key))
-                    {
-                        yield return script;
-                    }
-
-                    if (!changeRequiresProcedureRecreation)
-                    {
-                        continue;
-                    }
+                    yield return GetCreateProcedureScript(procedureDifference);
                 }
-
-                if (procedureDifference.ProcedureRenamedTo != null)
+                else
                 {
-                    foreach (var script in GetRenameProcedureScript(currentProcedure.Key, requiredProcedure.Key))
-                        yield return script;
-                }
-
-                if (!changeRequiresProcedureRecreation && DifferenceRequiresAlterProcedure(procedureDifference))
-                {
-                    foreach (var script in GetAlterProcedureScript(procedureDifference))
+                    if (procedureDifference.ProcedureRenamedTo != null)
                     {
-                        yield return script;
+                        foreach (var script in GetRenameProcedureScript(currentProcedure.Key, requiredProcedure.Key))
+                            yield return script;
+                    }
+
+                    if (!changeRequiresProcedureRecreation && procedureDifference.DefinitionChangedTo != null)
+                    {
+                        foreach (var script in GetAlterProcedureScript(procedureDifference))
+                        {
+                            yield return script;
+                        }
                     }
                 }
 
-                if (procedureDifference.DescriptionChangedTo != null)
+                if (procedureDifference.DescriptionChangedTo != null 
+                    || changeRequiresProcedureRecreation 
+                    || (procedureDifference.ProcedureAdded && !string.IsNullOrEmpty(requiredProcedure.Value.Description)))
                 {
                     yield return descriptionScriptBuilder.ChangeProcedureDescription(
-                        procedureDifference.RequiredProcedure.Key,
-                        procedureDifference.CurrentProcedure.Value.Description,
-                        procedureDifference.DescriptionChangedTo.Value);
+                        requiredProcedure.Key,
+                        currentProcedure?.Value?.Description,
+                        procedureDifference.DescriptionChangedTo?.Value ?? requiredProcedure.Value.Description);
                 }
 
                 foreach (var script in permissionScriptBuilder.CreateProcedurePermissionScripts(
@@ -82,11 +78,6 @@ namespace vcdb.SqlServer.Scripting
                     yield return script;
                 }
             }
-        }
-
-        private bool DifferenceRequiresAlterProcedure(ProcedureDifference procedureDifference)
-        {
-            return procedureDifference.DefinitionChangedTo != null;
         }
 
         private IEnumerable<SqlScript> GetAlterProcedureScript(ProcedureDifference procedureDifference)
@@ -117,21 +108,12 @@ DROP PROCEDURE {name.SqlSafeName()}
 GO");
         }
 
-        private IEnumerable<SqlScript> GetCreateProcedureScript(ProcedureDifference procedureDifference, ObjectName procedureName)
+        private SqlScript GetCreateProcedureScript(ProcedureDifference procedureDifference)
         {
             var createProcedureStatement = programmabilityHelper.ChangeProcedureInstructionTo(procedureDifference.DefinitionChangedTo, "CREATE");
 
-            yield return new SqlScript($@"{createProcedureStatement}
+            return new SqlScript($@"{createProcedureStatement}
 GO");
-
-            var requiredProcedure = procedureDifference.RequiredProcedure.Value;
-            if (requiredProcedure.Description != null)
-            {
-                yield return descriptionScriptBuilder.ChangeProcedureDescription(
-                    procedureName,
-                    null,
-                    requiredProcedure.Description);
-            }
         }
     }
 }
