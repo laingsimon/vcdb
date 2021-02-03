@@ -73,7 +73,9 @@ namespace vcdb.SqlServer.Scripting
 
                 foreach (var script in permissionScriptBuilder.CreateProcedurePermissionScripts(
                     requiredProcedure.Key,
-                    procedureDifference.PermissionDifferences))
+                    changeRequiresProcedureRecreation 
+                        ? PermissionDifferences.From(procedureDifference.RequiredProcedure.Value.Permissions)
+                        : procedureDifference.PermissionDifferences))
                 {
                     yield return script;
                 }
