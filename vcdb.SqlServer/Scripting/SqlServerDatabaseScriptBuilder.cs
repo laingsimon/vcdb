@@ -65,7 +65,7 @@ namespace vcdb.SqlServer.Scripting
                 yield return script;
             }
 
-            foreach (var script in schemaScriptBuilder.CreateUpgradeScripts(databaseDifferences.SchemaDifferences, databaseDifferences.TableDifferences))
+            foreach (var script in schemaScriptBuilder.CreateUpgradeScripts(databaseDifferences.SchemaDifferences, databaseDifferences.TableDifferences, databaseDifferences.ProcedureDifferences))
             {
                 yield return script;
             }

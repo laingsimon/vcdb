@@ -8,27 +8,10 @@ namespace vcdb.SqlServer.Scripting
 {
     public class SqlServerProcedureDefinitionValidator : IProcedureDefinitionValidator
     {
-        public bool IsRenamedDefinitionOnly(string currentDefinition, string requiredDefinition, ObjectName currentName, ObjectName requiredName)
-        {
-            if (currentDefinition == null || requiredDefinition == null)
-                return false;
-
-            var renamedCurrentDefinition = currentDefinition.Replace(currentName.SqlSafeName(), requiredName.SqlSafeName());
-            return renamedCurrentDefinition == requiredDefinition;
-        }
-
-        public string NormaliseDefinition(string definition)
-        {
-            if (string.IsNullOrEmpty(definition))
-                return definition;
-
-            return Regex.Replace(definition.Trim(), @"(CREATE\s+OR\s+ALTER|CREATE|ALTER)\s+(PROCEDURE|PROC)", "CREATE OR ALTER PROCEDURE", RegexOptions.IgnoreCase);
-        }
-
-        public IEnumerable<string> ValidateDefinition(string definition, NamedItem<ObjectName, ProcedureDetails> procedure)
+        public IEnumerable<string> ValidateDefinition(string definition, NamedItem<ObjectName, ProcedureDetails> procedure, ObjectName otherAllowedName)
         {
             return DefintionContainsIncorrectNumberOfCreateOrAlterStatements(definition)
-                .Concat(DefintionContainsCreateOrAlterForADifferentProcedure(definition, procedure.Key))
+                .Concat(DefintionContainsCreateOrAlterForADifferentProcedure(definition, procedure.Key, otherAllowedName))
                 .Concat(DefinitionContainsAGoStatement(definition))
                 .Select(error => $"The procedure definition for {procedure.Key.SqlSafeName()} is invalid: {error}");
         }
@@ -39,10 +22,10 @@ namespace vcdb.SqlServer.Scripting
                 yield return $"GO statements are not permitted";
         }
 
-        private IEnumerable<string> DefintionContainsCreateOrAlterForADifferentProcedure(string definition, ObjectName key)
+        private IEnumerable<string> DefintionContainsCreateOrAlterForADifferentProcedure(string definition, ObjectName requiredName, ObjectName otherAllowedName)
         {
             return GetCreateOrAlterProcedureNames(definition)
-                .Where(procedureName => !procedureName.Equals(key))
+                .Where(procedureName => !procedureName.Equals(requiredName) && !procedureName.Equals(otherAllowedName))
                 .Select(procedureName => $"The definition contains a CREATE or ALTER statement for a different procedure: {procedureName.SqlSafeName()}");
         }
 
