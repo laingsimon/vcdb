@@ -54,10 +54,7 @@ namespace vcdb.SqlServer.Scripting
 
                     if (!changeRequiresProcedureRecreation && procedureDifference.DefinitionChangedTo != null)
                     {
-                        foreach (var script in GetAlterProcedureScript(procedureDifference))
-                        {
-                            yield return script;
-                        }
+                        yield return GetAlterProcedureScript(procedureDifference);
                     }
                 }
 
@@ -82,11 +79,11 @@ namespace vcdb.SqlServer.Scripting
             }
         }
 
-        private IEnumerable<SqlScript> GetAlterProcedureScript(ProcedureDifference procedureDifference)
+        private SqlScript GetAlterProcedureScript(ProcedureDifference procedureDifference)
         {
             var alterProcedureStatement = programmabilityHelper.ChangeProcedureInstructionTo(procedureDifference.DefinitionChangedTo, "ALTER");
 
-            yield return new SqlScript(@$"{alterProcedureStatement}
+            return new SqlScript(@$"{alterProcedureStatement}
 GO");
         }
 
