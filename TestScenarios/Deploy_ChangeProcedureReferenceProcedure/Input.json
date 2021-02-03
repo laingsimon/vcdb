@@ -1,0 +1,16 @@
+{
+  "procedures": {
+    "[dbo].[AA_OuterProcedure]": {
+      "fileDefinition": "dbo.AA_OuterProcedure.sql"
+    },
+    "[dbo].[AB_InnerProcedure]": {
+      "fileDefinition": "dbo.AB_InnerProcedure.sql",
+    },
+    "[dbo].[CA_InnerProcedure]": {
+      "fileDefinition": "dbo.CA_InnerProcedure.sql",
+    },
+    "[dbo].[CC_OuterProcedure]": {
+      "fileDefinition": "dbo.CC_OuterProcedure.sql"
+    }
+  }
+}
