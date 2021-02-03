@@ -17,6 +17,14 @@ namespace vcdb.SqlServer.Scripting
             return renamedCurrentDefinition == requiredDefinition;
         }
 
+        public string NormaliseDefinition(string definition)
+        {
+            if (string.IsNullOrEmpty(definition))
+                return definition;
+
+            return Regex.Replace(definition.Trim(), @"(CREATE\s+OR\s+ALTER|CREATE|ALTER)\s+(PROCEDURE|PROC)", "CREATE OR ALTER PROCEDURE", RegexOptions.IgnoreCase);
+        }
+
         public IEnumerable<string> ValidateDefinition(string definition, NamedItem<ObjectName, ProcedureDetails> procedure)
         {
             return DefintionContainsIncorrectNumberOfCreateOrAlterStatements(definition)

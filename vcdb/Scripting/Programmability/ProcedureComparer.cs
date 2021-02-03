@@ -95,7 +95,7 @@ namespace vcdb.Scripting.Programmability
             var currentDefinition = currentProcedure.Value.Definition;
             var requiredDefinition = GetDefinition(requiredProcedure);
 
-            var definitionChanged = currentDefinition != requiredDefinition;
+            var definitionChanged = definitionValidator.NormaliseDefinition(currentDefinition) != definitionValidator.NormaliseDefinition(requiredDefinition);
 
             return definitionChanged && !definitionValidator.IsRenamedDefinitionOnly(currentDefinition, requiredDefinition, currentProcedure.Key, requiredProcedure.Key)
                 ? requiredDefinition
