@@ -6,7 +6,6 @@ AS
 BEGIN
     SELECT @name
 END
-
 GO
 EXEC sp_updateextendedproperty 
 @name = N'MS_Description', @value = 'changed procedure description',
@@ -23,5 +22,4 @@ AS
 BEGIN
     SELECT @name
 END
-
 GO

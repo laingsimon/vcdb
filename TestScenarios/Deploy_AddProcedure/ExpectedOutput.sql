@@ -6,7 +6,6 @@ AS
 BEGIN
     SELECT @id * 3
 END
-
 GO
 EXEC sp_addextendedproperty 
 @name = N'MS_Description', @value = 'procedure description',
@@ -23,5 +22,4 @@ AS
 BEGIN
     SELECT @id * 3
 END
-
 GO

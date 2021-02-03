@@ -83,7 +83,7 @@ namespace vcdb.SqlServer.Scripting
         {
             var alterProcedureStatement = programmabilityHelper.ChangeProcedureInstructionTo(procedureDifference.DefinitionChangedTo, "ALTER");
 
-            return new SqlScript(@$"{alterProcedureStatement}
+            return new SqlScript(@$"{alterProcedureStatement.Trim()}
 GO");
         }
 
@@ -111,7 +111,7 @@ GO");
         {
             var createProcedureStatement = programmabilityHelper.ChangeProcedureInstructionTo(procedureDifference.DefinitionChangedTo, "CREATE");
 
-            return new SqlScript($@"{createProcedureStatement}
+            return new SqlScript($@"{createProcedureStatement.Trim()}
 GO");
         }
     }

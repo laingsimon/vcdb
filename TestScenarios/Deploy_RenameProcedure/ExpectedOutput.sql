@@ -17,5 +17,4 @@ AS
 BEGIN
     SELECT @name
 END
-
 GO

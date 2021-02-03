@@ -6,7 +6,6 @@ AS
 BEGIN
     SELECT @name
 END
-
 GO
 DENY EXECUTE ON [dbo].[RegularProcedure] TO [MyUser_Deny] CASCADE
 GO
