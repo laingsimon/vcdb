@@ -6,10 +6,11 @@ using vcdb.Scripting.Column;
 using vcdb.Scripting.Index;
 using vcdb.Scripting.Permission;
 using vcdb.Scripting.PrimaryKey;
+using vcdb.Scripting.Schema;
 
 namespace vcdb.Scripting.Table
 {
-    public class TableDifference
+    public class TableDifference : ISchemaObjectDifference
     {
         public NamedItem<ObjectName, TableDetails> CurrentTable { get; set; }
         public NamedItem<ObjectName, TableDetails> RequiredTable { get; set; }
@@ -40,5 +41,11 @@ namespace vcdb.Scripting.Table
                     || PermissionDifferences != null;
             }
         }
+
+        bool ISchemaObjectDifference.ObjectAdded => TableAdded;
+        bool ISchemaObjectDifference.ObjectDeleted => TableDeleted;
+        ObjectName ISchemaObjectDifference.ObjectRenamedTo => TableRenamedTo;
+        ObjectName ISchemaObjectDifference.CurrentName => CurrentTable?.Key;
+        ObjectName ISchemaObjectDifference.RequiredName => RequiredTable?.Key;
     }
 }

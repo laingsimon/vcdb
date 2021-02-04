@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using vcdb.CommandLine;
 using vcdb.Models;
 using vcdb.Output;
@@ -65,7 +66,10 @@ namespace vcdb.SqlServer.Scripting
                 yield return script;
             }
 
-            foreach (var script in schemaScriptBuilder.CreateUpgradeScripts(databaseDifferences.SchemaDifferences, databaseDifferences.TableDifferences, databaseDifferences.ProcedureDifferences))
+            var schemaObjectDifferences = databaseDifferences.TableDifferences.Cast<ISchemaObjectDifference>()
+                .Concat(databaseDifferences.ProcedureDifferences.Cast<ISchemaObjectDifference>())
+                .ToArray();
+            foreach (var script in schemaScriptBuilder.CreateUpgradeScripts(databaseDifferences.SchemaDifferences, schemaObjectDifferences))
             {
                 yield return script;
             }

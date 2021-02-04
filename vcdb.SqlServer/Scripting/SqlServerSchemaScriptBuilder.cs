@@ -1,12 +1,9 @@
 ﻿using System.Collections.Generic;
-using System.Linq;
 using vcdb.Models;
 using vcdb.Output;
 using vcdb.Scripting;
 using vcdb.Scripting.Permission;
-using vcdb.Scripting.Programmability;
 using vcdb.Scripting.Schema;
-using vcdb.Scripting.Table;
 
 namespace vcdb.SqlServer.Scripting
 {
@@ -25,11 +22,9 @@ namespace vcdb.SqlServer.Scripting
 
         public IEnumerable<SqlScript> CreateUpgradeScripts(
             IReadOnlyCollection<SchemaDifference> schemaDifferences,
-            IReadOnlyCollection<TableDifference> tableDifferences,
-            IReadOnlyCollection<ProcedureDifference> procedureDifferences)
+            IReadOnlyCollection<ISchemaObjectDifference> schemaObjectDifferences)
         {
-            var processedTableTransfers = new List<TableDifference>();
-            var processedProcedureTransfers = new List<ProcedureDifference>();
+            var transferScope = new SchemaObjectTransferScope(schemaObjectDifferences);
 
             foreach (var difference in schemaDifferences)
             {
@@ -37,16 +32,9 @@ namespace vcdb.SqlServer.Scripting
                 {
                     yield return GetCreateSchemaScript(difference.RequiredSchema);
 
-                    foreach (var transfer in CreateTransferTableScripts(null, difference.RequiredSchema.Key, tableDifferences))
+                    foreach (var script in transferScope.CreateTransferScriptsIntoCreatedSchema(difference.RequiredSchema.Key))
                     {
-                        processedTableTransfers.Add(transfer.Difference);
-                        yield return transfer.SqlScript;
-                    }
-
-                    foreach (var transfer in CreateTransferProcedureScripts(null, difference.RequiredSchema.Key, procedureDifferences))
-                    {
-                        processedProcedureTransfers.Add(transfer.Difference);
-                        yield return transfer.SqlScript;
+                        yield return script;
                     }
 
                     foreach (var script in permissionScriptBuilder.CreateSchemaPermissionScripts(
@@ -61,16 +49,9 @@ namespace vcdb.SqlServer.Scripting
 
                 if (difference.SchemaDeleted)
                 {
-                    foreach (var transfer in CreateTransferTableScripts(difference.CurrentSchema.Key, null, tableDifferences))
+                    foreach (var script in transferScope.CreateTransferScriptsAwayFromDroppedSchema(difference.CurrentSchema.Key))
                     {
-                        processedTableTransfers.Add(transfer.Difference);
-                        yield return transfer.SqlScript;
-                    }
-
-                    foreach (var transfer in CreateTransferProcedureScripts(difference.CurrentSchema.Key, null, procedureDifferences))
-                    {
-                        processedProcedureTransfers.Add(transfer.Difference);
-                        yield return transfer.SqlScript;
+                        yield return script;
                     }
 
                     yield return GetDropSchemaScript(difference.CurrentSchema);
@@ -81,10 +62,9 @@ namespace vcdb.SqlServer.Scripting
                 {
                     yield return GetCreateSchemaScript(difference.RequiredSchema);
 
-                    foreach (var transfer in CreateTransferTableScripts(difference.CurrentSchema.Key, difference.RequiredSchema.Key, tableDifferences))
+                    foreach (var script in transferScope.CreateTransferScriptsForRenamedSchema(difference.CurrentSchema.Key, difference.RequiredSchema.Key))
                     {
-                        processedTableTransfers.Add(transfer.Difference);
-                        yield return transfer.SqlScript;
+                        yield return script;
                     }
 
                     yield return GetDropSchemaScript(difference.CurrentSchema);
@@ -106,91 +86,9 @@ namespace vcdb.SqlServer.Scripting
                 }
             }
 
-            var unprocessedTableTransfers = tableDifferences.Except(processedTableTransfers).ToArray();
-            foreach (var difference in unprocessedTableTransfers)
+            foreach (var script in transferScope.CreateTransferScriptsForUnProcessedObjects())
             {
-                if (difference.TableAdded || difference.TableDeleted)
-                    continue; //ignore added and removed tables
-
-                //transfer tables...
-                foreach (var transfer in CreateTransferTableScripts(difference.CurrentTable.Key.Schema, difference.RequiredTable.Key.Schema, unprocessedTableTransfers))
-                {
-                    yield return transfer.SqlScript;
-                }
-            }
-
-            var unprocessedProcedureTransfers = procedureDifferences.Except(processedProcedureTransfers).ToArray();
-            foreach (var difference in unprocessedProcedureTransfers)
-            {
-                if (difference.ProcedureAdded || difference.ProcedureDeleted)
-                    continue; //ignore added and removed procedures
-
-                //transfer tables...
-                foreach (var transfer in CreateTransferProcedureScripts(difference.CurrentProcedure.Key.Schema, difference.RequiredProcedure.Key.Schema, unprocessedProcedureTransfers))
-                {
-                    yield return transfer.SqlScript;
-                }
-            }
-        }
-
-        private IEnumerable<SchemaConstiuentTransfer<TableDifference>> CreateTransferTableScripts(
-            string currentSchemaName,
-            string requiredSchemaName,
-            IReadOnlyCollection<TableDifference> tableDifferences)
-        {
-            foreach (var tableDifference in tableDifferences.Where(diff => diff.TableRenamedTo != null))
-            {
-                var oldName = tableDifference.CurrentTable.Key;
-                var newName = tableDifference.TableRenamedTo;
-
-                if (oldName.Schema == newName.Schema)
-                    continue;
-
-                //there is a change of schema
-                if (currentSchemaName != null && oldName.Schema == currentSchemaName)
-                {
-                    //schema is being removed or renamed
-                    yield return new SchemaConstiuentTransfer<TableDifference>(new SqlScript(@$"ALTER SCHEMA {newName.Schema.SqlSafeName()}
-TRANSFER {oldName.SqlSafeName()}
-GO"), tableDifference);
-                } else if (requiredSchemaName != null && newName.Schema == requiredSchemaName)
-                {
-                    //schema has been created, tables are supposed to be moved to it
-                    yield return new SchemaConstiuentTransfer<TableDifference>(new SqlScript(@$"ALTER SCHEMA {newName.Schema.SqlSafeName()}
-TRANSFER {oldName.SqlSafeName()}
-GO"), tableDifference);
-                }
-            }
-        }
-
-        private IEnumerable<SchemaConstiuentTransfer<ProcedureDifference>> CreateTransferProcedureScripts(
-            string currentSchemaName,
-            string requiredSchemaName,
-            IReadOnlyCollection<ProcedureDifference> procedureDifferences)
-        {
-            foreach (var procedureDifference in procedureDifferences.Where(diff => diff.ProcedureRenamedTo != null))
-            {
-                var oldName = procedureDifference.CurrentProcedure.Key;
-                var newName = procedureDifference.ProcedureRenamedTo;
-
-                if (oldName.Schema == newName.Schema)
-                    continue;
-
-                //there is a change of schema
-                if (currentSchemaName != null && oldName.Schema == currentSchemaName)
-                {
-                    //schema is being removed or renamed
-                    yield return new SchemaConstiuentTransfer<ProcedureDifference>(new SqlScript(@$"ALTER SCHEMA {newName.Schema.SqlSafeName()}
-TRANSFER {oldName.SqlSafeName()}
-GO"), procedureDifference);
-                }
-                else if (requiredSchemaName != null && newName.Schema == requiredSchemaName)
-                {
-                    //schema has been created, tables are supposed to be moved to it
-                    yield return new SchemaConstiuentTransfer<ProcedureDifference>(new SqlScript(@$"ALTER SCHEMA {newName.Schema.SqlSafeName()}
-TRANSFER {oldName.SqlSafeName()}
-GO"), procedureDifference);
-                }
+                yield return script;
             }
         }
 
@@ -204,18 +102,6 @@ GO");
         {
             return new SqlScript($@"CREATE SCHEMA [{requiredSchema.Key}]
 GO");
-        }
-
-        private class SchemaConstiuentTransfer<TDifference>
-        {
-            public SqlScript SqlScript { get; }
-            public TDifference Difference { get; }
-
-            public SchemaConstiuentTransfer(SqlScript sqlScript, TDifference tableDifference)
-            {
-                SqlScript = sqlScript;
-                Difference = tableDifference;
-            }
         }
     }
 }

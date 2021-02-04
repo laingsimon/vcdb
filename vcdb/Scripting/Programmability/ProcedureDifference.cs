@@ -1,9 +1,10 @@
 ﻿using vcdb.Models;
 using vcdb.Scripting.Permission;
+using vcdb.Scripting.Schema;
 
 namespace vcdb.Scripting.Programmability
 {
-    public class ProcedureDifference
+    public class ProcedureDifference : ISchemaObjectDifference
     {
         public NamedItem<ObjectName, ProcedureDetails> RequiredProcedure { get; set; }
         public NamedItem<ObjectName, ProcedureDetails> CurrentProcedure { get; set; }
@@ -31,5 +32,11 @@ namespace vcdb.Scripting.Programmability
                     || DefinitionChangedTo != null;
             }
         }
+
+        bool ISchemaObjectDifference.ObjectAdded => ProcedureAdded;
+        bool ISchemaObjectDifference.ObjectDeleted => ProcedureDeleted;
+        ObjectName ISchemaObjectDifference.ObjectRenamedTo => ProcedureRenamedTo;
+        ObjectName ISchemaObjectDifference.CurrentName => CurrentProcedure?.Key;
+        ObjectName ISchemaObjectDifference.RequiredName => RequiredProcedure?.Key;
     }
 }
