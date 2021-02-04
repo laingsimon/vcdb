@@ -5,7 +5,6 @@
   "users": {
     "MyUser": {
         "loginName": "MyOtherLogin_Change",
-        "enabled": true,
         "defaultSchema": "MySchema"
     },
     "MyEnabledUser": {
@@ -13,8 +12,7 @@
         "enabled": false
     },
     "MyDisabledUser": {
-        "loginName": "MyDisabledLogin",
-        "enabled": true
+        "loginName": "MyDisabledLogin"
     }
   }
 }

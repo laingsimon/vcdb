@@ -4,8 +4,7 @@
   },
   "users": {
     "MyUser": {
-        "loginName": "MyLogin_Add",
-        "enabled": true
+        "loginName": "MyLogin_Add"
     },
     "MyOtherUser": {
         "loginName": "MyOtherLogin_Add",

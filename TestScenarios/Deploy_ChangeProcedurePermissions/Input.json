@@ -16,8 +16,7 @@
   },
   "users": {
     "MyUser_Grant": {
-        "loginName": "MyLogin_ChangeProcedurePermissions_Grant",
-        "enabled": true
+        "loginName": "MyLogin_ChangeProcedurePermissions_Grant"
     },
     "MyUser_Deny": {
         "loginName": "MyLogin_ChangeProcedurePermissions_Deny",

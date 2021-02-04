@@ -10,7 +10,7 @@ namespace vcdb.Scripting.Column
 
         public string ColumnRenamedTo { get; set; }
         public string TypeChangedTo { get; set; }
-        public OptOut NullabilityChangedTo { get; set; }
+        public Change<OptOut> NullabilityChangedTo { get; set; }
         public Change<object> DefaultChangedTo { get; set; }
 
         public bool ColumnAdded { get; set; }

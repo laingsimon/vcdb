@@ -10,7 +10,6 @@
             },
 			"TheirAge": {
 				"type": "int",
-				"nullable": true,
 				"previousNames": [ "Age" ]
 			}
 		},

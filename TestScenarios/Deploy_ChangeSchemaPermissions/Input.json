@@ -10,17 +10,14 @@
   "users": {
     "MyUser_Grant": {
         "type": "DatabaseAuthority",
-        "enabled": true,
         "loginName": "MyLogin_ChangeSchemaPermissions_Grant"
     },
     "MyUser_Deny": {
         "type": "DatabaseAuthority",
-        "enabled": true,
         "loginName": "MyLogin_ChangeSchemaPermissions_Deny"
     },
     "MyUser_Change": {
         "type": "DatabaseAuthority",
-        "enabled": true,
         "loginName": "MyLogin_ChangeSchemaPermissions_Change"
     }
   },

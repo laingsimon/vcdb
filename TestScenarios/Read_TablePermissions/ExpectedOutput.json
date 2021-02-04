@@ -23,12 +23,10 @@
   "users": {
     "MyUser_Grant": {
         "type": "DatabaseAuthority",
-        "enabled": true,
         "loginName": "MyLogin_TablePermissions_Grant"
     },
     "MyUser_Deny": {
         "type": "DatabaseAuthority",
-        "enabled": true,
         "loginName": "MyLogin_TablePermissions_Deny"
     }
   },

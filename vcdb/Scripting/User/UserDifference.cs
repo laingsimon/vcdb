@@ -10,7 +10,7 @@ namespace vcdb.Scripting.User
         public bool UserAdded { get; set; }
         public bool UserDeleted { get; set; }
         public string UserRenamedTo { get; set; }
-        public Change<bool> StateChangedTo { get; set; }
+        public Change<OptOut> StateChangedTo { get; set; }
         public string LoginChangedTo { get; set; }
         public string DefaultSchemaChangedTo { get; set; }
 

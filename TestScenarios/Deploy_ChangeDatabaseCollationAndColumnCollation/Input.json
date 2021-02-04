@@ -10,7 +10,6 @@
             },
             "Title": {
                 "type": "varchar(10)",
-                "nullable": true,
                 "collation": null
             }
 		},

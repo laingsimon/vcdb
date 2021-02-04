@@ -90,15 +90,15 @@ GO");
             yield return new SqlScript($@"CREATE USER {requiredUser.Key.SqlSafeName()} FOR LOGIN {requiredUser.Value.LoginName.SqlSafeName()}
 {clauses}GO");
 
-            if (!requiredUser.Value.Enabled)
+            if (requiredUser.Value.Enabled == false)
             {
                 yield return GetChangeLoginStateScript(requiredUser.Value.LoginName, requiredUser.Value.Enabled);
             }
         }
 
-        private SqlScript GetChangeLoginStateScript(string loginName, bool enabled)
+        private SqlScript GetChangeLoginStateScript(string loginName, OptOut enabled)
         {
-            var disabledClause = enabled
+            var disabledClause = enabled == true
                 ? "ENABLE"
                 : "DISABLE";
 

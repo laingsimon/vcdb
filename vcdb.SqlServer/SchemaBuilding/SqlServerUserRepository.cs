@@ -56,7 +56,7 @@ where db.type not in ('A', 'G', 'R', 'X')
                     user => new UserDetails
                     {
                         Type = GetLoginType(user.type_desc),
-                        Enabled = !user.is_disabled,
+                        Enabled = OptOut.From(!user.is_disabled),
                         LoginName = user.login,
                         DefaultSchema = user.default_schema_name == options.UserDefaultSchemaName
                             ? null

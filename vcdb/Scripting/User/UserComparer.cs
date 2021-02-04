@@ -45,7 +45,7 @@ namespace vcdb.Scripting.User
                             ? requiredUser.Key
                             : null,
                         StateChangedTo = currentUser.Value.Enabled != requiredUser.Value.Enabled
-                            ? requiredUser.Value.Enabled.AsChange()
+                            ? (requiredUser.Value.Enabled ?? OptOut.True).AsChange()
                             : null,
                         LoginChangedTo = currentUser.Value.LoginName != requiredUser.Value.LoginName
                             ? requiredUser.Value.LoginName

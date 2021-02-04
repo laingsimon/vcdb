@@ -87,9 +87,9 @@ namespace vcdb.Scripting.Column
                 TypeChangedTo = currentColumn.Type == requiredColumn.Type
                     ? null
                     : requiredColumn.Type,
-                NullabilityChangedTo = currentColumn.Nullable == requiredColumn.Nullable
-                    ? null
-                    : requiredColumn.Nullable,
+                NullabilityChangedTo = currentColumn.Nullable != requiredColumn.Nullable
+                    ? (requiredColumn.Nullable ?? OptOut.True).AsChange()
+                    : null,
                 DefaultChangedTo = defaultsIdentical
                     ? null
                     : requiredColumn.Default.AsChange(),

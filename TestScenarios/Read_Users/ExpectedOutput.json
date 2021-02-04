@@ -5,7 +5,6 @@
   "users": {
     "MyUser": {
       "Type": "DatabaseAuthority",
-      "Enabled": true,
       "LoginName": "MyLogin"
     },
     "MyDisabledUser": {

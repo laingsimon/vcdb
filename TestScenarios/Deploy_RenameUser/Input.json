@@ -2,7 +2,6 @@
   "users": {
     "MyNewUser": {
         "loginName": "MyLogin_Rename",
-        "enabled": true,
         "previousNames": [ "MyUser" ]
     }
   }

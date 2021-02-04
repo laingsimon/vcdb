@@ -4,8 +4,7 @@
 		"columns": {
 			"Id": { "type": "int identity", "nullable": false },
 			"Name": { 
-                "type": "nvarchar(1024)", 
-                "nullable": true
+                "type": "nvarchar(1024)"
             },
 		},
 		"indexes": { }

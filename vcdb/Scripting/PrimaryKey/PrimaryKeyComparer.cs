@@ -26,7 +26,7 @@ namespace vcdb.Scripting.PrimaryKey
                     ? (requiredPrimaryKey?.Name ?? null).AsChange()
                     : null,
                 ClusteredChangedTo = currentPrimaryKey?.Clustered != requiredPrimaryKey?.Clustered
-                    ? requiredPrimaryKey?.Clustered.AsChange()
+                    ? (requiredPrimaryKey?.Clustered ?? OptOut.True).AsChange()
                     : null,
                 Added = currentPrimaryKeyColumns.Length == 0 && requiredPrimaryKeyColumns.Length > 0,
                 Removed = requiredPrimaryKeyColumns.Length == 0 && currentPrimaryKeyColumns.Length > 0,

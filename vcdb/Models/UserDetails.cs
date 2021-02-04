@@ -10,7 +10,7 @@
         /// <summary>
         /// Whether this login is enabled or not
         /// </summary>
-        public bool Enabled { get; set; }
+        public OptOut Enabled { get; set; }
 
         /// <summary>
         /// The name of the login this user is linked to
