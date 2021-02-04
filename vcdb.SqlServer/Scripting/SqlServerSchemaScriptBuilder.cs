@@ -133,11 +133,6 @@ namespace vcdb.SqlServer.Scripting
             }
         }
 
-        private IEnumerable<object> CreateTransferProcedureScripts(object p, string key, IReadOnlyCollection<ProcedureDifference> procedureDifferences)
-        {
-            throw new System.NotImplementedException();
-        }
-
         private IEnumerable<SchemaConstiuentTransfer<TableDifference>> CreateTransferTableScripts(
             string currentSchemaName,
             string requiredSchemaName,
