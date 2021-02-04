@@ -8,7 +8,7 @@ namespace vcdb.SqlServer.Scripting
         {
             return Regex.Replace(
                 definition,
-                @"(?<instruction>(CREATE\s+OR\s+ALTER)|(CREATE)|(ALTER))\s+(?:PROC|PROCEDURE)\s+",
+                @"(^|\b)(?<instruction>(CREATE\s+OR\s+ALTER)|(CREATE)|(ALTER))\s+(?:PROC|PROCEDURE)\s+",
                 (match) =>
                 {
                     var wholeGroup = match.Value;
