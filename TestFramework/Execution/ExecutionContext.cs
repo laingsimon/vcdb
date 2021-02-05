@@ -34,7 +34,7 @@ namespace TestFramework.Execution
                 return result;
             }
 
-            log.LogWarning($"Scenario {scenario.Name} failed");
+            log.LogWarning($"Scenario {scenario.Name} unsuccessful: {result}");
             foreach (var difference in differences)
                 log.LogWarning(difference);
             return result;

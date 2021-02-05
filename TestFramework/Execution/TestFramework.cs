@@ -116,12 +116,25 @@ namespace TestFramework.Execution
                     {
                         using (logger.GetWriteLock())
                         using (new ResetCursorPosition(messageDetail?.EndingConsoleLeft - 3, messageDetail?.EndingConsoleTop - 1))
-                        using (new ResetConsoleColor(foreground: executionResult == ExecutionResultStatus.Pass ? ConsoleColor.DarkGreen : ConsoleColor.Red))
+                        using (new ResetConsoleColor(foreground: GetConsoleColor(executionResult)))
                         {
                             Console.Write($" {executionResult.ToString().ToLower()}");
                         }
                     }
                 }
+            }
+        }
+
+        private ConsoleColor GetConsoleColor(ExecutionResultStatus resultStatus)
+        {
+            switch (resultStatus)
+            {
+                case ExecutionResultStatus.Pass:
+                    return ConsoleColor.DarkGreen;
+                case ExecutionResultStatus.Timeout:
+                    return ConsoleColor.Yellow;
+                default:
+                    return ConsoleColor.Red;
             }
         }
 
