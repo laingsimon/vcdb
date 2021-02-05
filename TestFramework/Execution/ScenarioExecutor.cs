@@ -47,7 +47,7 @@ namespace TestFramework.Execution
             this.differenceFilter = differenceFilter;
         }
 
-        public async Task<bool> Execute(DirectoryInfo scenario)
+        public async Task<ExecutionResultStatus> Execute(DirectoryInfo scenario)
         {
             await InitialiseDatabase(scenario);
             var settings = ReadScenarioSettings(scenario) ?? ScenarioSettings.Default;
@@ -56,14 +56,17 @@ namespace TestFramework.Execution
             if (settings.ExpectedExitCode.HasValue && result.ExitCode != settings.ExpectedExitCode.Value)
             {
                 PrintReproductionStatement(scenario, result);
-                executionContext.ScenarioComplete(scenario, false, new[] { $"Expected process to exit with code {settings.ExpectedExitCode}, but it exited with {result.ExitCode}", result.ErrorOutput });
-                return false;
+                return executionContext.ScenarioComplete(scenario, ExecutionResultStatus.UnexpectedExitCode, new[] { $"Expected process to exit with code {settings.ExpectedExitCode}, but it exited with {result.ExitCode}", result.ErrorOutput });
+            }
+            else if (result.Timeout)
+            {
+                PrintReproductionStatement(scenario, result);
+                return executionContext.ScenarioComplete(scenario, ExecutionResultStatus.Timeout, new[] { $"vcdb process did not exit within the given timeout", result.ErrorOutput });
             }
             else if (result.ExitCode != 0)
             {
                 PrintReproductionStatement(scenario, result);
-                executionContext.ScenarioComplete(scenario, false, new[] { $"vcdb process exited with non-success exit code: {result.ExitCode}", result.ErrorOutput });
-                return false;
+                return executionContext.ScenarioComplete(scenario, ExecutionResultStatus.UnexpectedExitCode, new[] { $"vcdb process exited with non-success exit code: {result.ExitCode}", result.ErrorOutput });
             }
 
             if (settings.Mode == null || settings.Mode.Equals("Read", StringComparison.OrdinalIgnoreCase))
@@ -72,26 +75,35 @@ namespace TestFramework.Execution
             }
             else
             {
-                var pass = await CompareSqlScriptResult(result, scenario);
+                var executionResult = await CompareSqlScriptResult(result, scenario);
                 var actualOutputFilePath = Path.Combine(scenario.FullName, "ActualOutput.sql");
 
-                if (pass)
+                if (executionResult == ExecutionResultStatus.Pass)
                 {
-                    if (await TestSqlScriptResult(settings, result, scenario))
+                    var scriptExecutionResult = await TestSqlScriptResult(settings, result, scenario);
+                    if (scriptExecutionResult == ExecutionResultStatus.Pass)
                     {
                         File.Delete(actualOutputFilePath);
-                        await DropDatabase(scenario);
-                        return true;
+                        try
+                        {
+                            await DropDatabase(scenario);
+                        }
+                        catch (Exception exc)
+                        {
+                            log.LogError(exc, $"Unable to drop database for {scenario.Name}");
+                        }
+
+                        return ExecutionResultStatus.Pass;
                     }
 
                     File.WriteAllText(actualOutputFilePath, result.Output);
-                    return false;
+                    return scriptExecutionResult;
                 }
                 else
                 {
                     File.WriteAllText(actualOutputFilePath, result.Output);
                     PrintReproductionStatement(scenario, result);
-                    return false;
+                    return executionResult;
                 }
             }
         }
@@ -101,51 +113,50 @@ namespace TestFramework.Execution
             log.LogInformation($"Execute vcdb with the following commandline to debug this scenario:\r\n{scenario.FullName}\r\n$ {result.CommandLine}");
         }
 
-        private async Task<bool> TestSqlScriptResult(ScenarioSettings settings, ExecutionResult result, DirectoryInfo scenario)
+        private async Task<ExecutionResultStatus> TestSqlScriptResult(ScenarioSettings settings, ExecutionResult result, DirectoryInfo scenario)
         {
             try
             {
                 log.LogDebug("Testing created sql script...");
                 await sql.ExecuteBatchedSql(new StringReader(result.Output), scenario.Name);
 
-                executionContext.ScenarioComplete(scenario, true, new string[0] { });
-                return true;
+                return executionContext.ScenarioComplete(scenario, ExecutionResultStatus.Pass, new string[0] { });
             }
             catch (SqlException exc)
             {
                 PrintReproductionStatement(scenario, result);
-                executionContext.ScenarioComplete(scenario, false, new[] { exc.Message });
-                return false;
+                return executionContext.ScenarioComplete(scenario, ExecutionResultStatus.InvalidSql, new[] { exc.Message });
             }
             catch (Exception exc)
             {
                 PrintReproductionStatement(scenario, result);
-                executionContext.ScenarioComplete(scenario, false, new[] { exc.ToString() });
-                return false;
+                return executionContext.ScenarioComplete(scenario, ExecutionResultStatus.Exception, new[] { exc.ToString() });
             }
         }
 
-        private async Task<bool> CompareSqlScriptResult(ExecutionResult result, DirectoryInfo scenario)
+        private async Task<ExecutionResultStatus> CompareSqlScriptResult(ExecutionResult result, DirectoryInfo scenario)
         {
             using (var expectedReader = new StreamReader(Path.Combine(scenario.FullName, "ExpectedOutput.sql")))
             {
                 var differences = differ.CompareScripts(await expectedReader.ReadToEndAsync(), result.Output);
                 var filteredDifferences = differenceFilter.FilterDifferences(differences).ToArray();
-                var pass = !filteredDifferences.Any();
+                var executionResult = filteredDifferences.Any()
+                    ? ExecutionResultStatus.Different
+                    : ExecutionResultStatus.Pass;
 
-                if (!pass)
+                if (executionResult != ExecutionResultStatus.Pass)
                 {
                     executionContext.ScenarioComplete(
                         scenario,
-                        pass,
+                        executionResult,
                         filteredDifferences.SelectMany(difference => difference.GetLineDifferences()));
                 }
 
-                return pass;
+                return executionResult;
             }
         }
 
-        private Task<bool> CompareJsonResult(ScenarioSettings settings, ExecutionResult result, DirectoryInfo scenario)
+        private Task<ExecutionResultStatus> CompareJsonResult(ScenarioSettings settings, ExecutionResult result, DirectoryInfo scenario)
         {
             return Task.Run(() =>
             {
@@ -165,7 +176,9 @@ namespace TestFramework.Execution
 
                 executionContext.ScenarioComplete(
                     scenario,
-                    !context.Differences.Any(),
+                    context.Differences.Any() 
+                        ? ExecutionResultStatus.Different 
+                        : ExecutionResultStatus.Pass,
                     context.Differences.Select(difference => $"- Found a difference: {difference}"));
 
                 var actualOutputFileName = Path.Combine(scenario.FullName, "ActualOutput.json");
@@ -179,7 +192,9 @@ namespace TestFramework.Execution
                     File.Delete(actualOutputFileName);
                 }
 
-                return !context.Differences.Any();
+                return context.Differences.Any()
+                    ? ExecutionResultStatus.Different
+                    : ExecutionResultStatus.Pass;
             });
         }
 

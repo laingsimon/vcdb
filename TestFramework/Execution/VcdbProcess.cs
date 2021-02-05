@@ -9,10 +9,12 @@ namespace TestFramework.Execution
     internal class VcdbProcess : IVcdbProcess
     {
         private readonly Options options;
+        private readonly TimeSpan processTimeout;
 
         public VcdbProcess(Options options)
         {
             this.options = options;
+            this.processTimeout = TimeSpan.FromSeconds(options.ProcessTimeout);
         }
 
         public async Task<ExecutionResult> Execute(ScenarioSettings settings, DirectoryInfo scenario)
@@ -40,18 +42,22 @@ namespace TestFramework.Execution
                     throw new InvalidOperationException($"Unable to start process `{process.StartInfo.FileName} {process.StartInfo.Arguments}`");
                 }
 
-                process.WaitForExit();
+                var exitedWithinTimeout = process.WaitForExit(processTimeout);
+
                 var output = await process.StandardOutput.ReadToEndAsync();
 
-                return new ExecutionResult
+                var result = new ExecutionResult
                 {
                     Output = output,
                     ErrorOutput = process.StartInfo.RedirectStandardError
                         ? await process.StandardError.ReadToEndAsync()
                         : null,
                     ExitCode = process.ExitCode,
-                    CommandLine = commandLine
+                    CommandLine = commandLine,
+                    Timeout = !exitedWithinTimeout
                 };
+
+                return result;
             }
             catch (Exception exc)
             {

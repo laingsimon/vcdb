@@ -5,6 +5,6 @@ namespace TestFramework.Execution
 {
     internal interface IScenarioExecutor
     {
-        Task<bool> Execute(DirectoryInfo scenarioDirectory);
+        Task<ExecutionResultStatus> Execute(DirectoryInfo scenarioDirectory);
     }
 }

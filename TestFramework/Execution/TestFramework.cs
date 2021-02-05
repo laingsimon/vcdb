@@ -100,15 +100,15 @@ namespace TestFramework.Execution
                 {
                     messageDetail = logger.LogLine(logMessage);
                 }
-                var success = false;
+                var executionResult = (ExecutionResultStatus)0;
 
                 try
                 {
-                    success = await scenarioExecutor.Execute(scenarioDirectory);
+                    executionResult = await scenarioExecutor.Execute(scenarioDirectory);
                 }
                 catch (Exception exc)
                 {
-                    executionContext.ScenarioComplete(scenarioDirectory, false, new[] { exc.Message });
+                    executionContext.ScenarioComplete(scenarioDirectory, ExecutionResultStatus.Exception, new[] { exc.Message });
                 }
                 finally
                 {
@@ -116,9 +116,9 @@ namespace TestFramework.Execution
                     {
                         using (logger.GetWriteLock())
                         using (new ResetCursorPosition(messageDetail?.EndingConsoleLeft - 3, messageDetail?.EndingConsoleTop - 1))
-                        using (new ResetConsoleColor(foreground: success ? ConsoleColor.DarkGreen : ConsoleColor.Red))
+                        using (new ResetConsoleColor(foreground: executionResult == ExecutionResultStatus.Pass ? ConsoleColor.DarkGreen : ConsoleColor.Red))
                         {
-                            Console.Write($" done");
+                            Console.Write($" {executionResult.ToString().ToLower()}");
                         }
                     }
                 }

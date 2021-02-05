@@ -31,6 +31,12 @@ namespace TestFramework.Execution
             }, cancellationToken);
         }
 
+        /// <summary>
+        /// Instructs the <see cref="Process"/> component to wait for the specified time for the associated process to exit.
+        /// </summary>
+        /// <param name="process"></param>
+        /// <param name="timeout"></param>
+        /// <returns><see cref="true"/> if the associated process has exited; otherwise <see cref="false"/></returns>
         public static bool WaitForExit(this Process process, TimeSpan timeout)
         {
             return process.WaitForExit((int)timeout.TotalMilliseconds);

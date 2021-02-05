@@ -1,4 +1,5 @@
 ﻿using CommandLine;
+using System;
 using TestFramework.Output;
 
 namespace TestFramework.Input
@@ -34,5 +35,8 @@ namespace TestFramework.Input
 
         [Option("maxConcurrency", Default = null, HelpText = "The maximum number of scenarios that can run at any one time")]
         public int? MaxConcurrency { get; set; }
+
+        [Option("timeout", HelpText = "The maximum amount of time (in seconds) the vcdb process can execute for")]
+        public int ProcessTimeout { get; set; } = 60;
     }
 }
