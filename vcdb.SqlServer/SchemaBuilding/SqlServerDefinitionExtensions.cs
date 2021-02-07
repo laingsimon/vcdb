@@ -1,4 +1,6 @@
-﻿namespace vcdb.SqlServer.SchemaBuilding
+﻿using System.Text.RegularExpressions;
+
+namespace vcdb.SqlServer.SchemaBuilding
 {
     public static class SqlServerDefinitionExtensions
     {
@@ -7,7 +9,13 @@
             while (definition.StartsWith("(") && definition.EndsWith(")"))
                 definition = definition.Substring(1, definition.Length - 2);
 
-            return definition;
+            return Regex.Replace(
+                definition,
+                @"(\(\d+(?:\.\d+)?\))|(\(\'.+?\'\))",
+                match =>
+                {
+                    return match.Value.UnwrapDefinition();
+                });
         }
     }
 }

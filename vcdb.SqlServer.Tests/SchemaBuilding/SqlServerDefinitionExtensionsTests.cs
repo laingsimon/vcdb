@@ -12,7 +12,9 @@ namespace vcdb.SqlServer.Tests.SchemaBuilding
         [TestCase("(0)", "0")]
         [TestCase("((0))", "0")]
         [TestCase("('0')", "'0'")]
-        [TestCase("([A] * (5))", "[A] * (5)")]
+        [TestCase("([A] * (5))", "[A] * 5")]
+        [TestCase("([A] + ('5'))", "[A] + '5'")]
+        [TestCase("([A] * (5.5))", "[A] * 5.5")]
         public void UnwrapDefinition_ShouldReturnCorrectValues(string definition, string expectedResult)
         {
             var result = definition.UnwrapDefinition();
