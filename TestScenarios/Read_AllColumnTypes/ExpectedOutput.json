@@ -14,7 +14,8 @@
                 "default": 0, 
                 "primaryKey": false
             },
-			"UniqueId": { "type": "uniqueidentifier", "primaryKey": false } 
+			"UniqueId": { "type": "uniqueidentifier", "primaryKey": false },
+            "PriceIncVat": { "expression": "[Price]*(1.2)", "primaryKey": false, "type": "numeric" }
 		}
 	}
   },

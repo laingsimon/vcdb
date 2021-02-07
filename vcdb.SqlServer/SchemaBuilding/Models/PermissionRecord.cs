@@ -1,7 +1,7 @@
 ﻿using System;
 using vcdb.Models;
 
-namespace vcdb.SqlServer.SchemaBuilding
+namespace vcdb.SqlServer.SchemaBuilding.Models
 {
     internal class PermissionRecord
     {

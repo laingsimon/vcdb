@@ -5,7 +5,7 @@ using vcdb.Models;
 
 namespace vcdb.SchemaBuilding
 {
-    public interface IColumnsRepository
+    public interface IColumnRepository
     {
         Task<Dictionary<string, ColumnDetails>> GetColumns(
             DbConnection connection,

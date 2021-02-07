@@ -6,6 +6,7 @@ CREATE TABLE dbo.Person (
 	Price		decimal(18, 2),
 	DoB			date,
 	Deleted		bit not null default(0),
-	UniqueId	uniqueidentifier
+	UniqueId	uniqueidentifier,
+    PriceIncVat as Price * 1.2
 )
 GO

@@ -5,7 +5,7 @@ using vcdb.Models;
 
 namespace vcdb.SchemaBuilding
 {
-    public interface IIndexesRepository
+    public interface IIndexRepository
     {
         Task<Dictionary<string, IndexDetails>> GetIndexes(DbConnection connection, ObjectName tableName);
     }

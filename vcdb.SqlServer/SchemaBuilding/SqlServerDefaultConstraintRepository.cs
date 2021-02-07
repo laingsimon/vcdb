@@ -3,12 +3,10 @@ using System.Collections.Generic;
 using System.Data.Common;
 using System.Threading.Tasks;
 using vcdb.SchemaBuilding;
-using vcdb;
-using System;
 
 namespace vcdb.SqlServer.SchemaBuilding
 {
-    public class SqlServerDefaultConstraintsRepository : IDefaultConstraintRepository
+    public class SqlServerDefaultConstraintRepository : ISqlServerDefaultConstraintRepository
     {
         public async Task<IDictionary<string, ColumnDefault>> GetColumnDefaults(DbConnection connection, ObjectName tableName)
         {
@@ -55,7 +53,7 @@ and SCHEMA_NAME(tab.schema_id) = @table_owner",
                 if (string.IsNullOrEmpty(stringDefinition))
                     return definition;
 
-                var withoutBrackets = stringDefinition.Trim('(', ')');
+                var withoutBrackets = stringDefinition.UnwrapDefinition();
                 if (withoutBrackets.StartsWith("'") && withoutBrackets.EndsWith("'"))
                     return withoutBrackets.Trim('\'');
 

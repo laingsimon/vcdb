@@ -11,7 +11,7 @@ namespace vcdb.SqlServer
         public void RegisterServices(IServiceCollection services, DatabaseVersion databaseVersion)
         {
             services.InNamespace<SqlObjectNameHelper>().AddAsSingleton();
-            services.InNamespace<SqlServerCheckConstraintsRepository>().AddAsSingleton();
+            services.InNamespace<SqlServerCheckConstraintRepository>().AddAsSingleton();
             services.InNamespace<SqlServerCheckConstraintScriptBuilder>().AddAsSingleton();
         }
     }

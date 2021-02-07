@@ -1,4 +1,4 @@
-﻿namespace vcdb.SqlServer.SchemaBuilding
+﻿namespace vcdb.SqlServer.SchemaBuilding.Models
 {
     public class SqlServerSchemata
     {

@@ -6,6 +6,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using vcdb.Models;
 using vcdb.SchemaBuilding;
+using vcdb.SqlServer.SchemaBuilding.Models;
 
 namespace vcdb.SqlServer.SchemaBuilding
 {

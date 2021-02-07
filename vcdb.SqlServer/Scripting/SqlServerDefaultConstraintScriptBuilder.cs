@@ -3,7 +3,6 @@ using System.Linq;
 using vcdb.CommandLine;
 using vcdb.Models;
 using vcdb.Output;
-using vcdb.Scripting;
 using vcdb.Scripting.Column;
 using vcdb.Scripting.Table;
 

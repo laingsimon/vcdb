@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using vcdb.Models;
+using vcdb.SqlServer.SchemaBuilding.Models;
 
 namespace vcdb.SqlServer.SchemaBuilding
 {

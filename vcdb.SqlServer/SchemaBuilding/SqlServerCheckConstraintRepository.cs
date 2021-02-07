@@ -5,10 +5,11 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using vcdb.Models;
 using vcdb.SchemaBuilding;
+using vcdb.SqlServer.SchemaBuilding.Models;
 
 namespace vcdb.SqlServer.SchemaBuilding
 {
-    public class SqlServerCheckConstraintsRepository : ICheckConstraintRepository
+    public class SqlServerCheckConstraintRepository : ICheckConstraintRepository
     {
         public async Task<CheckConstraintDetails[]> GetCheckConstraints(DbConnection connection, ObjectName tableName)
         {

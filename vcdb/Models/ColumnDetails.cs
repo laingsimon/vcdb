@@ -61,5 +61,10 @@ namespace vcdb.Models
         /// The user defined permissions on this column
         /// </summary>
         public Permissions Permissions { get; set; }
+
+        /// <summary>
+        /// An expression that defines the computation for this column
+        /// </summary>
+        public string Expression { get; set; }
     }
 }

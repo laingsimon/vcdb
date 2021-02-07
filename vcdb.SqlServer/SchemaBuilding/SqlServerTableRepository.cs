@@ -10,16 +10,16 @@ namespace vcdb.SqlServer.SchemaBuilding
 {
     public class SqlServerTableRepository : ITableRepository
     {
-        private readonly IColumnsRepository columnsRepository;
-        private readonly IIndexesRepository indexesRepository;
+        private readonly IColumnRepository columnsRepository;
+        private readonly IIndexRepository indexesRepository;
         private readonly IDescriptionRepository descriptionRepository;
         private readonly ICheckConstraintRepository checkConstraintRepository;
         private readonly IPrimaryKeyRepository primaryKeyRepository;
         private readonly IPermissionRepository permissionRepository;
 
         public SqlServerTableRepository(
-            IColumnsRepository columnsRepository,
-            IIndexesRepository indexesRepository,
+            IColumnRepository columnsRepository,
+            IIndexRepository indexesRepository,
             IDescriptionRepository descriptionRepository,
             ICheckConstraintRepository checkConstraintRepository,
             IPrimaryKeyRepository primaryKeyRepository,

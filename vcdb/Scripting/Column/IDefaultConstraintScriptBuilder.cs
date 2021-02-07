@@ -1,9 +1,8 @@
 ﻿using System.Collections.Generic;
 using vcdb.Output;
-using vcdb.Scripting.Column;
 using vcdb.Scripting.Table;
 
-namespace vcdb.Scripting
+namespace vcdb.Scripting.Column
 {
     public interface IDefaultConstraintScriptBuilder
     {

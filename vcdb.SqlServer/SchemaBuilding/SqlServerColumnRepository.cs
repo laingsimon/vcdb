@@ -1,29 +1,34 @@
 ﻿using Dapper;
 using System.Collections.Generic;
 using System.Data.Common;
+using System.Linq;
 using System.Threading.Tasks;
 using vcdb.Models;
 using vcdb.SchemaBuilding;
+using vcdb.SqlServer.SchemaBuilding.Models;
 
 namespace vcdb.SqlServer.SchemaBuilding
 {
-    public class SqlServerColumnsRepository : IColumnsRepository
+    public class SqlServerColumnRepository : IColumnRepository
     {
         private readonly IDescriptionRepository descriptionRepository;
         private readonly ICollationRepository collationRepository;
-        private readonly IDefaultConstraintRepository defaultConstraintRepository;
+        private readonly ISqlServerDefaultConstraintRepository defaultConstraintRepository;
         private readonly IPrimaryKeyRepository primaryKeyRepository;
+        private readonly ISqlServerComputedColumnRepository computedColumnRepository;
 
-        public SqlServerColumnsRepository(
+        public SqlServerColumnRepository(
             IDescriptionRepository descriptionRepository, 
             ICollationRepository collationRepository,
-            IDefaultConstraintRepository defaultConstraintRepository,
-            IPrimaryKeyRepository primaryKeyRepository)
+            ISqlServerDefaultConstraintRepository defaultConstraintRepository,
+            IPrimaryKeyRepository primaryKeyRepository,
+            ISqlServerComputedColumnRepository computedColumnRepository)
         {
             this.descriptionRepository = descriptionRepository;
             this.collationRepository = collationRepository;
             this.defaultConstraintRepository = defaultConstraintRepository;
             this.primaryKeyRepository = primaryKeyRepository;
+            this.computedColumnRepository = computedColumnRepository;
         }
 
         public async Task<Dictionary<string, ColumnDetails>> GetColumns(
@@ -36,6 +41,7 @@ namespace vcdb.SqlServer.SchemaBuilding
             var columnDescriptions = await descriptionRepository.GetColumnDescriptions(connection, tableName);
             var columnCollations = await collationRepository.GetColumnCollations(connection, tableName);
             var columnsInPrimaryKey = await primaryKeyRepository.GetColumnsInPrimaryKey(connection, tableName);
+            var computedColumns = await computedColumnRepository.GetComputedColumns(connection, tableName);
 
             return await connection.QueryAsync<SpColumnsOutput>(@"
 exec sp_columns 
@@ -66,7 +72,8 @@ exec sp_columns
                                     ? null
                                     : columnCollations.ItemOrDefault(column.COLUMN_NAME),
                                 PrimaryKey = columnsInPrimaryKey.Contains(column.COLUMN_NAME),
-                                Permissions = tablePermissions?.SubEntityPermissions?.ItemOrDefault(column.COLUMN_NAME)
+                                Permissions = tablePermissions?.SubEntityPermissions?.ItemOrDefault(column.COLUMN_NAME),
+                                Expression = computedColumns.ItemOrDefault(column.COLUMN_NAME)
                             };
                         });
         }
