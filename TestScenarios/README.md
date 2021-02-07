@@ -55,7 +55,11 @@ The following database entities are tested in the scenarios below.
 |Permissions|Change|[Deploy_ChangeSchemaPermissions](Deploy_ChangeSchemaPermissions)<br/>[Deploy_ChangeTablePermissions](Deploy_ChangeTablePermissions)|
 |Permissions|Revoke|[Deploy_ChangeSchemaPermissions](Deploy_ChangeSchemaPermissions)<br/>[Deploy_ChangeTablePermissions](Deploy_ChangeTablePermissions)|
 |Procedure|Read|[Read_Procedures](Read_Procedures)|
-|Permissions|Add|[Deploy_AddProcedure](Deploy_AddProcedure)|
-|Permissions|Change|[Deploy_ChangeProcedure](Deploy_ChangeProcedure)<br />[Deploy_ChangeProcedureFromFile](Deploy_ChangeProcedureFromFile)|
-|Permissions|Drop|[Deploy_DropProcedure](Deploy_DropProcedure)|
-|Permissions|Rename|[Deploy_RenameProcedure](Deploy_RenameProcedure)|
+|Procedure|Add|[Deploy_AddProcedure](Deploy_AddProcedure)|
+|Procedure|Change|[Deploy_ChangeProcedure](Deploy_ChangeProcedure)<br />[Deploy_ChangeProcedureFromFile](Deploy_ChangeProcedureFromFile)|
+|Procedure|Drop|[Deploy_DropProcedure](Deploy_DropProcedure)|
+|Procedure|Rename|[Deploy_RenameProcedure](Deploy_RenameProcedure)|
+|Computed column|Read|[Read_AllColumnTypes](Read_AllColumnTypes)|
+|Computed column|Add|[Deploy_AddComputedColumn](Deploy_AddComputedColumn)|
+|Computed column|Change|[Deploy_ChangeComputedColumn](Deploy_ChangeComputedColumn)<br />[Deploy_ChangeColumnFromComputed](Deploy_ChangeColumnFromComputed)<br />[Deploy_ChangeColumnToComputed](Deploy_ChangeColumnToComputed)|
+|Computed column|Drop|[Deploy_DropComputedColumn](Deploy_DropComputedColumn)|

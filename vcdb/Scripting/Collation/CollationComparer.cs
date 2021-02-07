@@ -21,6 +21,11 @@ namespace vcdb.Scripting.Collation
 
         private bool IsCollationApplicable(string type)
         {
+            if (string.IsNullOrEmpty(type))
+            {
+                return false;
+            }
+
             var normalisedType = type.Contains("(")
                 ? type.Substring(0, type.IndexOf("("))
                 : type;

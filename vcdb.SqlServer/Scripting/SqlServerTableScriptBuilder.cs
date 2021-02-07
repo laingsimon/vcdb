@@ -148,7 +148,7 @@ GO");
             var requiredTableName = tableDifference.RequiredTable.Key;
             var columnDifferences = tableDifference.ColumnDifferences;
 
-            foreach (var rename in columnDifferences.Where(difference => difference.ColumnRenamedTo != null))
+            foreach (var rename in columnDifferences.Where(difference => difference.ColumnRenamedTo != null && !RequiresDropAndReAdd(difference)))
             {
                 foreach (var script in checkConstraintScriptBuilder.CreateUpgradeScriptsBeforeColumnChanges(tableDifference, rename))
                 {
@@ -163,7 +163,7 @@ GO");
                 }
             }
 
-            var drops = columnDifferences.Where(diff => diff.ColumnDeleted).ToArray();
+            var drops = columnDifferences.Where(diff => diff.ColumnDeleted || RequiresDropAndReAdd(diff)).ToArray();
             if (drops.Any())
             {
                 yield return new SqlScript($@"ALTER TABLE {requiredTableName.SqlSafeName()}
@@ -171,7 +171,7 @@ GO");
 GO");
             }
 
-            foreach (var add in columnDifferences.Where(diff => diff.ColumnAdded))
+            foreach (var add in columnDifferences.Where(diff => diff.ColumnAdded || RequiresDropAndReAdd(diff)))
             {
                 foreach (var script in GetAddColumnScript(requiredTableName, add.RequiredColumn.Key, add.RequiredColumn.Value))
                     yield return script;
@@ -204,9 +204,18 @@ GO");
             }
         }
 
+        private bool RequiresDropAndReAdd(ColumnDifference difference)
+        {
+            return difference.ComputedChangedTo != null
+                || difference.ExpressionChangedTo != null;
+        }
+
         private bool IsAlteration(ColumnDifference difference)
         {
-            return !difference.ColumnAdded && !difference.ColumnDeleted && difference.IsChanged;
+            return !difference.ColumnAdded 
+                && !difference.ColumnDeleted 
+                && difference.IsChanged
+                && !RequiresDropAndReAdd(difference);
         }
 
         private IEnumerable<SqlScript> GetAlterColumnScript(
@@ -330,7 +339,12 @@ GO");
                 ? $" COLLATE {(collationOverride ?? column.Collation)}"
                 : null;
 
-            return $"{columnName.SqlSafeName()} {column.Type}{collationClause}{nullabilityClause}";
+            if (string.IsNullOrEmpty(column.Expression))
+            {
+                return $"{columnName.SqlSafeName()} {column.Type}{collationClause}{nullabilityClause}";
+            }
+
+            return $"{columnName.SqlSafeName()} AS ({column.Expression})";
         }
     }
 }
