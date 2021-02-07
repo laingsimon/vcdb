@@ -102,12 +102,25 @@ namespace vcdb.Scripting.Column
                 CollationChangedTo = collationComparer.GetColumnCollationChange(
                     context,
                     currentColumn,
-                    requiredColumn)
+                    requiredColumn),
+                ExpressionChangedTo = currentColumn.Expression != requiredColumn.Expression
+                    ? requiredColumn.Expression
+                    : null,
+                ComputedChangedTo = GetComputedState(currentColumn.Expression) != GetComputedState(requiredColumn.Expression)
+                    ? GetComputedState(requiredColumn.Expression).AsChange()
+                    : null
             };
 
             return difference.IsChanged
                 ? difference
                 : null;
+        }
+
+        private bool GetComputedState(string expression)
+        {
+            return string.IsNullOrEmpty(expression)
+                ? false
+                : true;
         }
 
         private bool ColumnDefaultsAreIdentical(object currentDefault, object requiredDefault)

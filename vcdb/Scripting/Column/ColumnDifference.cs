@@ -19,6 +19,8 @@ namespace vcdb.Scripting.Column
         public Change<string> DescriptionChangedTo { get; set; }
         public string CollationChangedTo { get; set; }
         public PermissionDifferences PermissionDifferences { get; set; }
+        public string ExpressionChangedTo { get; set; }
+        public Change<bool> ComputedChangedTo { get; set; }
 
         public bool IsChanged
         {
@@ -33,7 +35,9 @@ namespace vcdb.Scripting.Column
                     || DefaultRenamedTo != null
                     || DescriptionChangedTo != null
                     || CollationChangedTo != null
-                    || PermissionDifferences != null;
+                    || PermissionDifferences != null
+                    || ExpressionChangedTo != null
+                    || ComputedChangedTo != null;
             }
         }
 
@@ -51,7 +55,10 @@ namespace vcdb.Scripting.Column
                 DefaultChangedTo = DefaultChangedTo ?? other.DefaultChangedTo,
                 DefaultRenamedTo = DefaultRenamedTo ?? other.DefaultRenamedTo,
                 DescriptionChangedTo = DescriptionChangedTo ?? other.DescriptionChangedTo,
-                CollationChangedTo = CollationChangedTo ?? other.CollationChangedTo
+                CollationChangedTo = CollationChangedTo ?? other.CollationChangedTo,
+                ExpressionChangedTo = ExpressionChangedTo ?? other.ExpressionChangedTo,
+                ComputedChangedTo = ComputedChangedTo ?? other.ComputedChangedTo,
+                PermissionDifferences = PermissionDifferences?.MergeIn(other.PermissionDifferences) ?? other.PermissionDifferences
             };
         }
     }
