@@ -40,6 +40,11 @@ namespace vcdb.SqlServer.Scripting
             return GetChangeDescriptionScript(requiredProcedureName.Schema, requiredProcedureName.Name, null, null, current, required, objectType: "PROCEDURE");
         }
 
+        public SqlScript ChangeForeignKeyDescription(ObjectName requiredTableName, string requiredForeignKeyName, string current, string required)
+        {
+            return GetChangeDescriptionScript(requiredTableName.Schema, requiredTableName.Name, "CONSTRAINT", requiredForeignKeyName, current, required);
+        }
+
         private SqlScript GetChangeDescriptionScript(
             string schemaName,
             string objectName,

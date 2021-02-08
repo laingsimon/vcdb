@@ -28,8 +28,8 @@ namespace vcdb.Scripting.PrimaryKey
                 ClusteredChangedTo = currentPrimaryKey?.Clustered != requiredPrimaryKey?.Clustered
                     ? (requiredPrimaryKey?.Clustered ?? OptOut.True).AsChange()
                     : null,
-                Added = currentPrimaryKeyColumns.Length == 0 && requiredPrimaryKeyColumns.Length > 0,
-                Removed = requiredPrimaryKeyColumns.Length == 0 && currentPrimaryKeyColumns.Length > 0,
+                PrimaryKeyAdded = currentPrimaryKeyColumns.Length == 0 && requiredPrimaryKeyColumns.Length > 0,
+                PrimaryKeyRemoved = requiredPrimaryKeyColumns.Length == 0 && currentPrimaryKeyColumns.Length > 0,
                 DescriptionChangedTo = currentPrimaryKey?.Description != requiredPrimaryKey?.Description
                     ? (requiredPrimaryKey?.Description ?? null).AsChange()
                     : null

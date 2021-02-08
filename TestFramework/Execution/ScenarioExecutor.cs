@@ -49,7 +49,14 @@ namespace TestFramework.Execution
 
         public async Task<ExecutionResultStatus> Execute(DirectoryInfo scenario)
         {
-            await InitialiseDatabase(scenario);
+            try
+            {
+                await InitialiseDatabase(scenario);
+            }
+            catch (Exception exc)
+            {
+                return executionContext.ScenarioComplete(scenario, ExecutionResultStatus.InitialiseDatabaseError, new[] { $"Unable to initialise the database: {exc.Message}" });
+            }
             var settings = ReadScenarioSettings(scenario) ?? ScenarioSettings.Default;
 
             var result = await vcdbProcess.Execute(settings, scenario);

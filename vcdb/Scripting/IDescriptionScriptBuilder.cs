@@ -11,5 +11,6 @@ namespace vcdb.Scripting
         SqlScript ChangeTableDescription(ObjectName requiredTableName, string current, string required);
         SqlScript ChangePrimaryKeyDescription(ObjectName requiredTableName, string requiredKeyName, string current, string required);
         SqlScript ChangeProcedureDescription(ObjectName procedureName, string current, string required);
+        SqlScript ChangeForeignKeyDescription(ObjectName requiredTableName, string requiredPrimaryKeyName, string current, string required);
     }
 }

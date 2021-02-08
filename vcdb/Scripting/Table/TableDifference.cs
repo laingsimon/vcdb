@@ -3,6 +3,7 @@ using System.Linq;
 using vcdb.Models;
 using vcdb.Scripting.CheckConstraint;
 using vcdb.Scripting.Column;
+using vcdb.Scripting.ForeignKey;
 using vcdb.Scripting.Index;
 using vcdb.Scripting.Permission;
 using vcdb.Scripting.PrimaryKey;
@@ -25,6 +26,7 @@ namespace vcdb.Scripting.Table
         public IReadOnlyCollection<CheckConstraintDifference> ChangedCheckConstraints { get; set; }
         public PrimaryKeyDifference PrimaryKeyDifference { get; set; }
         public PermissionDifferences PermissionDifferences { get; set; }
+        public IReadOnlyCollection<ForeignKeyDifference> ForeignKeyDifferences { get; set; }
 
         public bool IsChanged
         {
@@ -38,7 +40,8 @@ namespace vcdb.Scripting.Table
                     || DescriptionChangedTo != null
                     || ChangedCheckConstraints?.Any() == true
                     || PrimaryKeyDifference != null
-                    || PermissionDifferences != null;
+                    || PermissionDifferences != null
+                    || ForeignKeyDifferences?.Any() == true;
             }
         }
 

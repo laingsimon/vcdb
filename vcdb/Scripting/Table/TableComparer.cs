@@ -3,6 +3,7 @@ using System.Linq;
 using vcdb.Models;
 using vcdb.Scripting.CheckConstraint;
 using vcdb.Scripting.Column;
+using vcdb.Scripting.ForeignKey;
 using vcdb.Scripting.Index;
 using vcdb.Scripting.Permission;
 using vcdb.Scripting.PrimaryKey;
@@ -17,6 +18,7 @@ namespace vcdb.Scripting.Table
         private readonly ICheckConstraintComparer checkConstraintComparer;
         private readonly IPrimaryKeyComparer primaryKeyComparer;
         private readonly IPermissionComparer permissionComparer;
+        private readonly IForeignKeyComparer foreignKeyComparer;
 
         public TableComparer(
             IColumnComparer columnComparer,
@@ -24,7 +26,8 @@ namespace vcdb.Scripting.Table
             INamedItemFinder namedItemFinder,
             ICheckConstraintComparer checkConstraintComparer,
             IPrimaryKeyComparer primaryKeyComparer,
-            IPermissionComparer permissionComparer)
+            IPermissionComparer permissionComparer,
+            IForeignKeyComparer foreignKeyComparer)
         {
             this.columnComparer = columnComparer;
             this.indexComparer = indexComparer;
@@ -32,6 +35,7 @@ namespace vcdb.Scripting.Table
             this.checkConstraintComparer = checkConstraintComparer;
             this.primaryKeyComparer = primaryKeyComparer;
             this.permissionComparer = permissionComparer;
+            this.foreignKeyComparer = foreignKeyComparer;
         }
 
         public IEnumerable<TableDifference> GetTableDifferences(
@@ -87,7 +91,11 @@ namespace vcdb.Scripting.Table
                         PermissionDifferences = permissionComparer.GetPermissionDifferences(
                             context.ForTable(currentTable, requiredTable.AsNamedItem(), columnDifferences),
                             currentTable.Value.Permissions,
-                            requiredTable.Value.Permissions)
+                            requiredTable.Value.Permissions),
+                        ForeignKeyDifferences = foreignKeyComparer.GetForeignKeyDifferences(
+                            context.ForTable(currentTable, requiredTable.AsNamedItem(), columnDifferences),
+                            currentTable.Value.ForeignKeys.OrEmpty(),
+                            requiredTable.Value.ForeignKeys.OrEmpty()).ToArray()
                     };
 
                     if (difference.IsChanged)

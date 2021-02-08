@@ -25,56 +25,62 @@ namespace vcdb.SqlServer.Scripting
             this.hashHelper = hashHelper;
         }
 
-        public IEnumerable<SqlScript> CreateUpgradeScripts(ObjectName tableName, PrimaryKeyDifference primaryKeyDifference)
+        public IEnumerable<SqlScript> CreateUpgradeScripts(ObjectName tableName, PrimaryKeyDifference primaryKeyDifference, ScriptingPhase phase)
         {
             if (primaryKeyDifference == null)
             {
                 yield break;
             }
 
-            if (primaryKeyDifference.Added)
+            if (phase == ScriptingPhase.DropDependencies)
             {
-                foreach (var script in GetAddPrimaryKeyScripts(tableName, primaryKeyDifference))
+                if (primaryKeyDifference.PrimaryKeyRemoved)
                 {
-                    yield return script;
+                    foreach (var script in GetDropPrimaryKeyScripts(tableName, primaryKeyDifference.CurrentPrimaryKey))
+                    {
+                        yield return script;
+                    }
                 }
+                else if (primaryKeyDifference.CurrentPrimaryKey != null && (primaryKeyDifference.ClusteredChangedTo != null || primaryKeyDifference.ColumnsAdded.Any() || primaryKeyDifference.ColumnsRemoved.Any()))
+                {
+                    foreach (var script in GetDropPrimaryKeyScripts(tableName, primaryKeyDifference.CurrentPrimaryKey))
+                    {
+                        yield return script;
+                    }
+                    yield break;
+                }
+
                 yield break;
             }
 
-            if (primaryKeyDifference.Removed)
+            if (phase == ScriptingPhase.RecreateDependencies)
             {
-                foreach (var script in GetDropPrimaryKeyScripts(tableName, primaryKeyDifference.CurrentPrimaryKey))
+                if (!primaryKeyDifference.PrimaryKeyRemoved && (primaryKeyDifference.PrimaryKeyAdded || primaryKeyDifference.ClusteredChangedTo != null || primaryKeyDifference.ColumnsAdded.Any() || primaryKeyDifference.ColumnsRemoved.Any()))
                 {
-                    yield return script;
+                    foreach (var script in GetAddPrimaryKeyScripts(tableName, primaryKeyDifference))
+                    {
+                        yield return script;
+                    }
                 }
+
                 yield break;
             }
 
-            if (primaryKeyDifference.ClusteredChangedTo != null || primaryKeyDifference.ColumnsAdded.Any() || primaryKeyDifference.ColumnsRemoved.Any())
+            if (phase == ScriptingPhase.Recreate && !primaryKeyDifference.PrimaryKeyRemoved)
             {
-                foreach (var script in GetDropPrimaryKeyScripts(tableName, primaryKeyDifference.CurrentPrimaryKey))
+                if (primaryKeyDifference.RenamedTo != null)
                 {
-                    yield return script;
+                    yield return GetRenamePrimaryKeyScript(tableName, primaryKeyDifference);
                 }
-                foreach (var script in GetAddPrimaryKeyScripts(tableName, primaryKeyDifference))
+
+                if (primaryKeyDifference.DescriptionChangedTo != null)
                 {
-                    yield return script;
+                    yield return descriptionScriptBuilder.ChangePrimaryKeyDescription(
+                        tableName,
+                        primaryKeyDifference.CurrentPrimaryKey.SqlName,
+                        primaryKeyDifference.CurrentPrimaryKey.Description,
+                        primaryKeyDifference.RequiredPrimaryKey.Description);
                 }
-                yield break;
-            }
-
-            if (primaryKeyDifference.RenamedTo != null)
-            {
-                yield return GetRenamePrimaryKeyScript(tableName, primaryKeyDifference);
-            }
-
-            if (primaryKeyDifference.DescriptionChangedTo != null)
-            {
-                yield return descriptionScriptBuilder.ChangePrimaryKeyDescription(
-                    tableName,
-                    primaryKeyDifference.CurrentPrimaryKey.SqlName,
-                    primaryKeyDifference.CurrentPrimaryKey.Description,
-                    primaryKeyDifference.RequiredPrimaryKey.Description);
             }
         }
 

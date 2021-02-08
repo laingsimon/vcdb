@@ -28,6 +28,18 @@ EXEC sp_updateextendedproperty
 @level1type = N'TABLE',  @level1name = N'ChangeDescriptionTable',
 @level2type = N'COLUMN', @level2name = N'Id'
 GO
+EXEC sp_addextendedproperty 
+@name = N'MS_Description', @value = 'new column description',
+@level0type = N'SCHEMA', @level0name = N'AddDescriptionSchema', 
+@level1type = N'TABLE',  @level1name = N'AddDescriptionTable',
+@level2type = N'COLUMN', @level2name = N'Id'
+GO
+EXEC sp_dropextendedproperty
+@name = N'MS_Description',
+@level0type = N'SCHEMA', @level0name = N'DropDescriptionSchema',
+@level1type = N'TABLE',  @level1name = N'DropDescriptionTable',
+@level2type = N'COLUMN', @level2name = N'Id'
+GO
 EXEC sp_updateextendedproperty 
 @name = N'MS_Description', @value = 'updated index description',
 @level0type = N'SCHEMA', @level0name = N'ChangeDescriptionSchema', 
@@ -41,12 +53,6 @@ EXEC sp_updateextendedproperty
 @level2type = null, @level2name = null
 GO
 EXEC sp_addextendedproperty 
-@name = N'MS_Description', @value = 'new column description',
-@level0type = N'SCHEMA', @level0name = N'AddDescriptionSchema', 
-@level1type = N'TABLE',  @level1name = N'AddDescriptionTable',
-@level2type = N'COLUMN', @level2name = N'Id'
-GO
-EXEC sp_addextendedproperty 
 @name = N'MS_Description', @value = 'new index description',
 @level0type = N'SCHEMA', @level0name = N'AddDescriptionSchema', 
 @level1type = N'TABLE',  @level1name = N'AddDescriptionTable',
@@ -57,12 +63,6 @@ EXEC sp_addextendedproperty
 @level0type = N'SCHEMA', @level0name = N'AddDescriptionSchema', 
 @level1type = N'TABLE',  @level1name = N'AddDescriptionTable',
 @level2type = null, @level2name = null
-GO
-EXEC sp_dropextendedproperty
-@name = N'MS_Description',
-@level0type = N'SCHEMA', @level0name = N'DropDescriptionSchema',
-@level1type = N'TABLE',  @level1name = N'DropDescriptionTable',
-@level2type = N'COLUMN', @level2name = N'Id'
 GO
 EXEC sp_dropextendedproperty 
 @name = N'MS_Description',
@@ -76,3 +76,4 @@ EXEC sp_dropextendedproperty
 @level1type = N'TABLE',  @level1name = N'DropDescriptionTable',
 @level2type = null, @level2name = null
 GO
+

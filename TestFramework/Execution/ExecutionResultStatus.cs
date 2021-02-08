@@ -7,6 +7,7 @@
         Different,
         InvalidSql,
         UnexpectedExitCode,
-        Exception
+        Exception,
+        InitialiseDatabaseError
     }
 }

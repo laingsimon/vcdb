@@ -17,6 +17,7 @@ using vcdb.Scripting.CheckConstraint;
 using vcdb.Scripting.Collation;
 using vcdb.Scripting.Column;
 using vcdb.Scripting.Database;
+using vcdb.Scripting.ForeignKey;
 using vcdb.Scripting.Index;
 using vcdb.Scripting.Permission;
 using vcdb.Scripting.PrimaryKey;
@@ -120,6 +121,7 @@ namespace vcdb
             services.InNamespace<IUserComparer>().AddAsSingleton();
             services.InNamespace<IProcedureComparer>().AddAsSingleton();
             services.InNamespace<INamedItemFinder>().AddAsSingleton();
+            services.InNamespace<IForeignKeyComparer>().AddAsSingleton();
             services.InNamespace<IPermissionComparer>().AddAsSingleton();
             var version = options.GetDatabaseVersion();
             services.AddSingleton(version);

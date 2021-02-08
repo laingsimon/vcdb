@@ -5,6 +5,9 @@ namespace vcdb.Scripting.PrimaryKey
 {
     public interface IPrimaryKeyScriptBuilder
     {
-        IEnumerable<SqlScript> CreateUpgradeScripts(ObjectName tableName, PrimaryKeyDifference primaryKeyDifference);
+        IEnumerable<SqlScript> CreateUpgradeScripts(
+            ObjectName tableName,
+            PrimaryKeyDifference primaryKeyDifference,
+            ScriptingPhase phase);
     }
 }

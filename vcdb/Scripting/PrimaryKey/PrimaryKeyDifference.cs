@@ -13,8 +13,8 @@ namespace vcdb.Scripting.PrimaryKey
         public string[] ColumnsRemoved { get; set; }
         public Change<string> RenamedTo { get; set; }
         public Change<OptOut> ClusteredChangedTo { get; set; }
-        public bool Added { get; set; }
-        public bool Removed { get; set; }
+        public bool PrimaryKeyAdded { get; set; }
+        public bool PrimaryKeyRemoved { get; set; }
         public Change<string> DescriptionChangedTo { get; set; }
 
         public bool IsChanged
@@ -23,8 +23,8 @@ namespace vcdb.Scripting.PrimaryKey
             {
                 return ColumnsAdded?.Any() == true
                     || ColumnsRemoved?.Any() == true
-                    || Added
-                    || Removed
+                    || PrimaryKeyAdded
+                    || PrimaryKeyRemoved
                     || DescriptionChangedTo != null
                     || RenamedTo != null
                     || ClusteredChangedTo != null;
