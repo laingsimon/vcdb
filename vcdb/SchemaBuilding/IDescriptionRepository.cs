@@ -13,5 +13,6 @@ namespace vcdb.SchemaBuilding
         Task<string> GetTableDescription(DbConnection connection, ObjectName tableName);
         Task<string> GetPrimaryKeyDescription(DbConnection connection, ObjectName tableName, string primaryKeyName);
         Task<string> GetProcedureDescription(DbConnection connection, ObjectName procedureName);
+        Task<IDictionary<string, string>> GetForeignKeyDescription(DbConnection connection, ObjectName tableName);
     }
 }

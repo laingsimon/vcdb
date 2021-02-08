@@ -1,0 +1,50 @@
+{
+  "tables": {
+	"[dbo].[Person]": {
+		"columns": {
+			"Id": { "type": "int", "nullable": false, "primaryKey": true },
+            "Name": { "type": "varchar(255)", "primaryKey": false },
+            "FavouriteCar": { "type": "int", "primaryKey": false },
+            "ParentId": { "type": "int", "nullable": false, "primaryKey": false }
+		},
+        "primaryKey": {
+        
+        },
+        "foreignKeys": {
+          "FK_Person_FavouriteCar": {
+            "ReferencedTable": "[dbo].[Car]",
+            "Columns": {
+              "FavouriteCar": "Id"
+            },
+            "OnDelete": "Cascade",
+            "description": "the persons favourite car"
+          },
+          "FK_Person_Parent": {
+            "ReferencedTable": "[dbo].[Person]",
+            "Columns": {
+              "ParentId": "Id"
+            },
+            "description": "foreign key description"
+          }
+        }
+	},
+    "[dbo].[Car]": {
+		"columns": {
+			"Id": { "type": "int", "nullable": false, "primaryKey": true },
+            "Name": { "type": "varchar(255)", "nullable": false, "primaryKey": false }
+		},
+        "primaryKey": {
+        
+        }
+	}
+  },
+  "permissions": {
+    "grant": {
+      "CONNECT": {
+        "dbo": {
+          "WithGrant": false
+        }
+      }
+    }
+  }
+}

@@ -12,3 +12,9 @@ ALTER TABLE dbo.Car
 ADD CONSTRAINT PK_Car_IdAndName
 PRIMARY KEY (Id, Name)
 GO
+EXEC sp_addextendedproperty 
+@name = N'MS_Description', @value = 'primary key description',
+@level0type = 'SCHEMA', @level0name = 'dbo', 
+@level1type = 'TABLE',  @level1name = 'Car',
+@level2type = 'CONSTRAINT', @level2name = 'PK_Car_IdAndName'
+GO

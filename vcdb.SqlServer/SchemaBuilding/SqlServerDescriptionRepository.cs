@@ -60,6 +60,11 @@ from fn_listextendedproperty(default, 'SCHEMA', '{procedureName.Schema}', 'PROCE
 where name = 'MS_Description'");
         }
 
+        public async Task<IDictionary<string, string>> GetForeignKeyDescription(DbConnection connection, ObjectName tableName)
+        {
+            return await GetMultipleDescription(connection, tableName, "CONSTRAINT");
+        }
+
         private class DescriptionMap
         {
             public string ObjectName { get; set; }

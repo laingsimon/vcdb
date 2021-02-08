@@ -15,7 +15,8 @@
             "Name": { "type": "varchar(255)", "nullable": false, "primaryKey": true }
 		},
         "primaryKey": {
-            "name": "PK_Car_IdAndName"
+          "name": "PK_Car_IdAndName",
+          "description": "primary key description"
         }
 	}
   },

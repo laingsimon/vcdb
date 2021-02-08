@@ -16,6 +16,7 @@ namespace vcdb.SqlServer.SchemaBuilding
         private readonly ICheckConstraintRepository checkConstraintRepository;
         private readonly IPrimaryKeyRepository primaryKeyRepository;
         private readonly IPermissionRepository permissionRepository;
+        private readonly IForeignKeyRepository foreignKeyRepository;
 
         public SqlServerTableRepository(
             IColumnRepository columnsRepository,
@@ -23,7 +24,8 @@ namespace vcdb.SqlServer.SchemaBuilding
             IDescriptionRepository descriptionRepository,
             ICheckConstraintRepository checkConstraintRepository,
             IPrimaryKeyRepository primaryKeyRepository,
-            IPermissionRepository permissionRepository)
+            IPermissionRepository permissionRepository,
+            IForeignKeyRepository foreignKeyRepository)
         {
             this.columnsRepository = columnsRepository;
             this.indexesRepository = indexesRepository;
@@ -31,6 +33,7 @@ namespace vcdb.SqlServer.SchemaBuilding
             this.checkConstraintRepository = checkConstraintRepository;
             this.primaryKeyRepository = primaryKeyRepository;
             this.permissionRepository = permissionRepository;
+            this.foreignKeyRepository = foreignKeyRepository;
         }
 
         public async Task<Dictionary<ObjectName, TableDetails>> GetTables(DbConnection connection)
@@ -55,7 +58,8 @@ where TABLE_TYPE = 'BASE TABLE'");
                         Description = await descriptionRepository.GetTableDescription(connection, tableName),
                         Checks = await checkConstraintRepository.GetCheckConstraints(connection, tableName),
                         PrimaryKey = await primaryKeyRepository.GetPrimaryKeyDetails(connection, tableName),
-                        Permissions = tablePermissions
+                        Permissions = tablePermissions,
+                        ForeignKeys = await foreignKeyRepository.GetForeignKeys(connection, tableName)
                     };
                 });
         }

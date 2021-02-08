@@ -39,5 +39,10 @@ namespace vcdb.Models
         /// The user defined permissions for this table
         /// </summary>
         public Permissions Permissions { get; set; }
+
+        /// <summary>
+        /// The foreign keys that exist on this table
+        /// </summary>
+        public Dictionary<string, ForeignKeyDetails> ForeignKeys { get; set; }
     }
 }
