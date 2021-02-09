@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using vcdb.CommandLine;
 using vcdb.Models;
@@ -56,33 +55,15 @@ namespace vcdb.SqlServer.Scripting
             if (databaseDifferences.DescriptionChangedTo != null)
                 yield return descriptionScriptBuilder.ChangeDatabaseDescription(current.Description, databaseDifferences.DescriptionChangedTo.Value);
 
-            foreach (var script in userScriptBuilder.CreateUpgradeScripts(databaseDifferences.UserDifferences))
-            {
-                yield return script;
-            }
-
-            foreach (var script in permissionScriptBuilder.CreateDatabasePermissionScripts(databaseDifferences.PermissionDifferences))
-            {
-                yield return script;
-            }
+            yield return new OutputableCollection(userScriptBuilder.CreateUpgradeScripts(databaseDifferences.UserDifferences));
+            yield return new OutputableCollection(permissionScriptBuilder.CreateDatabasePermissionScripts(databaseDifferences.PermissionDifferences));
 
             var schemaObjectDifferences = databaseDifferences.TableDifferences.Cast<ISchemaObjectDifference>()
                 .Concat(databaseDifferences.ProcedureDifferences.Cast<ISchemaObjectDifference>())
                 .ToArray();
-            foreach (var script in schemaScriptBuilder.CreateUpgradeScripts(databaseDifferences.SchemaDifferences, schemaObjectDifferences))
-            {
-                yield return script;
-            }
-
-            foreach (var script in tableScriptBuilder.CreateUpgradeScripts(databaseDifferences.TableDifferences))
-            {
-                yield return script;
-            }
-
-            foreach (var script in procedureScriptBuilder.CreateUpgradeScripts(databaseDifferences.ProcedureDifferences))
-            {
-                yield return script;
-            }
+            yield return new OutputableCollection(schemaScriptBuilder.CreateUpgradeScripts(databaseDifferences.SchemaDifferences, schemaObjectDifferences));
+            yield return new OutputableCollection(tableScriptBuilder.CreateUpgradeScripts(databaseDifferences.TableDifferences));
+            yield return new OutputableCollection(procedureScriptBuilder.CreateUpgradeScripts(databaseDifferences.ProcedureDifferences));
         }
 
         private SqlScript GetChangeDatabaseCollationScript(string requiredCollation)

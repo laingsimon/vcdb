@@ -73,7 +73,7 @@ namespace vcdb
                 currentDatabaseRepresentation,
                 requiredDatabaseRepresentation);
 
-            return new OutputtableCollection(
+            return new OutputableCollection(
                 outputHeader,
                 new EnumerableOutput<IOutputable>(databaseScripts));
         }

@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using vcdb.Models;
 using vcdb.Output;
 using vcdb.Scripting;
@@ -30,44 +31,31 @@ namespace vcdb.SqlServer.Scripting
             {
                 if (difference.SchemaAdded)
                 {
-                    yield return GetCreateSchemaScript(difference.RequiredSchema);
-
-                    foreach (var script in transferScope.CreateTransferScriptsIntoCreatedSchema(difference.RequiredSchema.Key))
-                    {
-                        yield return script;
-                    }
-
-                    foreach (var script in permissionScriptBuilder.CreateSchemaPermissionScripts(
-                        difference.RequiredSchema.Key,
-                        PermissionDifferences.From(difference.RequiredSchema.Value.Permissions)))
-                    {
-                        yield return script;
-                    }
+                    yield return new OutputableCollection(
+                        new[] { GetCreateSchemaScript(difference.RequiredSchema) }
+                        .Concat(transferScope.CreateTransferScriptsIntoCreatedSchema(difference.RequiredSchema.Key))
+                        .Concat(permissionScriptBuilder.CreateSchemaPermissionScripts(
+                                    difference.RequiredSchema.Key,
+                                    PermissionDifferences.From(difference.RequiredSchema.Value.Permissions)))
+                    );
 
                     continue;
                 }
 
                 if (difference.SchemaDeleted)
                 {
-                    foreach (var script in transferScope.CreateTransferScriptsAwayFromDroppedSchema(difference.CurrentSchema.Key))
-                    {
-                        yield return script;
-                    }
-
-                    yield return GetDropSchemaScript(difference.CurrentSchema);
+                    yield return new OutputableCollection(
+                        transferScope.CreateTransferScriptsAwayFromDroppedSchema(difference.CurrentSchema.Key)
+                        .Concat(new[] { GetDropSchemaScript(difference.CurrentSchema) }));
                     continue;
                 }
 
                 if (difference.SchemaRenamedTo != null)
                 {
-                    yield return GetCreateSchemaScript(difference.RequiredSchema);
-
-                    foreach (var script in transferScope.CreateTransferScriptsForRenamedSchema(difference.CurrentSchema.Key, difference.RequiredSchema.Key))
-                    {
-                        yield return script;
-                    }
-
-                    yield return GetDropSchemaScript(difference.CurrentSchema);
+                    yield return new OutputableCollection(
+                        new[] { GetCreateSchemaScript(difference.RequiredSchema) }
+                        .Concat(transferScope.CreateTransferScriptsForRenamedSchema(difference.CurrentSchema.Key, difference.RequiredSchema.Key))
+                        .Concat(new[] { GetDropSchemaScript(difference.CurrentSchema) }));
                 }
 
                 if (difference.DescriptionChangedTo != null)
@@ -78,27 +66,21 @@ namespace vcdb.SqlServer.Scripting
                         difference.DescriptionChangedTo.Value);
                 }
 
-                foreach (var script in permissionScriptBuilder.CreateSchemaPermissionScripts(
+                yield return new OutputableCollection(permissionScriptBuilder.CreateSchemaPermissionScripts(
                     difference.RequiredSchema.Key,
-                    difference.PermissionDifferences))
-                {
-                    yield return script;
-                }
+                    difference.PermissionDifferences));
             }
 
-            foreach (var script in transferScope.CreateTransferScriptsForUnProcessedObjects())
-            {
-                yield return script;
-            }
+            yield return new OutputableCollection(transferScope.CreateTransferScriptsForUnProcessedObjects());
         }
 
-        private SqlScript GetDropSchemaScript(NamedItem<string, SchemaDetails> currentSchema)
+        private IOutputable GetDropSchemaScript(NamedItem<string, SchemaDetails> currentSchema)
         {
             return new SqlScript($@"DROP SCHEMA [{currentSchema.Key}]
 GO");
         }
 
-        private SqlScript GetCreateSchemaScript(NamedItem<string, SchemaDetails> requiredSchema)
+        private IOutputable GetCreateSchemaScript(NamedItem<string, SchemaDetails> requiredSchema)
         {
             return new SqlScript($@"CREATE SCHEMA [{requiredSchema.Key}]
 GO");

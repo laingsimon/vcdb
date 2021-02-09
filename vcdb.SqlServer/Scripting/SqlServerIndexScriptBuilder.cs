@@ -16,22 +16,13 @@ namespace vcdb.SqlServer.Scripting
             this.descriptionScriptBuilder = descriptionScriptBuilder;
         }
 
-        private SqlScript GetDropIndexScript(ObjectName requiredTableName, string indexName)
-        {
-            return new SqlScript($@"DROP INDEX {indexName.SqlSafeName()} ON {requiredTableName.SqlSafeName()}
-GO");
-        }
-
         public IEnumerable<IOutputable> CreateUpgradeScripts(ObjectName requiredTableName, IReadOnlyCollection<IndexDifference> indexDifferences)
         {
             foreach (var indexDifference in indexDifferences)
             {
                 if (indexDifference.IndexAdded)
                 {
-                    foreach (var script in GetAddIndexScript(requiredTableName, indexDifference.RequiredIndex.Key, indexDifference.RequiredIndex.Value))
-                    {
-                        yield return script;
-                    }
+                    yield return new OutputableCollection(GetAddIndexScript(requiredTableName, indexDifference.RequiredIndex.Key, indexDifference.RequiredIndex.Value));
                     continue;
                 }
 
@@ -45,10 +36,7 @@ GO");
                 {
                     //Indexes cannot be altered, they have to be dropped and re-created
                     yield return GetDropIndexScript(requiredTableName, indexDifference.CurrentIndex.Key);
-                    foreach (var script in GetAddIndexScript(requiredTableName, indexDifference.RequiredIndex.Key, indexDifference.RequiredIndex.Value))
-                    {
-                        yield return script;
-                    }
+                    yield return new OutputableCollection(GetAddIndexScript(requiredTableName, indexDifference.RequiredIndex.Key, indexDifference.RequiredIndex.Value));
                 }
                 else if (indexDifference.IndexRenamedTo != null)
                 {
@@ -64,6 +52,12 @@ GO");
                         indexDifference.DescriptionChangedTo.Value);
                 }
             }
+        }
+
+        private SqlScript GetDropIndexScript(ObjectName requiredTableName, string indexName)
+        {
+            return new SqlScript($@"DROP INDEX {indexName.SqlSafeName()} ON {requiredTableName.SqlSafeName()}
+GO");
         }
 
         private IEnumerable<IOutputable> GetAddIndexScript(ObjectName tableName, string indexName, IndexDetails index)

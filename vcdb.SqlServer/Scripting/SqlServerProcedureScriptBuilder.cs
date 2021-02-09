@@ -48,8 +48,7 @@ namespace vcdb.SqlServer.Scripting
                 {
                     if (procedureDifference.ProcedureRenamedTo != null)
                     {
-                        foreach (var script in GetRenameProcedureScript(currentProcedure.Key, requiredProcedure.Key))
-                            yield return script;
+                        yield return new OutputableCollection(GetRenameProcedureScript(currentProcedure.Key, requiredProcedure.Key));
                     }
 
                     if (!changeRequiresProcedureRecreation && procedureDifference.DefinitionChangedTo != null)
@@ -68,14 +67,11 @@ namespace vcdb.SqlServer.Scripting
                         procedureDifference.DescriptionChangedTo?.Value ?? requiredProcedure.Value.Description);
                 }
 
-                foreach (var script in permissionScriptBuilder.CreateProcedurePermissionScripts(
+                yield return new OutputableCollection(permissionScriptBuilder.CreateProcedurePermissionScripts(
                     requiredProcedure.Key,
-                    changeRequiresProcedureRecreation 
+                    changeRequiresProcedureRecreation
                         ? PermissionDifferences.From(procedureDifference.RequiredProcedure.Value.Permissions)
-                        : procedureDifference.PermissionDifferences))
-                {
-                    yield return script;
-                }
+                        : procedureDifference.PermissionDifferences));
             }
         }
 

@@ -18,10 +18,7 @@ namespace vcdb.SqlServer.Scripting
 
                 if (userDifference.UserAdded)
                 {
-                    foreach (var script in GetCreateUserScript(requiredUser))
-                    {
-                        yield return script;
-                    }
+                    yield return new OutputableCollection(GetCreateUserScript(requiredUser));
 
                     continue;
                 }
@@ -34,8 +31,7 @@ namespace vcdb.SqlServer.Scripting
 
                 if (userDifference.UserRenamedTo != null || userDifference.DefaultSchemaChangedTo != null || userDifference.LoginChangedTo != null)
                 {
-                    foreach (var script in GetAlterUserScript(currentUser.Key, userDifference))
-                        yield return script;
+                    yield return GetAlterUserScript(currentUser.Key, userDifference);
                 }
 
                 if (userDifference.StateChangedTo != null)
@@ -45,7 +41,7 @@ namespace vcdb.SqlServer.Scripting
             }
         }
 
-        private IEnumerable<IOutputable> GetAlterUserScript(string currentName, UserDifference userDifference)
+        private SqlScript GetAlterUserScript(string currentName, UserDifference userDifference)
         {
             var requiredUser = userDifference.RequiredUser;
 
@@ -63,7 +59,7 @@ namespace vcdb.SqlServer.Scripting
             }.Where(clause => !string.IsNullOrEmpty(clause)).ToArray();
             var clauses = string.Join("," + Environment.NewLine, withClauses);
 
-            yield return new SqlScript($@"ALTER USER {currentName.SqlSafeName()}
+            return new SqlScript($@"ALTER USER {currentName.SqlSafeName()}
 WITH {clauses}
 GO");
         }

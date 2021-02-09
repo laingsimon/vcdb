@@ -27,21 +27,14 @@ namespace vcdb.SqlServer.Scripting
 
             if (tableDifference.TableRenamedTo != null)
             {
-                foreach (var script in DropAllUnnamedCheckConstraints(tableDifference))
-                {
-                    yield return script;
-                }
+                yield return new OutputableCollection(DropAllUnnamedCheckConstraints(tableDifference));
                 yield break;
             }
 
             foreach (var columnToDropOrRename in tableDifference.ColumnDifferences.Where(cd => cd.ColumnDeleted || cd.ColumnRenamedTo != null))
             {
                 var checkConstraintsForColumn = GetCheckConstraintsBoundToCurrentColumn(tableDifference, columnToDropOrRename.CurrentColumn.Key);
-
-                foreach (var checkConstraint in checkConstraintsForColumn)
-                {
-                    yield return DropCheckConstraint(tableDifference.CurrentTable.Key, checkConstraint);
-                }
+                yield return new OutputableCollection(checkConstraintsForColumn.Select(checkConstraint => DropCheckConstraint(tableDifference.CurrentTable.Key, checkConstraint)));
             }
         }
 
@@ -81,15 +74,8 @@ GO");
             var tableName = tableDifference.RequiredTable.Key;
             if (tableDifference.TableRenamedTo != null)
             {
-                foreach (var script in CreateRenameAllCheckConstraintScripts(tableDifference))
-                {
-                    yield return script;
-                }
-
-                foreach (var script in CreateAddAllCheckConstraintScripts(tableDifference))
-                {
-                    yield return script;
-                }
+                yield return new OutputableCollection(CreateRenameAllCheckConstraintScripts(tableDifference));
+                yield return new OutputableCollection(CreateAddAllCheckConstraintScripts(tableDifference));
             }
 
             var processedCheckConstraintDifferences = new HashSet<CheckConstraintDifference>();
@@ -105,10 +91,7 @@ GO");
                     if (checkConstraintDifference != null && checkConstraintDifference.RequiredConstraint != null)
                     {
                         processedCheckConstraintDifferences.Add(checkConstraintDifference);
-                        foreach (var script in AddCheckConstraint(tableName, checkConstraintDifference))
-                        {
-                            yield return script;
-                        }
+                        yield return new OutputableCollection(AddCheckConstraint(tableName, checkConstraintDifference));
                     }
                 }
             }
@@ -123,10 +106,7 @@ GO");
                     }
 
                     processedCheckConstraintDifferences.Add(changedCheckConstraint);
-                    foreach (var script in AddCheckConstraint(tableName, changedCheckConstraint))
-                    {
-                        yield return script;
-                    }
+                    yield return new OutputableCollection(AddCheckConstraint(tableName, changedCheckConstraint));
                 }
 
                 var columnWasRenamed = changedCheckConstraint?.CurrentConstraint?.ColumnNames.OrEmptyCollection()
@@ -153,10 +133,7 @@ GO");
                     processedCheckConstraintDifferences.Add(changedCheckConstraint);
                     if (columnWasRenamed)
                     {
-                        foreach (var script in AddCheckConstraint(tableName, changedCheckConstraint.RequiredConstraint))
-                        {
-                            yield return script;
-                        }
+                        yield return new OutputableCollection(AddCheckConstraint(tableName, changedCheckConstraint.RequiredConstraint));
                     }
                     else
                     {
@@ -171,10 +148,7 @@ GO");
                 {
                     processedCheckConstraintDifferences.Add(changedCheckConstraint);
                     yield return DropCheckConstraint(tableName, changedCheckConstraint.CurrentConstraint);
-                    foreach (var script in AddCheckConstraint(tableName, changedCheckConstraint))
-                    {
-                        yield return script;
-                    }
+                    yield return new OutputableCollection(AddCheckConstraint(tableName, changedCheckConstraint));
                 }
             }
         }
@@ -232,10 +206,7 @@ GO");
                     continue;
                 }
 
-                foreach (var script in AddCheckConstraint(tableDifference.RequiredTable.Key, checkConstraint))
-                {
-                    yield return script;
-                }
+                yield return new OutputableCollection(AddCheckConstraint(tableDifference.RequiredTable.Key, checkConstraint));
             }
         }
 

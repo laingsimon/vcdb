@@ -36,17 +36,11 @@ namespace vcdb.SqlServer.Scripting
             {
                 if (primaryKeyDifference.PrimaryKeyRemoved)
                 {
-                    foreach (var script in GetDropPrimaryKeyScripts(tableName, primaryKeyDifference.CurrentPrimaryKey))
-                    {
-                        yield return script;
-                    }
+                    yield return GetDropPrimaryKeyScript(tableName, primaryKeyDifference.CurrentPrimaryKey);
                 }
                 else if (primaryKeyDifference.CurrentPrimaryKey != null && (primaryKeyDifference.ClusteredChangedTo != null || primaryKeyDifference.ColumnsAdded.Any() || primaryKeyDifference.ColumnsRemoved.Any()))
                 {
-                    foreach (var script in GetDropPrimaryKeyScripts(tableName, primaryKeyDifference.CurrentPrimaryKey))
-                    {
-                        yield return script;
-                    }
+                    yield return GetDropPrimaryKeyScript(tableName, primaryKeyDifference.CurrentPrimaryKey);
                     yield break;
                 }
 
@@ -57,10 +51,7 @@ namespace vcdb.SqlServer.Scripting
             {
                 if (!primaryKeyDifference.PrimaryKeyRemoved && (primaryKeyDifference.PrimaryKeyAdded || primaryKeyDifference.ClusteredChangedTo != null || primaryKeyDifference.ColumnsAdded.Any() || primaryKeyDifference.ColumnsRemoved.Any()))
                 {
-                    foreach (var script in GetAddPrimaryKeyScripts(tableName, primaryKeyDifference))
-                    {
-                        yield return script;
-                    }
+                    yield return new OutputableCollection(GetAddPrimaryKeyScripts(tableName, primaryKeyDifference));
                 }
 
                 yield break;
@@ -124,9 +115,9 @@ GO");
                 PrimaryKeyObjectIdPrefix + hashOfRequiredColumns);
         }
 
-        private IEnumerable<IOutputable> GetDropPrimaryKeyScripts(ObjectName tableName, PrimaryKeyDetails currentPrimaryKey)
+        private SqlScript GetDropPrimaryKeyScript(ObjectName tableName, PrimaryKeyDetails currentPrimaryKey)
         {
-            yield return new SqlScript($@"ALTER TABLE {tableName.SqlSafeName()}
+            return new SqlScript($@"ALTER TABLE {tableName.SqlSafeName()}
 DROP CONSTRAINT {currentPrimaryKey.SqlName.SqlSafeName()}
 GO");
         }

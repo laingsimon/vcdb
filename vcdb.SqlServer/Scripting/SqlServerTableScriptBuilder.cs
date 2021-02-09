@@ -61,23 +61,13 @@ namespace vcdb.SqlServer.Scripting
                 if (tableDifference.TableAdded)
                 {
                     processedDifferences.Add(tableDifference);
-                    foreach (var script in GetCreateTableScript(requiredTable.Value, requiredTable.Key))
-                    {
-                        yield return script;
-                    }
-
-                    foreach (var script in GetCreateTableScripts(tableDifference))
-                    {
-                        yield return script;
-                    }
+                    yield return new OutputableCollection(GetCreateTableScript(requiredTable.Value, requiredTable.Key));
+                    yield return new OutputableCollection(GetCreateTableScripts(tableDifference));
 
                     continue;
                 }
 
-                foreach (var script in foreignKeyScriptBuilder.CreateUpgradeScripts(currentTable.Key, tableDifference.ForeignKeyDifferences, ScriptingPhase.DropReferences))
-                {
-                    yield return script;
-                }
+                yield return new OutputableCollection(foreignKeyScriptBuilder.CreateUpgradeScripts(currentTable.Key, tableDifference.ForeignKeyDifferences, ScriptingPhase.DropReferences));
             }
 
             //Drop dependencies phase
@@ -86,10 +76,7 @@ namespace vcdb.SqlServer.Scripting
                 var requiredTable = tableDifference.RequiredTable;
                 var currentTable = tableDifference.CurrentTable;
 
-                foreach (var script in primaryKeyScriptBuilder.CreateUpgradeScripts(currentTable.Key, tableDifference.PrimaryKeyDifference, ScriptingPhase.DropDependencies))
-                {
-                    yield return script;
-                }
+                yield return new OutputableCollection(primaryKeyScriptBuilder.CreateUpgradeScripts(currentTable.Key, tableDifference.PrimaryKeyDifference, ScriptingPhase.DropDependencies));
 
                 if (tableDifference.ColumnDifferences?.Any() == true)
                 {
@@ -111,47 +98,31 @@ GO");
 
                 if (tableDifference.TableRenamedTo != null)
                 {
-                    foreach (var script in GetRenameTableScript(currentTable.Key, requiredTable.Key))
-                        yield return script;
+                    yield return new OutputableCollection(GetRenameTableScript(currentTable.Key, requiredTable.Key));
                 }
 
                 foreach (var rename in tableDifference.ColumnDifferences.Where(difference => difference.ColumnRenamedTo != null && !RequiresDropAndReAdd(difference)))
                 {
-                    foreach (var script in checkConstraintScriptBuilder.CreateUpgradeScriptsBeforeColumnChanges(tableDifference, rename))
-                    {
-                        yield return script;
-                    }
+                    yield return new OutputableCollection(checkConstraintScriptBuilder.CreateUpgradeScriptsBeforeColumnChanges(tableDifference, rename));
 
                     var requiredColumn = rename.RequiredColumn;
                     var currentColumn = rename.CurrentColumn;
-                    foreach (var script in GetRenameColumnScript(requiredTable.Key, currentColumn.Key, requiredColumn.Key))
-                    {
-                        yield return script;
-                    }
+                    yield return new OutputableCollection(GetRenameColumnScript(requiredTable.Key, currentColumn.Key, requiredColumn.Key));
                 }
 
-                foreach (var script in GetAlterTableScript(tableDifference))
-                {
-                    yield return script;
-                }
+                yield return new OutputableCollection(GetAlterTableScript(tableDifference));
             }
 
             //Recreate depdencies phase
             foreach (var tableDifference in tableDifferences.Except(processedDifferences))
             {
-                foreach (var script in primaryKeyScriptBuilder.CreateUpgradeScripts(tableDifference.RequiredTable.Key, tableDifference.PrimaryKeyDifference, ScriptingPhase.RecreateDependencies))
-                {
-                    yield return script;
-                }
+                yield return new OutputableCollection(primaryKeyScriptBuilder.CreateUpgradeScripts(tableDifference.RequiredTable.Key, tableDifference.PrimaryKeyDifference, ScriptingPhase.RecreateDependencies));
             }
 
             //Recreate phase
             foreach (var tableDifference in tableDifferences.Except(processedDifferences))
             {
-                foreach (var script in GetChangeTableScripts(tableDifference))
-                {
-                    yield return script;
-                }
+                yield return new OutputableCollection(GetChangeTableScripts(tableDifference));
             }
         }
 
@@ -159,67 +130,25 @@ GO");
         {
             var requiredTable = tableDifference.RequiredTable;
 
-            foreach (var script in indexScriptBuilder.CreateUpgradeScripts(requiredTable.Key, tableDifference.IndexDifferences ?? new IndexDifference[0]))
-            {
-                yield return script;
-            }
-
-            foreach (var script in defaultConstraintScriptBuilder.CreateUpgradeScripts(tableDifference))
-            {
-                yield return script;
-            }
-
-            foreach (var script in checkConstraintScriptBuilder.CreateUpgradeScripts(tableDifference))
-            {
-                yield return script;
-            }
-
-            foreach (var script in primaryKeyScriptBuilder.CreateUpgradeScripts(requiredTable.Key, tableDifference.PrimaryKeyDifference, ScriptingPhase.Recreate))
-            {
-                yield return script;
-            }
-
-            foreach (var script in foreignKeyScriptBuilder.CreateUpgradeScripts(requiredTable.Key, tableDifference.ForeignKeyDifferences, ScriptingPhase.Recreate))
-            {
-                yield return script;
-            }
-
-            foreach (var script in permissionScriptBuilder.CreateTablePermissionScripts(
+            yield return new OutputableCollection(indexScriptBuilder.CreateUpgradeScripts(requiredTable.Key, tableDifference.IndexDifferences.OrEmptyCollection()));
+            yield return new OutputableCollection(defaultConstraintScriptBuilder.CreateUpgradeScripts(tableDifference));
+            yield return new OutputableCollection(checkConstraintScriptBuilder.CreateUpgradeScripts(tableDifference));
+            yield return new OutputableCollection(primaryKeyScriptBuilder.CreateUpgradeScripts(requiredTable.Key, tableDifference.PrimaryKeyDifference, ScriptingPhase.Recreate));
+            yield return new OutputableCollection(foreignKeyScriptBuilder.CreateUpgradeScripts(requiredTable.Key, tableDifference.ForeignKeyDifferences, ScriptingPhase.Recreate));
+            yield return new OutputableCollection(permissionScriptBuilder.CreateTablePermissionScripts(
                 requiredTable.Key,
-                PermissionDifferences.From(requiredTable.Value.Permissions)))
-            {
-                yield return script;
-            }
+                PermissionDifferences.From(requiredTable.Value.Permissions)));
         }
 
         private IEnumerable<IOutputable> GetChangeTableScripts(TableDifference tableDifference)
         {
             var requiredTable = tableDifference.RequiredTable;
 
-            foreach (var script in indexScriptBuilder.CreateUpgradeScripts(requiredTable.Key, tableDifference.IndexDifferences ?? new IndexDifference[0]))
-            {
-                yield return script;
-            }
-
-            foreach (var script in defaultConstraintScriptBuilder.CreateUpgradeScripts(tableDifference))
-            {
-                yield return script;
-            }
-
-            foreach (var script in checkConstraintScriptBuilder.CreateUpgradeScripts(tableDifference))
-            {
-                yield return script;
-            }
-
-            foreach (var script in primaryKeyScriptBuilder.CreateUpgradeScripts(requiredTable.Key, tableDifference.PrimaryKeyDifference, ScriptingPhase.Recreate))
-            {
-                yield return script;
-            }
-
-            foreach (var script in foreignKeyScriptBuilder.CreateUpgradeScripts(requiredTable.Key, tableDifference.ForeignKeyDifferences, ScriptingPhase.Recreate))
-            {
-                yield return script;
-            }
+            yield return new OutputableCollection(indexScriptBuilder.CreateUpgradeScripts(requiredTable.Key, tableDifference.IndexDifferences.OrEmptyCollection()));
+            yield return new OutputableCollection(defaultConstraintScriptBuilder.CreateUpgradeScripts(tableDifference)); 
+            yield return new OutputableCollection(checkConstraintScriptBuilder.CreateUpgradeScripts(tableDifference)); 
+            yield return new OutputableCollection(primaryKeyScriptBuilder.CreateUpgradeScripts(requiredTable.Key, tableDifference.PrimaryKeyDifference, ScriptingPhase.Recreate)); 
+            yield return new OutputableCollection(foreignKeyScriptBuilder.CreateUpgradeScripts(requiredTable.Key, tableDifference.ForeignKeyDifferences, ScriptingPhase.Recreate)); 
 
             if (tableDifference.DescriptionChangedTo != null)
             {
@@ -229,12 +158,9 @@ GO");
                     tableDifference.DescriptionChangedTo.Value);
             }
 
-            foreach (var script in permissionScriptBuilder.CreateTablePermissionScripts(
+            yield return new OutputableCollection(permissionScriptBuilder.CreateTablePermissionScripts(
                 requiredTable.Key,
-                tableDifference.PermissionDifferences))
-            {
-                yield return script;
-            }
+                tableDifference.PermissionDifferences)); 
         }
 
         private SqlScript GetDropTableScript(ObjectName table)
@@ -251,8 +177,7 @@ GO");
 
             foreach (var add in columnDifferences.Where(diff => diff.ColumnAdded || RequiresDropAndReAdd(diff)))
             {
-                foreach (var script in GetAddColumnScript(requiredTableName, add.RequiredColumn.Key, add.RequiredColumn.Value))
-                    yield return script;
+                yield return new OutputableCollection(GetAddColumnScript(requiredTableName, add.RequiredColumn.Key, add.RequiredColumn.Value));
 
                 if (add.DescriptionChangedTo != null)
                 {
@@ -263,22 +188,16 @@ GO");
                         add.DescriptionChangedTo.Value);
                 }
 
-                foreach (var script in permissionScriptBuilder.CreateColumnPermissionScripts(
+                yield return new OutputableCollection(permissionScriptBuilder.CreateColumnPermissionScripts(
                     requiredTableName,
                     add.RequiredColumn.Key,
-                    PermissionDifferences.From(add.RequiredColumn.Value.Permissions)))
-                {
-                    yield return script;
-                }
+                    PermissionDifferences.From(add.RequiredColumn.Value.Permissions)));
             }
 
             var alterations = columnDifferences.Where(IsAlteration);
             foreach (var alteration in alterations)
             {
-                foreach (var script in GetAlterColumnScript(requiredTableName, alteration))
-                {
-                    yield return script;
-                }
+                yield return new OutputableCollection(GetAlterColumnScript(requiredTableName, alteration));
             }
         }
 
@@ -310,10 +229,7 @@ ALTER COLUMN {ColumnClause(columnName, column, columnDifference.CollationChanged
 GO");
             }
 
-            foreach (var script in defaultConstraintScriptBuilder.CreateUpgradeScripts(tableName, columnDifference))
-            {
-                yield return script;
-            }
+            yield return new OutputableCollection(defaultConstraintScriptBuilder.CreateUpgradeScripts(tableName, columnDifference));
 
             if (columnDifference.DescriptionChangedTo != null)
             {
@@ -324,23 +240,20 @@ GO");
                     columnDifference.DescriptionChangedTo.Value);
             }
 
-            foreach (var script in permissionScriptBuilder.CreateColumnPermissionScripts(
+            yield return new OutputableCollection(permissionScriptBuilder.CreateColumnPermissionScripts(
                 tableName,
                 columnName,
-                columnDifference.PermissionDifferences))
-            {
-                yield return script;
-            }
+                columnDifference.PermissionDifferences));
         }
 
-        private IEnumerable<IOutputable> GetRenameColumnScript(
+        private SqlScript GetRenameColumnScript(
             ObjectName tableName,
             string currentColumnName,
             string requiredColumnName)
         {
             //TODO: If there are anly check constraints bound to this column, drop it first.
 
-            yield return new SqlScript(@$"EXEC sp_rename
+            return new SqlScript(@$"EXEC sp_rename
     @objname = '{tableName.Schema}.{tableName.Name}.{currentColumnName}',
     @newname = '{requiredColumnName}',
     @objtype = 'COLUMN'
@@ -390,20 +303,17 @@ GO");
 
                 if (column.Value.Permissions != null)
                 {
-                    foreach (var script in permissionScriptBuilder.CreateColumnPermissionScripts(
+                    yield return new OutputableCollection(permissionScriptBuilder.CreateColumnPermissionScripts(
                         tableName,
                         column.Key,
-                        PermissionDifferences.From(column.Value.Permissions)))
-                    {
-                        yield return script;
-                    }
+                        PermissionDifferences.From(column.Value.Permissions)));
                 }
             }
         }
 
-        private IEnumerable<IOutputable> GetAddColumnScript(ObjectName tableName, string columnName, ColumnDetails column)
+        private SqlScript GetAddColumnScript(ObjectName tableName, string columnName, ColumnDetails column)
         {
-            yield return new SqlScript($@"ALTER TABLE {tableName.SqlSafeName()}
+            return new SqlScript($@"ALTER TABLE {tableName.SqlSafeName()}
 ADD {ColumnClause(columnName, column)}
 GO");
         }

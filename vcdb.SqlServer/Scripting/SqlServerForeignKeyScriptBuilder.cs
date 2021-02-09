@@ -32,10 +32,7 @@ namespace vcdb.SqlServer.Scripting
 
                 if ((difference.ForeignKeyAdded || difference.ChangedColumns?.Any() == true) && phase == ScriptingPhase.Recreate)
                 {
-                    foreach (var script in GetAddForeignKeyScripts(requiredTableName, difference.RequiredForeignKey))
-                    {
-                        yield return script;
-                    }
+                    yield return new OutputableCollection(GetAddForeignKeyScripts(requiredTableName, difference.RequiredForeignKey));
                 }
 
                 if (difference.ForeignKeyRenamedTo != null && phase == ScriptingPhase.Recreate)

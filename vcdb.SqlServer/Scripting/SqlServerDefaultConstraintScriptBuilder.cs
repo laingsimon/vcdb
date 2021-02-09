@@ -35,8 +35,7 @@ namespace vcdb.SqlServer.Scripting
                 if (!options.IgnoreUnnamedConstraints)
                 {
                     var defaultConstraintRenames = GetRenameUnnamedDefaultsIfNoColumnsAreRenamed(tableDifference);
-                    foreach (var defaultConstraintRename in defaultConstraintRenames)
-                        yield return defaultConstraintRename;
+                    yield return new OutputableCollection(defaultConstraintRenames);
                 }
             }
 
@@ -68,21 +67,17 @@ namespace vcdb.SqlServer.Scripting
             {
                 foreach (var columnWithDefault in tableDifference.RequiredTable.Value.Columns.Where(col => col.Value.Default != null))
                 {
-                    foreach (var script in GetAddDefaultScript(requiredTableName, columnWithDefault.Key, columnWithDefault.Value))
-                        yield return script;
+                    yield return new OutputableCollection(GetAddDefaultScript(requiredTableName, columnWithDefault.Key, columnWithDefault.Value));
                 }
             }
             else
             {
                 foreach (var addedColumn in tableDifference.ColumnDifferences.Where(cd => cd.ColumnAdded))
                 {
-                    foreach (var script in GetAddDefaultScript(
+                    yield return new OutputableCollection(GetAddDefaultScript(
                         requiredTableName,
                         addedColumn.RequiredColumn.Key,
-                        addedColumn.RequiredColumn.Value))
-                    {
-                        yield return script;
-                    }
+                        addedColumn.RequiredColumn.Value));
                 }
             }
         }
@@ -95,8 +90,7 @@ namespace vcdb.SqlServer.Scripting
                     yield return GetDropDefaultScript(tableName, columnDifference.CurrentColumn.Value.SqlDefaultName);
                 else
                 {
-                    foreach (var script in GetAlterDefaultScript(tableName, columnDifference.RequiredColumn, columnDifference.CurrentColumn.Value.SqlDefaultName))
-                        yield return script;
+                    yield return new OutputableCollection(GetAlterDefaultScript(tableName, columnDifference.RequiredColumn, columnDifference.CurrentColumn.Value.SqlDefaultName));
                 }
             }
             else if (columnDifference.DefaultRenamedTo != null)
@@ -112,13 +106,10 @@ namespace vcdb.SqlServer.Scripting
 
             if (columnDifference.ColumnAdded && columnDifference.RequiredColumn.Value.Default != null)
             {
-                foreach (var script in GetAddDefaultScript(
+                yield return new OutputableCollection(GetAddDefaultScript(
                     tableName,
                     columnDifference.RequiredColumn.Key,
-                    columnDifference.RequiredColumn.Value))
-                {
-                    yield return script;
-                }
+                    columnDifference.RequiredColumn.Value));
             }
         }
 
@@ -171,10 +162,7 @@ GO");
             var columnName = columnDetails.Key;
             var column = columnDetails.Value;
             yield return GetDropDefaultScript(tableName, currentConstraintName);
-            foreach (var script in GetAddDefaultScript(tableName, columnName, column))
-            {
-                yield return script;
-            }
+            yield return new OutputableCollection(GetAddDefaultScript(tableName, columnName, column));
         }
 
         private IEnumerable<IOutputable> GetAddDefaultScript(ObjectName tableName, string columnName, ColumnDetails column)
