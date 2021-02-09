@@ -25,7 +25,7 @@ namespace vcdb.SqlServer.Scripting
             this.hashHelper = hashHelper;
         }
 
-        public IEnumerable<SqlScript> CreateUpgradeScripts(ObjectName tableName, PrimaryKeyDifference primaryKeyDifference, ScriptingPhase phase)
+        public IEnumerable<IOutputable> CreateUpgradeScripts(ObjectName tableName, PrimaryKeyDifference primaryKeyDifference, ScriptingPhase phase)
         {
             if (primaryKeyDifference == null)
             {
@@ -84,7 +84,7 @@ namespace vcdb.SqlServer.Scripting
             }
         }
 
-        private IEnumerable<SqlScript> GetAddPrimaryKeyScripts(ObjectName tableName, PrimaryKeyDifference primaryKeyDifference)
+        private IEnumerable<IOutputable> GetAddPrimaryKeyScripts(ObjectName tableName, PrimaryKeyDifference primaryKeyDifference)
         {
             var requiredPrimaryKey = primaryKeyDifference.RequiredPrimaryKey;
             var primaryKeyName = requiredPrimaryKey?.Name ?? GetNameForPrimaryKey(tableName, primaryKeyDifference.RequiredPrimaryKey, primaryKeyDifference.RequiredColumns);
@@ -124,7 +124,7 @@ GO");
                 PrimaryKeyObjectIdPrefix + hashOfRequiredColumns);
         }
 
-        private IEnumerable<SqlScript> GetDropPrimaryKeyScripts(ObjectName tableName, PrimaryKeyDetails currentPrimaryKey)
+        private IEnumerable<IOutputable> GetDropPrimaryKeyScripts(ObjectName tableName, PrimaryKeyDetails currentPrimaryKey)
         {
             yield return new SqlScript($@"ALTER TABLE {tableName.SqlSafeName()}
 DROP CONSTRAINT {currentPrimaryKey.SqlName.SqlSafeName()}

@@ -5,7 +5,7 @@ namespace vcdb.Scripting.ForeignKey
 {
     public interface IForeignKeyScriptBuilder
     {
-        IEnumerable<SqlScript> CreateUpgradeScripts(
+        IEnumerable<IOutputable> CreateUpgradeScripts(
             ObjectName requiredTableName,
             IReadOnlyCollection<ForeignKeyDifference> foreignKeyDifferences,
             ScriptingPhase phase);

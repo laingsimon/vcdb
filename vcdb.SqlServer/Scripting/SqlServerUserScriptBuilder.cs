@@ -9,7 +9,7 @@ namespace vcdb.SqlServer.Scripting
 {
     public class SqlServerUserScriptBuilder : IUserScriptBuilder
     {
-        public IEnumerable<SqlScript> CreateUpgradeScripts(IReadOnlyCollection<UserDifference> userDifferences)
+        public IEnumerable<IOutputable> CreateUpgradeScripts(IReadOnlyCollection<UserDifference> userDifferences)
         {
             foreach (var userDifference in userDifferences)
             {
@@ -45,7 +45,7 @@ namespace vcdb.SqlServer.Scripting
             }
         }
 
-        private IEnumerable<SqlScript> GetAlterUserScript(string currentName, UserDifference userDifference)
+        private IEnumerable<IOutputable> GetAlterUserScript(string currentName, UserDifference userDifference)
         {
             var requiredUser = userDifference.RequiredUser;
 
@@ -74,7 +74,7 @@ GO");
 GO");
         }
 
-        private IEnumerable<SqlScript> GetCreateUserScript(NamedItem<string, UserDetails> requiredUser)
+        private IEnumerable<IOutputable> GetCreateUserScript(NamedItem<string, UserDetails> requiredUser)
         {
             var withClauses = new[]
             {

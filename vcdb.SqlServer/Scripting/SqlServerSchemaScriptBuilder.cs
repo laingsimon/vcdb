@@ -20,7 +20,7 @@ namespace vcdb.SqlServer.Scripting
             this.permissionScriptBuilder = permissionScriptBuilder;
         }
 
-        public IEnumerable<SqlScript> CreateUpgradeScripts(
+        public IEnumerable<IOutputable> CreateUpgradeScripts(
             IReadOnlyCollection<SchemaDifference> schemaDifferences,
             IReadOnlyCollection<ISchemaObjectDifference> schemaObjectDifferences)
         {

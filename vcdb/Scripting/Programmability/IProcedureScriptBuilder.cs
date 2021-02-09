@@ -5,6 +5,6 @@ namespace vcdb.Scripting.Programmability
 {
     public interface IProcedureScriptBuilder
     {
-        IEnumerable<SqlScript> CreateUpgradeScripts(IReadOnlyCollection<ProcedureDifference> procedureDifferences);
+        IEnumerable<IOutputable> CreateUpgradeScripts(IReadOnlyCollection<ProcedureDifference> procedureDifferences);
     }
 }

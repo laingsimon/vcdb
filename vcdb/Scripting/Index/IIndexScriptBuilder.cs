@@ -5,6 +5,6 @@ namespace vcdb.Scripting.Index
 {
     public interface IIndexScriptBuilder
     {
-        IEnumerable<SqlScript> CreateUpgradeScripts(ObjectName requiredTableName, IReadOnlyCollection<IndexDifference> indexDifferences);
+        IEnumerable<IOutputable> CreateUpgradeScripts(ObjectName requiredTableName, IReadOnlyCollection<IndexDifference> indexDifferences);
     }
 }

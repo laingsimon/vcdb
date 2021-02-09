@@ -6,6 +6,6 @@ namespace vcdb.Scripting.Database
 {
     public interface IDatabaseScriptBuilder
     {
-        IEnumerable<SqlScript> CreateUpgradeScripts(DatabaseDetails current, DatabaseDetails required);
+        IEnumerable<IOutputable> CreateUpgradeScripts(DatabaseDetails current, DatabaseDetails required);
     }
 }

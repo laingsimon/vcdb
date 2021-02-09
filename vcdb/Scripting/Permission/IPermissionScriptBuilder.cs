@@ -5,10 +5,10 @@ namespace vcdb.Scripting.Permission
 {
     public interface IPermissionScriptBuilder
     {
-        IEnumerable<SqlScript> CreateTablePermissionScripts(ObjectName tableName, PermissionDifferences permissionDifferences);
-        IEnumerable<SqlScript> CreateSchemaPermissionScripts(string schemaName, PermissionDifferences permissionDifferences);
-        IEnumerable<SqlScript> CreateColumnPermissionScripts(ObjectName tableName, string columnName, PermissionDifferences permissionDifferences);
-        IEnumerable<SqlScript> CreateDatabasePermissionScripts(PermissionDifferences permissionDifferences);
-        IEnumerable<SqlScript> CreateProcedurePermissionScripts(ObjectName procedureName, PermissionDifferences permissionDifferences);
+        IEnumerable<IOutputable> CreateTablePermissionScripts(ObjectName tableName, PermissionDifferences permissionDifferences);
+        IEnumerable<IOutputable> CreateSchemaPermissionScripts(string schemaName, PermissionDifferences permissionDifferences);
+        IEnumerable<IOutputable> CreateColumnPermissionScripts(ObjectName tableName, string columnName, PermissionDifferences permissionDifferences);
+        IEnumerable<IOutputable> CreateDatabasePermissionScripts(PermissionDifferences permissionDifferences);
+        IEnumerable<IOutputable> CreateProcedurePermissionScripts(ObjectName procedureName, PermissionDifferences permissionDifferences);
     }
 }

@@ -75,7 +75,7 @@ namespace vcdb
 
             return new OutputtableCollection(
                 outputHeader,
-                new EnumerableOutput<SqlScript>(databaseScripts));
+                new EnumerableOutput<IOutputable>(databaseScripts));
         }
 
         private Task<IOutputable> ConstructRepresentationOutput(DatabaseDetails database)

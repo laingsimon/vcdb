@@ -21,7 +21,7 @@ namespace vcdb.SqlServer.Scripting
             this.hashHelper = hashHelper;
         }
 
-        public IEnumerable<SqlScript> CreateUpgradeScriptsBeforeColumnChanges(TableDifference tableDifference, ColumnDifference alteration)
+        public IEnumerable<IOutputable> CreateUpgradeScriptsBeforeColumnChanges(TableDifference tableDifference, ColumnDifference alteration)
         {
             //drop any check constraints on columns that need to be renamed
 
@@ -58,7 +58,7 @@ GO");
                 .Where(check => check.ColumnNames.Any(columnName => columnName == currentColumnName));
         }
 
-        private IEnumerable<SqlScript> DropAllUnnamedCheckConstraints(TableDifference tableDifference)
+        private IEnumerable<IOutputable> DropAllUnnamedCheckConstraints(TableDifference tableDifference)
         {
             if (tableDifference.CurrentTable.Value.Checks == null)
             {
@@ -71,7 +71,7 @@ GO");
             }
         }
 
-        public IEnumerable<SqlScript> CreateUpgradeScripts(TableDifference tableDifference)
+        public IEnumerable<IOutputable> CreateUpgradeScripts(TableDifference tableDifference)
         {
             if (tableDifference.TableDeleted)
             {
@@ -188,7 +188,7 @@ GO");
 GO");
         }
 
-        private IEnumerable<SqlScript> CreateRenameAllCheckConstraintScripts(TableDifference tableDifference)
+        private IEnumerable<IOutputable> CreateRenameAllCheckConstraintScripts(TableDifference tableDifference)
         {
             foreach (var checkConstraint in tableDifference.RequiredTable.Value.Checks.OrEmptyCollection())
             {
@@ -218,7 +218,7 @@ GO");
             }
         }
 
-        private IEnumerable<SqlScript> CreateAddAllCheckConstraintScripts(TableDifference tableDifference)
+        private IEnumerable<IOutputable> CreateAddAllCheckConstraintScripts(TableDifference tableDifference)
         {
             foreach (var checkConstraint in tableDifference.RequiredTable.Value.Checks.OrEmptyCollection())
             {
@@ -239,12 +239,12 @@ GO");
             }
         }
 
-        private IEnumerable<SqlScript> AddCheckConstraint(ObjectName tableName, CheckConstraintDifference checkDifference)
+        private IEnumerable<IOutputable> AddCheckConstraint(ObjectName tableName, CheckConstraintDifference checkDifference)
         {
             return AddCheckConstraint(tableName, checkDifference.RequiredConstraint);
         }
 
-        private IEnumerable<SqlScript> AddCheckConstraint(
+        private IEnumerable<IOutputable> AddCheckConstraint(
             ObjectName tableName,
             CheckConstraintDetails checkConstraint)
         {

@@ -42,7 +42,7 @@ namespace vcdb.SqlServer.Scripting
             this.foreignKeyScriptBuilder = foreignKeyScriptBuilder;
         }
 
-        public IEnumerable<SqlScript> CreateUpgradeScripts(IReadOnlyCollection<TableDifference> tableDifferences)
+        public IEnumerable<IOutputable> CreateUpgradeScripts(IReadOnlyCollection<TableDifference> tableDifferences)
         {
             var processedDifferences = new List<TableDifference>();
 
@@ -155,7 +155,7 @@ GO");
             }
         }
 
-        private IEnumerable<SqlScript> GetCreateTableScripts(TableDifference tableDifference)
+        private IEnumerable<IOutputable> GetCreateTableScripts(TableDifference tableDifference)
         {
             var requiredTable = tableDifference.RequiredTable;
 
@@ -192,7 +192,7 @@ GO");
             }
         }
 
-        private IEnumerable<SqlScript> GetChangeTableScripts(TableDifference tableDifference)
+        private IEnumerable<IOutputable> GetChangeTableScripts(TableDifference tableDifference)
         {
             var requiredTable = tableDifference.RequiredTable;
 
@@ -244,7 +244,7 @@ DROP TABLE {table.SqlSafeName()}
 GO");
         }
 
-        private IEnumerable<SqlScript> GetAlterTableScript(TableDifference tableDifference)
+        private IEnumerable<IOutputable> GetAlterTableScript(TableDifference tableDifference)
         {
             var requiredTableName = tableDifference.RequiredTable.Key;
             var columnDifferences = tableDifference.ColumnDifferences;
@@ -296,7 +296,7 @@ GO");
                 && !RequiresDropAndReAdd(difference);
         }
 
-        private IEnumerable<SqlScript> GetAlterColumnScript(
+        private IEnumerable<IOutputable> GetAlterColumnScript(
             ObjectName tableName, 
             ColumnDifference columnDifference)
         {
@@ -333,7 +333,7 @@ GO");
             }
         }
 
-        private IEnumerable<SqlScript> GetRenameColumnScript(
+        private IEnumerable<IOutputable> GetRenameColumnScript(
             ObjectName tableName,
             string currentColumnName,
             string requiredColumnName)
@@ -347,7 +347,7 @@ GO");
 GO");
         }
 
-        private IEnumerable<SqlScript> GetRenameTableScript(ObjectName current, ObjectName required)
+        private IEnumerable<IOutputable> GetRenameTableScript(ObjectName current, ObjectName required)
         {
             if (current.Name != required.Name)
             {
@@ -361,7 +361,7 @@ GO");
             }
         }
 
-        private IEnumerable<SqlScript> GetCreateTableScript(TableDetails requiredTable, ObjectName tableName)
+        private IEnumerable<IOutputable> GetCreateTableScript(TableDetails requiredTable, ObjectName tableName)
         {
             var columns = requiredTable.Columns.Select(pair => ColumnClause(pair.Key, pair.Value));
             yield return new SqlScript($@"CREATE TABLE {tableName.SqlSafeName()} (
@@ -401,7 +401,7 @@ GO");
             }
         }
 
-        private IEnumerable<SqlScript> GetAddColumnScript(ObjectName tableName, string columnName, ColumnDetails column)
+        private IEnumerable<IOutputable> GetAddColumnScript(ObjectName tableName, string columnName, ColumnDetails column)
         {
             yield return new SqlScript($@"ALTER TABLE {tableName.SqlSafeName()}
 ADD {ColumnClause(columnName, column)}

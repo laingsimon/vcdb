@@ -22,7 +22,7 @@ namespace vcdb.SqlServer.Scripting
 GO");
         }
 
-        public IEnumerable<SqlScript> CreateUpgradeScripts(ObjectName requiredTableName, IReadOnlyCollection<IndexDifference> indexDifferences)
+        public IEnumerable<IOutputable> CreateUpgradeScripts(ObjectName requiredTableName, IReadOnlyCollection<IndexDifference> indexDifferences)
         {
             foreach (var indexDifference in indexDifferences)
             {
@@ -66,7 +66,7 @@ GO");
             }
         }
 
-        private IEnumerable<SqlScript> GetAddIndexScript(ObjectName tableName, string indexName, IndexDetails index)
+        private IEnumerable<IOutputable> GetAddIndexScript(ObjectName tableName, string indexName, IndexDetails index)
         {
             var uniqueClause = index.Unique
                 ? "UNIQUE "

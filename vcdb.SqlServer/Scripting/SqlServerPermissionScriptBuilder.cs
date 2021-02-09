@@ -8,7 +8,7 @@ namespace vcdb.SqlServer.Scripting
 {
     public class SqlServerPermissionScriptBuilder : IPermissionScriptBuilder
     {
-        public IEnumerable<SqlScript> CreateDatabasePermissionScripts(PermissionDifferences permissionDifferences)
+        public IEnumerable<IOutputable> CreateDatabasePermissionScripts(PermissionDifferences permissionDifferences)
         {
             if (permissionDifferences == null)
             {
@@ -40,7 +40,7 @@ namespace vcdb.SqlServer.Scripting
             }
         }
 
-        public IEnumerable<SqlScript> CreateTablePermissionScripts(
+        public IEnumerable<IOutputable> CreateTablePermissionScripts(
             ObjectName tableName,
             PermissionDifferences permissionDifferences)
         {
@@ -66,7 +66,7 @@ namespace vcdb.SqlServer.Scripting
             }
         }
 
-        public IEnumerable<SqlScript> CreateSchemaPermissionScripts(string schemaName, PermissionDifferences permissionDifferences)
+        public IEnumerable<IOutputable> CreateSchemaPermissionScripts(string schemaName, PermissionDifferences permissionDifferences)
         {
             if (permissionDifferences == null)
             {
@@ -90,7 +90,7 @@ namespace vcdb.SqlServer.Scripting
             }
         }
 
-        public IEnumerable<SqlScript> CreateColumnPermissionScripts(ObjectName tableName, string columnName, PermissionDifferences permissionDifferences)
+        public IEnumerable<IOutputable> CreateColumnPermissionScripts(ObjectName tableName, string columnName, PermissionDifferences permissionDifferences)
         {
             if (permissionDifferences == null)
             {
@@ -122,7 +122,7 @@ namespace vcdb.SqlServer.Scripting
             }
         }
 
-        public IEnumerable<SqlScript> CreateProcedurePermissionScripts(ObjectName procedureName, PermissionDifferences permissionDifferences)
+        public IEnumerable<IOutputable> CreateProcedurePermissionScripts(ObjectName procedureName, PermissionDifferences permissionDifferences)
         {
             if (permissionDifferences == null)
             {
@@ -154,7 +154,7 @@ namespace vcdb.SqlServer.Scripting
             }
         }
         
-        private IEnumerable<SqlScript> CreateDatabaseDenyScripts(PermissionNameDifference<HashSet<UserPrincipal>> deny)
+        private IEnumerable<IOutputable> CreateDatabaseDenyScripts(PermissionNameDifference<HashSet<UserPrincipal>> deny)
         {
             return DenyOrRevoke(
                 deny,
@@ -162,7 +162,7 @@ namespace vcdb.SqlServer.Scripting
                 (permission, user) => ApplyDatabasePermission("REVOKE", permission, user));
         }
 
-        private IEnumerable<SqlScript> CreateDatabaseGrantScripts(PermissionNameDifference<Dictionary<UserPrincipal, PermissionDetails>> grant)
+        private IEnumerable<IOutputable> CreateDatabaseGrantScripts(PermissionNameDifference<Dictionary<UserPrincipal, PermissionDetails>> grant)
         {
             return GrantOrRevoke(
                 grant,
@@ -170,7 +170,7 @@ namespace vcdb.SqlServer.Scripting
                 (permission, user) => ApplyDatabasePermission("REVOKE", permission, user, cascade: true));
         }
 
-        private IEnumerable<SqlScript> CreateDatabaseRevokeScripts(PermissionNameDifference<HashSet<UserPrincipal>> deny)
+        private IEnumerable<IOutputable> CreateDatabaseRevokeScripts(PermissionNameDifference<HashSet<UserPrincipal>> deny)
         {
             return DenyOrRevoke(
                 deny,
@@ -178,7 +178,7 @@ namespace vcdb.SqlServer.Scripting
                 (permission, user) => throw new NotImplementedException("How do you revoke a revoke!"));
         }
 
-        private IEnumerable<SqlScript> CreateTableDenyScripts(ObjectName tableName, PermissionNameDifference<HashSet<UserPrincipal>> deny)
+        private IEnumerable<IOutputable> CreateTableDenyScripts(ObjectName tableName, PermissionNameDifference<HashSet<UserPrincipal>> deny)
         {
             return DenyOrRevoke(
                 deny,
@@ -186,7 +186,7 @@ namespace vcdb.SqlServer.Scripting
                 (permission, user) => ApplyObjectPermission("REVOKE", permission, tableName.SqlSafeName(), user));
         }
 
-        private IEnumerable<SqlScript> CreateTableGrantScripts(ObjectName tableName, PermissionNameDifference<Dictionary<UserPrincipal, PermissionDetails>> grant)
+        private IEnumerable<IOutputable> CreateTableGrantScripts(ObjectName tableName, PermissionNameDifference<Dictionary<UserPrincipal, PermissionDetails>> grant)
         {
             return GrantOrRevoke(
                 grant,
@@ -194,7 +194,7 @@ namespace vcdb.SqlServer.Scripting
                 (permission, user) => ApplyObjectPermission("REVOKE", permission, tableName.SqlSafeName(), user, cascade: true));
         }
 
-        private IEnumerable<SqlScript> CreateSchemaGrantScripts(string schemaName, PermissionNameDifference<Dictionary<UserPrincipal, PermissionDetails>> grant)
+        private IEnumerable<IOutputable> CreateSchemaGrantScripts(string schemaName, PermissionNameDifference<Dictionary<UserPrincipal, PermissionDetails>> grant)
         {
             return GrantOrRevoke(
                 grant,
@@ -202,7 +202,7 @@ namespace vcdb.SqlServer.Scripting
                 (permission, user) => ApplySchemaPermission("REVOKE", permission, schemaName, user, cascade: true));
         }
 
-        private IEnumerable<SqlScript> CreateSchemaDenyScripts(string schemaName, PermissionNameDifference<HashSet<UserPrincipal>> deny)
+        private IEnumerable<IOutputable> CreateSchemaDenyScripts(string schemaName, PermissionNameDifference<HashSet<UserPrincipal>> deny)
         {
             return DenyOrRevoke(
                 deny,
@@ -210,7 +210,7 @@ namespace vcdb.SqlServer.Scripting
                 (permission, user) => ApplySchemaPermission("REVOKE", permission, schemaName, user));
         }
 
-        private IEnumerable<SqlScript> CreateColumnGrantScripts(ObjectName tableName, string columnName, PermissionNameDifference<Dictionary<UserPrincipal, PermissionDetails>> grant)
+        private IEnumerable<IOutputable> CreateColumnGrantScripts(ObjectName tableName, string columnName, PermissionNameDifference<Dictionary<UserPrincipal, PermissionDetails>> grant)
         {
             return GrantOrRevoke(
                 grant,
@@ -218,7 +218,7 @@ namespace vcdb.SqlServer.Scripting
                 (permission, user) => ApplyColumnPermission("REVOKE", permission, tableName, columnName, user));
         }
 
-        private IEnumerable<SqlScript> CreateColumnDenyScripts(ObjectName tableName, string columnName, PermissionNameDifference<HashSet<UserPrincipal>> deny)
+        private IEnumerable<IOutputable> CreateColumnDenyScripts(ObjectName tableName, string columnName, PermissionNameDifference<HashSet<UserPrincipal>> deny)
         {
             return DenyOrRevoke(
                 deny,
@@ -226,7 +226,7 @@ namespace vcdb.SqlServer.Scripting
                 (permission, user) => ApplyColumnPermission("REVOKE", permission, tableName, columnName, user));
         }
 
-        private IEnumerable<SqlScript> CreateColumnRevokeScripts(ObjectName tableName, string columnName, PermissionNameDifference<HashSet<UserPrincipal>> revoke)
+        private IEnumerable<IOutputable> CreateColumnRevokeScripts(ObjectName tableName, string columnName, PermissionNameDifference<HashSet<UserPrincipal>> revoke)
         {
             return DenyOrRevoke(
                 revoke,
@@ -234,7 +234,7 @@ namespace vcdb.SqlServer.Scripting
                 (permission, user) => throw new NotImplementedException($"Dont know how to revoke a revoke!"));
         }
 
-        private IEnumerable<SqlScript> CreateProcedureDenyScripts(ObjectName objectName, PermissionNameDifference<HashSet<UserPrincipal>> deny)
+        private IEnumerable<IOutputable> CreateProcedureDenyScripts(ObjectName objectName, PermissionNameDifference<HashSet<UserPrincipal>> deny)
         {
             return DenyOrRevoke(
                 deny,
@@ -242,7 +242,7 @@ namespace vcdb.SqlServer.Scripting
                 (permission, user) => ApplyObjectPermission("REVOKE", permission, objectName.SqlSafeName(), user));
         }
 
-        private IEnumerable<SqlScript> CreateProcedureGrantScripts(ObjectName objectName, PermissionNameDifference<Dictionary<UserPrincipal, PermissionDetails>> grant)
+        private IEnumerable<IOutputable> CreateProcedureGrantScripts(ObjectName objectName, PermissionNameDifference<Dictionary<UserPrincipal, PermissionDetails>> grant)
         {
             return GrantOrRevoke(
                 grant,
@@ -250,7 +250,7 @@ namespace vcdb.SqlServer.Scripting
                 (permission, user) => ApplyObjectPermission("REVOKE", permission, objectName.SqlSafeName(), user, cascade: true));
         }
 
-        private IEnumerable<SqlScript> CreateProcedureRevokeScripts(ObjectName objectName, PermissionNameDifference<HashSet<UserPrincipal>> revoke)
+        private IEnumerable<IOutputable> CreateProcedureRevokeScripts(ObjectName objectName, PermissionNameDifference<HashSet<UserPrincipal>> revoke)
         {
             return DenyOrRevoke(
                 revoke,
@@ -259,7 +259,7 @@ namespace vcdb.SqlServer.Scripting
         }
 
 
-        private static IEnumerable<SqlScript> DenyOrRevoke(
+        private static IEnumerable<IOutputable> DenyOrRevoke(
             PermissionNameDifference<HashSet<UserPrincipal>> permissions,
             Func<PermissionName, UserPrincipal, SqlScript> apply,
             Func<PermissionName, UserPrincipal, SqlScript> revert)
@@ -290,7 +290,7 @@ namespace vcdb.SqlServer.Scripting
             }
         }
 
-        private static IEnumerable<SqlScript> GrantOrRevoke(
+        private static IEnumerable<IOutputable> GrantOrRevoke(
             PermissionNameDifference<Dictionary<UserPrincipal, PermissionDetails>> permissions,
             Func<PermissionName, UserPrincipal, bool, SqlScript> apply,
             Func<PermissionName, UserPrincipal, SqlScript> revert)

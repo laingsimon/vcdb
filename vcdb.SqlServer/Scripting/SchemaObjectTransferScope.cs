@@ -15,7 +15,7 @@ namespace vcdb.SqlServer.Scripting
             this.differences = differences;
         }
 
-        public IEnumerable<SqlScript> CreateTransferScriptsIntoCreatedSchema(string createdSchemaName)
+        public IEnumerable<IOutputable> CreateTransferScriptsIntoCreatedSchema(string createdSchemaName)
         {
             foreach (var transfer in CreateTransferScripts(null, createdSchemaName, differences))
             {
@@ -24,7 +24,7 @@ namespace vcdb.SqlServer.Scripting
             }
         }
 
-        public IEnumerable<SqlScript> CreateTransferScriptsAwayFromDroppedSchema(string droppedSchemaName)
+        public IEnumerable<IOutputable> CreateTransferScriptsAwayFromDroppedSchema(string droppedSchemaName)
         {
             foreach (var transfer in CreateTransferScripts(droppedSchemaName, null, differences))
             {
@@ -33,7 +33,7 @@ namespace vcdb.SqlServer.Scripting
             }
         }
 
-        public IEnumerable<SqlScript> CreateTransferScriptsForRenamedSchema(string currentName, string requiredName)
+        public IEnumerable<IOutputable> CreateTransferScriptsForRenamedSchema(string currentName, string requiredName)
         {
             foreach (var transfer in CreateTransferScripts(currentName, requiredName, differences))
             {
@@ -42,7 +42,7 @@ namespace vcdb.SqlServer.Scripting
             }
         }
 
-        public IEnumerable<SqlScript> CreateTransferScriptsForUnProcessedObjects()
+        public IEnumerable<IOutputable> CreateTransferScriptsForUnProcessedObjects()
         {
             var unprocessedDifferences = differences.Except(processedDifferences).ToArray();
             foreach (var difference in unprocessedDifferences)

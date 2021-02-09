@@ -19,7 +19,7 @@ namespace vcdb.SqlServer.Scripting
             this.objectNameHelper = objectNameHelper;
         }
 
-        public IEnumerable<SqlScript> CreateUpgradeScripts(TableDifference tableDifference)
+        public IEnumerable<IOutputable> CreateUpgradeScripts(TableDifference tableDifference)
         {
             if (tableDifference.TableDeleted)
             {
@@ -87,7 +87,7 @@ namespace vcdb.SqlServer.Scripting
             }
         }
 
-        public IEnumerable<SqlScript> CreateUpgradeScripts(ObjectName tableName, ColumnDifference columnDifference)
+        public IEnumerable<IOutputable> CreateUpgradeScripts(ObjectName tableName, ColumnDifference columnDifference)
         {
             if (columnDifference.DefaultChangedTo != null)
             {
@@ -122,7 +122,7 @@ namespace vcdb.SqlServer.Scripting
             }
         }
 
-        private IEnumerable<SqlScript> GetRenameUnnamedDefaultsIfNoColumnsAreRenamed(TableDifference tableDifference)
+        private IEnumerable<IOutputable> GetRenameUnnamedDefaultsIfNoColumnsAreRenamed(TableDifference tableDifference)
         {
             var requiredTable = tableDifference.RequiredTable;
             var columnsWithDefaultsButNoExplicitName = requiredTable.Value.Columns.Where(col =>
@@ -166,7 +166,7 @@ DROP CONSTRAINT {constraintName.SqlSafeName()}
 GO");
         }
 
-        private IEnumerable<SqlScript> GetAlterDefaultScript(ObjectName tableName, NamedItem<string, ColumnDetails> columnDetails, string currentConstraintName)
+        private IEnumerable<IOutputable> GetAlterDefaultScript(ObjectName tableName, NamedItem<string, ColumnDetails> columnDetails, string currentConstraintName)
         {
             var columnName = columnDetails.Key;
             var column = columnDetails.Value;
@@ -177,7 +177,7 @@ GO");
             }
         }
 
-        private IEnumerable<SqlScript> GetAddDefaultScript(ObjectName tableName, string columnName, ColumnDetails column)
+        private IEnumerable<IOutputable> GetAddDefaultScript(ObjectName tableName, string columnName, ColumnDetails column)
         {
             if (column.Default == null)
                 yield break;

@@ -22,7 +22,7 @@ namespace vcdb.SqlServer.Scripting
             this.programmabilityHelper = programmabilityHelper;
         }
 
-        public IEnumerable<SqlScript> CreateUpgradeScripts(IReadOnlyCollection<ProcedureDifference> procedureDifferences)
+        public IEnumerable<IOutputable> CreateUpgradeScripts(IReadOnlyCollection<ProcedureDifference> procedureDifferences)
         {
             foreach (var procedureDifference in procedureDifferences)
             {
@@ -87,7 +87,7 @@ namespace vcdb.SqlServer.Scripting
 GO");
         }
 
-        private IEnumerable<SqlScript> GetRenameProcedureScript(ObjectName current, ObjectName required)
+        private IEnumerable<IOutputable> GetRenameProcedureScript(ObjectName current, ObjectName required)
         {
             //TODO: Check if the schema has changed
             if (current.Name != required.Name)

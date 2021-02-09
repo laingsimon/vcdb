@@ -5,6 +5,6 @@ namespace vcdb.Scripting.User
 {
     public interface IUserScriptBuilder
     {
-        IEnumerable<SqlScript> CreateUpgradeScripts(IReadOnlyCollection<UserDifference> userDifferences);
+        IEnumerable<IOutputable> CreateUpgradeScripts(IReadOnlyCollection<UserDifference> userDifferences);
     }
 }

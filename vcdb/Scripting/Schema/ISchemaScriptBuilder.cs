@@ -5,7 +5,7 @@ namespace vcdb.Scripting.Schema
 {
     public interface ISchemaScriptBuilder
     {
-        IEnumerable<SqlScript> CreateUpgradeScripts(
+        IEnumerable<IOutputable> CreateUpgradeScripts(
             IReadOnlyCollection<SchemaDifference> schemaDifferences,
             IReadOnlyCollection<ISchemaObjectDifference> schemaObjectDifferences);
     }

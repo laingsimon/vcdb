@@ -45,7 +45,7 @@ namespace vcdb.SqlServer.Scripting
             this.procedureScriptBuilder = procedureScriptBuilder;
         }
 
-        public IEnumerable<SqlScript> CreateUpgradeScripts(DatabaseDetails current, DatabaseDetails required)
+        public IEnumerable<IOutputable> CreateUpgradeScripts(DatabaseDetails current, DatabaseDetails required)
         {
             var comparerContext = new ComparerContext();
             var databaseDifferences = databaseComparer.GetDatabaseDifferences(comparerContext, current, required);

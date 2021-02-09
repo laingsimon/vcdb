@@ -16,7 +16,7 @@ namespace vcdb.SqlServer.Scripting
             this.descriptionScriptBuilder = descriptionScriptBuilder;
         }
 
-        public IEnumerable<SqlScript> CreateUpgradeScripts(ObjectName requiredTableName, IReadOnlyCollection<ForeignKeyDifference> foreignKeyDifferences, ScriptingPhase phase)
+        public IEnumerable<IOutputable> CreateUpgradeScripts(ObjectName requiredTableName, IReadOnlyCollection<ForeignKeyDifference> foreignKeyDifferences, ScriptingPhase phase)
         {
             if (foreignKeyDifferences == null)
             {
@@ -66,7 +66,7 @@ namespace vcdb.SqlServer.Scripting
 GO");
         }
 
-        private IEnumerable<SqlScript> GetAddForeignKeyScripts(ObjectName requiredTableName, NamedItem<string, ForeignKeyDetails> requiredForeignKey)
+        private IEnumerable<IOutputable> GetAddForeignKeyScripts(ObjectName requiredTableName, NamedItem<string, ForeignKeyDetails> requiredForeignKey)
         {
             var columns = requiredForeignKey.Value.Columns;
             var sourceColumns = columns.Keys.Select(columnName => columnName.SqlSafeName());
