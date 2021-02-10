@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using vcdb.Output;
 using vcdb.Scripting;
+using vcdb.Scripting.ExecutionPlan;
 using vcdb.Scripting.Permission;
 using vcdb.Scripting.Programmability;
 
@@ -22,7 +23,7 @@ namespace vcdb.SqlServer.Scripting
             this.programmabilityHelper = programmabilityHelper;
         }
 
-        public IEnumerable<IOutputable> CreateUpgradeScripts(IReadOnlyCollection<ProcedureDifference> procedureDifferences)
+        public IEnumerable<IScriptTask> CreateUpgradeScripts(IReadOnlyCollection<ProcedureDifference> procedureDifferences)
         {
             foreach (var procedureDifference in procedureDifferences)
             {
@@ -48,7 +49,7 @@ namespace vcdb.SqlServer.Scripting
                 {
                     if (procedureDifference.ProcedureRenamedTo != null)
                     {
-                        yield return new OutputableCollection(GetRenameProcedureScript(currentProcedure.Key, requiredProcedure.Key));
+                        yield return new MultiScriptTask(GetRenameProcedureScript(currentProcedure.Key, requiredProcedure.Key));
                     }
 
                     if (!changeRequiresProcedureRecreation && procedureDifference.DefinitionChangedTo != null)
@@ -67,7 +68,7 @@ namespace vcdb.SqlServer.Scripting
                         procedureDifference.DescriptionChangedTo?.Value ?? requiredProcedure.Value.Description);
                 }
 
-                yield return new OutputableCollection(permissionScriptBuilder.CreateProcedurePermissionScripts(
+                yield return new MultiScriptTask(permissionScriptBuilder.CreateProcedurePermissionScripts(
                     requiredProcedure.Key,
                     changeRequiresProcedureRecreation
                         ? PermissionDifferences.From(procedureDifference.RequiredProcedure.Value.Permissions)
@@ -75,15 +76,15 @@ namespace vcdb.SqlServer.Scripting
             }
         }
 
-        private SqlScript GetAlterProcedureScript(ProcedureDifference procedureDifference)
+        private IScriptTask GetAlterProcedureScript(ProcedureDifference procedureDifference)
         {
             var alterProcedureStatement = programmabilityHelper.ChangeProcedureInstructionTo(procedureDifference.DefinitionChangedTo, "ALTER");
 
             return new SqlScript(@$"{alterProcedureStatement.Trim()}
-GO");
+GO").CreatesOrAlters().Procedure(procedureDifference.RequiredProcedure.Key);
         }
 
-        private IEnumerable<IOutputable> GetRenameProcedureScript(ObjectName current, ObjectName required)
+        private IEnumerable<IScriptTask> GetRenameProcedureScript(ObjectName current, ObjectName required)
         {
             //TODO: Check if the schema has changed
             if (current.Name != required.Name)
@@ -92,23 +93,23 @@ GO");
     @objname = '{current.Schema}.{current.Name}',
     @newname = '{required.Name}',
     @objtype = 'OBJECT'
-GO");
+GO").CreatesOrAlters().Procedure(required);
             }
         }
 
-        private SqlScript GetDropProcedureScript(ObjectName name)
+        private IScriptTask GetDropProcedureScript(ObjectName name)
         {
             return new SqlScript(@$"
 DROP PROCEDURE {name.SqlSafeName()}
-GO");
+GO").Drops().Procedure(name);
         }
 
-        private SqlScript GetCreateProcedureScript(ProcedureDifference procedureDifference)
+        private IScriptTask GetCreateProcedureScript(ProcedureDifference procedureDifference)
         {
             var createProcedureStatement = programmabilityHelper.ChangeProcedureInstructionTo(procedureDifference.DefinitionChangedTo, "CREATE");
 
             return new SqlScript($@"{createProcedureStatement.Trim()}
-GO");
+GO").CreatesOrAlters().Procedure(procedureDifference.RequiredProcedure.Key);
         }
     }
 }

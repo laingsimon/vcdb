@@ -1,10 +1,10 @@
 ﻿using System.Collections.Generic;
-using vcdb.Output;
+using vcdb.Scripting.ExecutionPlan;
 
 namespace vcdb.Scripting.Table
 {
     public interface ITableScriptBuilder
     {
-        IEnumerable<IOutputable> CreateUpgradeScripts(IReadOnlyCollection<TableDifference> tableDifferences);
+        IEnumerable<IScriptTask> CreateUpgradeScripts(IReadOnlyCollection<TableDifference> tableDifferences);
     }
 }

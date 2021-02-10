@@ -1,13 +1,12 @@
 ﻿using System.Collections.Generic;
-using vcdb.Output;
+using vcdb.Scripting.ExecutionPlan;
 
 namespace vcdb.Scripting.ForeignKey
 {
     public interface IForeignKeyScriptBuilder
     {
-        IEnumerable<IOutputable> CreateUpgradeScripts(
+        IEnumerable<IScriptTask> CreateUpgradeScripts(
             ObjectName requiredTableName,
-            IReadOnlyCollection<ForeignKeyDifference> foreignKeyDifferences,
-            ScriptingPhase phase);
+            IReadOnlyCollection<ForeignKeyDifference> foreignKeyDifferences);
     }
 }

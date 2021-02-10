@@ -1,11 +1,11 @@
 ﻿using System.Collections.Generic;
 using vcdb.Models;
-using vcdb.Output;
+using vcdb.Scripting.ExecutionPlan;
 
 namespace vcdb.Scripting.Database
 {
     public interface IDatabaseScriptBuilder
     {
-        IEnumerable<IOutputable> CreateUpgradeScripts(DatabaseDetails current, DatabaseDetails required);
+        IEnumerable<IScriptTask> CreateUpgradeScripts(DatabaseDetails current, DatabaseDetails required);
     }
 }

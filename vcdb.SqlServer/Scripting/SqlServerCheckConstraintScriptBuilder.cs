@@ -3,7 +3,7 @@ using System.Linq;
 using vcdb.Models;
 using vcdb.Output;
 using vcdb.Scripting.CheckConstraint;
-using vcdb.Scripting.Column;
+using vcdb.Scripting.ExecutionPlan;
 using vcdb.Scripting.Table;
 
 namespace vcdb.SqlServer.Scripting
@@ -21,77 +21,55 @@ namespace vcdb.SqlServer.Scripting
             this.hashHelper = hashHelper;
         }
 
-        public IEnumerable<IOutputable> CreateUpgradeScriptsBeforeColumnChanges(TableDifference tableDifference, ColumnDifference alteration)
-        {
-            //drop any check constraints on columns that need to be renamed
-
-            if (tableDifference.TableRenamedTo != null)
-            {
-                yield return new OutputableCollection(DropAllUnnamedCheckConstraints(tableDifference));
-                yield break;
-            }
-
-            foreach (var columnToDropOrRename in tableDifference.ColumnDifferences.Where(cd => cd.ColumnDeleted || cd.ColumnRenamedTo != null))
-            {
-                var checkConstraintsForColumn = GetCheckConstraintsBoundToCurrentColumn(tableDifference, columnToDropOrRename.CurrentColumn.Key);
-                yield return new OutputableCollection(checkConstraintsForColumn.Select(checkConstraint => DropCheckConstraint(tableDifference.CurrentTable.Key, checkConstraint)));
-            }
-        }
-
-        private SqlScript DropCheckConstraint(ObjectName tableName, CheckConstraintDetails checkConstraint)
-        {
-            return new SqlScript($@"ALTER TABLE {tableName.SqlSafeName()}
-DROP CONSTRAINT {checkConstraint.SqlName.SqlSafeName()}
-GO");
-        }
-
-        private IEnumerable<CheckConstraintDetails> GetCheckConstraintsBoundToCurrentColumn(TableDifference tableDifference, string currentColumnName)
-        {
-            return tableDifference.CurrentTable.Value.Checks.OrEmptyCollection()
-                .Where(check => check.ColumnNames.Any(columnName => columnName == currentColumnName));
-        }
-
-        private IEnumerable<IOutputable> DropAllUnnamedCheckConstraints(TableDifference tableDifference)
-        {
-            if (tableDifference.CurrentTable.Value.Checks == null)
-            {
-                yield break;
-            }
-
-            foreach (var checkConstraint in tableDifference.CurrentTable.Value.Checks.Where(check => check.Name == null))
-            {
-                yield return DropCheckConstraint(tableDifference.RequiredTable.Key, checkConstraint);
-            }
-        }
-
-        public IEnumerable<IOutputable> CreateUpgradeScripts(TableDifference tableDifference)
+        public IEnumerable<IScriptTask> CreateUpgradeScripts(TableDifference tableDifference)
         {
             if (tableDifference.TableDeleted)
             {
                 yield break;
             }
 
+            //drop any check constraints on columns that need to be renamed
             var tableName = tableDifference.RequiredTable.Key;
+
             if (tableDifference.TableRenamedTo != null)
             {
-                yield return new OutputableCollection(CreateRenameAllCheckConstraintScripts(tableDifference));
-                yield return new OutputableCollection(CreateAddAllCheckConstraintScripts(tableDifference));
+                yield return new ScriptBlock(CreateRenameAllCheckConstraintScripts(tableDifference));
+                yield return new ScriptBlock(CreateAddAllCheckConstraintScripts(tableDifference));
             }
 
             var processedCheckConstraintDifferences = new HashSet<CheckConstraintDifference>();
             foreach (var columnToDropOrRename in tableDifference.ColumnDifferences.OrEmptyCollection().Where(cd => cd.ColumnRenamedTo != null))
             {
+                if (tableDifference.TableRenamedTo != null)
+                {
+                    yield return new ScriptBlock(DropAllUnnamedCheckConstraints(tableDifference));
+                }
+
                 var checkConstraintsForColumn = GetCheckConstraintsBoundToCurrentColumn(tableDifference, columnToDropOrRename.CurrentColumn.Key);
 
-                foreach (var checkConstraint in checkConstraintsForColumn)
+                if (columnToDropOrRename.ColumnDeleted)
                 {
-                    var checkConstraintDifference = tableDifference.ChangedCheckConstraints
-                        .SingleOrDefault(diff => diff.CurrentConstraint == checkConstraint);
-
-                    if (checkConstraintDifference != null && checkConstraintDifference.RequiredConstraint != null)
+                    yield return new ScriptBlock(checkConstraintsForColumn.Select(checkConstraint => DropCheckConstraint(tableDifference.CurrentTable.Key, checkConstraint)));
+                }
+                else
+                {
+                    foreach (var checkConstraint in checkConstraintsForColumn)
                     {
-                        processedCheckConstraintDifferences.Add(checkConstraintDifference);
-                        yield return new OutputableCollection(AddCheckConstraint(tableName, checkConstraintDifference));
+                        var checkConstraintDifference = tableDifference.ChangedCheckConstraints.SingleOrDefault(diff => diff.CurrentConstraint == checkConstraint);
+
+                        if (checkConstraintDifference != null)
+                        {
+                            processedCheckConstraintDifferences.Add(checkConstraintDifference);
+                            if (checkConstraintDifference.CurrentConstraint.Name != null || tableDifference.TableRenamedTo == null)
+                            {
+                                //if it was unnamed, then it would have been dropped in the call to DropAllUnnamedCheckConstraints
+                                yield return DropCheckConstraint(tableDifference.CurrentTable.Key, checkConstraint);
+                            }
+                            if (checkConstraintDifference.RequiredConstraint != null)
+                            {
+                                yield return AddCheckConstraint(tableName, checkConstraintDifference);
+                            }
+                        }
                     }
                 }
             }
@@ -106,7 +84,7 @@ GO");
                     }
 
                     processedCheckConstraintDifferences.Add(changedCheckConstraint);
-                    yield return new OutputableCollection(AddCheckConstraint(tableName, changedCheckConstraint));
+                    yield return AddCheckConstraint(tableName, changedCheckConstraint);
                 }
 
                 var columnWasRenamed = changedCheckConstraint?.CurrentConstraint?.ColumnNames.OrEmptyCollection()
@@ -133,12 +111,12 @@ GO");
                     processedCheckConstraintDifferences.Add(changedCheckConstraint);
                     if (columnWasRenamed)
                     {
-                        yield return new OutputableCollection(AddCheckConstraint(tableName, changedCheckConstraint.RequiredConstraint));
+                        yield return AddCheckConstraint(tableName, changedCheckConstraint.RequiredConstraint);
                     }
                     else
                     {
                         yield return RenameCheckConstraint(
-                            tableName.Schema,
+                            tableName,
                             changedCheckConstraint.CurrentConstraint.SqlName,
                             GetNameForCheckConstraint(tableName, changedCheckConstraint.RequiredConstraint));
                     }
@@ -148,21 +126,40 @@ GO");
                 {
                     processedCheckConstraintDifferences.Add(changedCheckConstraint);
                     yield return DropCheckConstraint(tableName, changedCheckConstraint.CurrentConstraint);
-                    yield return new OutputableCollection(AddCheckConstraint(tableName, changedCheckConstraint));
+                    yield return AddCheckConstraint(tableName, changedCheckConstraint);
                 }
             }
         }
 
-        private SqlScript RenameCheckConstraint(string currentSchema, string currentName, string requiredName)
+        private IEnumerable<CheckConstraintDetails> GetCheckConstraintsBoundToCurrentColumn(TableDifference tableDifference, string currentColumnName)
         {
-            return new SqlScript($@"EXEC sp_rename 
-    @objname = '{currentSchema}.{currentName}', 
-    @newname = '{requiredName}', 
-    @objtype = 'OBJECT'
-GO");
+            return tableDifference.CurrentTable.Value.Checks.OrEmptyCollection()
+                .Where(check => check.ColumnNames.Any(columnName => columnName == currentColumnName));
         }
 
-        private IEnumerable<IOutputable> CreateRenameAllCheckConstraintScripts(TableDifference tableDifference)
+        private IEnumerable<IScriptTask> DropAllUnnamedCheckConstraints(TableDifference tableDifference)
+        {
+            if (tableDifference.CurrentTable.Value.Checks == null)
+            {
+                yield break;
+            }
+
+            foreach (var checkConstraint in tableDifference.CurrentTable.Value.Checks.Where(check => check.Name == null))
+            {
+                yield return DropCheckConstraint(tableDifference.RequiredTable.Key, checkConstraint);
+            }
+        }
+
+        private IScriptTask RenameCheckConstraint(ObjectName tableName, string currentName, string requiredName)
+        {
+            return new SqlScript($@"EXEC sp_rename 
+    @objname = '{tableName.Schema}.{currentName}', 
+    @newname = '{requiredName}', 
+    @objtype = 'OBJECT'
+GO").CreatesOrAlters().CheckConstraintOn(tableName.Components());
+        }
+
+        private IEnumerable<IScriptTask> CreateRenameAllCheckConstraintScripts(TableDifference tableDifference)
         {
             foreach (var checkConstraint in tableDifference.RequiredTable.Value.Checks.OrEmptyCollection())
             {
@@ -186,13 +183,13 @@ GO");
                     currentConstraint.CheckObjectId.Value);
 
                 yield return RenameCheckConstraint(
-                    tableDifference.RequiredTable.Key.Schema,
+                    tableDifference.RequiredTable.Key,
                     currentConstraint.SqlName,
                     checkConstraint.Name ?? newAutomaticName);
             }
         }
 
-        private IEnumerable<IOutputable> CreateAddAllCheckConstraintScripts(TableDifference tableDifference)
+        private IEnumerable<IScriptTask> CreateAddAllCheckConstraintScripts(TableDifference tableDifference)
         {
             foreach (var checkConstraint in tableDifference.RequiredTable.Value.Checks.OrEmptyCollection())
             {
@@ -206,29 +203,37 @@ GO");
                     continue;
                 }
 
-                yield return new OutputableCollection(AddCheckConstraint(tableDifference.RequiredTable.Key, checkConstraint));
+                yield return AddCheckConstraint(tableDifference.RequiredTable.Key, checkConstraint);
             }
         }
 
-        private IEnumerable<IOutputable> AddCheckConstraint(ObjectName tableName, CheckConstraintDifference checkDifference)
+        private IScriptTask DropCheckConstraint(ObjectName tableName, CheckConstraintDetails checkConstraint)
+        {
+            return new SqlScript($@"ALTER TABLE {tableName.SqlSafeName()}
+DROP CONSTRAINT {checkConstraint.SqlName.SqlSafeName()}
+GO").Drops().CheckConstraintOn(tableName.Components(checkConstraint.ColumnNames));
+        }
+
+        private IScriptTask AddCheckConstraint(ObjectName tableName, CheckConstraintDifference checkDifference)
         {
             return AddCheckConstraint(tableName, checkDifference.RequiredConstraint);
         }
 
-        private IEnumerable<IOutputable> AddCheckConstraint(
+        private IScriptTask AddCheckConstraint(
             ObjectName tableName,
             CheckConstraintDetails checkConstraint)
         {
             var unnamedCheckConstraint = GetNameForCheckConstraint(tableName, checkConstraint);
 
-            yield return new SqlScript($@"ALTER TABLE {tableName.SqlSafeName()}
+            var addConstraint = new SqlScript($@"ALTER TABLE {tableName.SqlSafeName()}
 ADD CONSTRAINT {(checkConstraint.Name ?? unnamedCheckConstraint).SqlSafeName()}
 CHECK ({checkConstraint.Check})
-GO");
+GO").Requiring().Table(tableName).ToBeCreatedOrAltered()
+    .CreatesOrAlters().CheckConstraintOn(tableName.Components(checkConstraint.ColumnNames.OrEmptyCollection()));
 
             if (checkConstraint.Name == null)
             {
-                yield return new SqlScript(@$"DECLARE @newName VARCHAR(1024)
+                var renameConstraint = new SqlScript(@$"DECLARE @newName VARCHAR(1024)
 SELECT @newName = 'CK__{tableName.Name}__' + col.name + '__' + FORMAT(chk.OBJECT_ID, 'X')
 FROM sys.check_constraints chk
 INNER JOIN sys.columns col
@@ -244,12 +249,17 @@ EXEC sp_rename
     @objname = '{tableName.Schema}.{unnamedCheckConstraint}', 
     @newname = @newName, 
     @objtype = 'OBJECT'
-GO");
+GO").Requiring().Table(tableName).ToBeCreatedOrAltered()
+    .CreatesOrAlters().CheckConstraintOn(tableName.Components(checkConstraint.ColumnNames.OrEmptyCollection()));
+
+                return new ScriptBlock(new[] { addConstraint, renameConstraint });
             }
+
+            return addConstraint;
         }
 
         private string GetNameForCheckConstraint(
-            ObjectName tableName, 
+            ObjectName tableName,
             CheckConstraintDetails checkConstraint)
         {
             if (!string.IsNullOrEmpty(checkConstraint.Name))

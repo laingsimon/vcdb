@@ -3,13 +3,14 @@ using System.Collections.Generic;
 using System.Linq;
 using vcdb.Models;
 using vcdb.Output;
+using vcdb.Scripting.ExecutionPlan;
 using vcdb.Scripting.User;
 
 namespace vcdb.SqlServer.Scripting
 {
     public class SqlServerUserScriptBuilder : IUserScriptBuilder
     {
-        public IEnumerable<IOutputable> CreateUpgradeScripts(IReadOnlyCollection<UserDifference> userDifferences)
+        public IEnumerable<IScriptTask> CreateUpgradeScripts(IReadOnlyCollection<UserDifference> userDifferences)
         {
             foreach (var userDifference in userDifferences)
             {
@@ -18,7 +19,7 @@ namespace vcdb.SqlServer.Scripting
 
                 if (userDifference.UserAdded)
                 {
-                    yield return new OutputableCollection(GetCreateUserScript(requiredUser));
+                    yield return new MultiScriptTask(GetCreateUserScript(requiredUser));
 
                     continue;
                 }
@@ -41,7 +42,7 @@ namespace vcdb.SqlServer.Scripting
             }
         }
 
-        private SqlScript GetAlterUserScript(string currentName, UserDifference userDifference)
+        private IScriptTask GetAlterUserScript(string currentName, UserDifference userDifference)
         {
             var requiredUser = userDifference.RequiredUser;
 
@@ -61,16 +62,16 @@ namespace vcdb.SqlServer.Scripting
 
             return new SqlScript($@"ALTER USER {currentName.SqlSafeName()}
 WITH {clauses}
-GO");
+GO").CreatesOrAlters().User(requiredUser.Key);
         }
 
-        private SqlScript GetDropUserScript(string userName)
+        private IScriptTask GetDropUserScript(string userName)
         {
             return new SqlScript($@"DROP USER {userName.SqlSafeName()}
-GO");
+GO").Drops().User(userName);
         }
 
-        private IEnumerable<IOutputable> GetCreateUserScript(NamedItem<string, UserDetails> requiredUser)
+        private IEnumerable<IScriptTask> GetCreateUserScript(NamedItem<string, UserDetails> requiredUser)
         {
             var withClauses = new[]
             {
@@ -84,7 +85,7 @@ GO");
                 : "";
 
             yield return new SqlScript($@"CREATE USER {requiredUser.Key.SqlSafeName()} FOR LOGIN {requiredUser.Value.LoginName.SqlSafeName()}
-{clauses}GO");
+{clauses}GO").CreatesOrAlters().User(requiredUser.Key);
 
             if (requiredUser.Value.Enabled == false)
             {
@@ -92,7 +93,7 @@ GO");
             }
         }
 
-        private SqlScript GetChangeLoginStateScript(string loginName, OptOut enabled)
+        private IScriptTask GetChangeLoginStateScript(string loginName, OptOut enabled)
         {
             var disabledClause = enabled == true
                 ? "ENABLE"
@@ -100,7 +101,7 @@ GO");
 
             return new SqlScript($@"ALTER LOGIN {loginName.SqlSafeName()}
 {disabledClause}
-GO");
+GO").AsTask();
         }
     }
 }

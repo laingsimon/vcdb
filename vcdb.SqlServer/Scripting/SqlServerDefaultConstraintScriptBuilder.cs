@@ -4,6 +4,7 @@ using vcdb.CommandLine;
 using vcdb.Models;
 using vcdb.Output;
 using vcdb.Scripting.Column;
+using vcdb.Scripting.ExecutionPlan;
 using vcdb.Scripting.Table;
 
 namespace vcdb.SqlServer.Scripting
@@ -19,7 +20,7 @@ namespace vcdb.SqlServer.Scripting
             this.objectNameHelper = objectNameHelper;
         }
 
-        public IEnumerable<IOutputable> CreateUpgradeScripts(TableDifference tableDifference)
+        public IEnumerable<IScriptTask> CreateUpgradeScripts(TableDifference tableDifference)
         {
             if (tableDifference.TableDeleted)
             {
@@ -35,7 +36,7 @@ namespace vcdb.SqlServer.Scripting
                 if (!options.IgnoreUnnamedConstraints)
                 {
                     var defaultConstraintRenames = GetRenameUnnamedDefaultsIfNoColumnsAreRenamed(tableDifference);
-                    yield return new OutputableCollection(defaultConstraintRenames);
+                    yield return new MultiScriptTask(defaultConstraintRenames);
                 }
             }
 
@@ -67,14 +68,14 @@ namespace vcdb.SqlServer.Scripting
             {
                 foreach (var columnWithDefault in tableDifference.RequiredTable.Value.Columns.Where(col => col.Value.Default != null))
                 {
-                    yield return new OutputableCollection(GetAddDefaultScript(requiredTableName, columnWithDefault.Key, columnWithDefault.Value));
+                    yield return new ScriptBlock(GetAddDefaultScript(requiredTableName, columnWithDefault.Key, columnWithDefault.Value));
                 }
             }
             else
             {
                 foreach (var addedColumn in tableDifference.ColumnDifferences.Where(cd => cd.ColumnAdded))
                 {
-                    yield return new OutputableCollection(GetAddDefaultScript(
+                    yield return new ScriptBlock(GetAddDefaultScript(
                         requiredTableName,
                         addedColumn.RequiredColumn.Key,
                         addedColumn.RequiredColumn.Value));
@@ -82,7 +83,7 @@ namespace vcdb.SqlServer.Scripting
             }
         }
 
-        public IEnumerable<IOutputable> CreateUpgradeScripts(ObjectName tableName, ColumnDifference columnDifference)
+        public IEnumerable<IScriptTask> CreateUpgradeScripts(ObjectName tableName, ColumnDifference columnDifference)
         {
             if (columnDifference.DefaultChangedTo != null)
             {
@@ -90,7 +91,7 @@ namespace vcdb.SqlServer.Scripting
                     yield return GetDropDefaultScript(tableName, columnDifference.CurrentColumn.Value.SqlDefaultName);
                 else
                 {
-                    yield return new OutputableCollection(GetAlterDefaultScript(tableName, columnDifference.RequiredColumn, columnDifference.CurrentColumn.Value.SqlDefaultName));
+                    yield return new MultiScriptTask(GetAlterDefaultScript(tableName, columnDifference.RequiredColumn, columnDifference.CurrentColumn.Value.SqlDefaultName));
                 }
             }
             else if (columnDifference.DefaultRenamedTo != null)
@@ -106,14 +107,14 @@ namespace vcdb.SqlServer.Scripting
 
             if (columnDifference.ColumnAdded && columnDifference.RequiredColumn.Value.Default != null)
             {
-                yield return new OutputableCollection(GetAddDefaultScript(
+                yield return new ScriptBlock(GetAddDefaultScript(
                     tableName,
                     columnDifference.RequiredColumn.Key,
                     columnDifference.RequiredColumn.Value));
             }
         }
 
-        private IEnumerable<IOutputable> GetRenameUnnamedDefaultsIfNoColumnsAreRenamed(TableDifference tableDifference)
+        private IEnumerable<IScriptTask> GetRenameUnnamedDefaultsIfNoColumnsAreRenamed(TableDifference tableDifference)
         {
             var requiredTable = tableDifference.RequiredTable;
             var columnsWithDefaultsButNoExplicitName = requiredTable.Value.Columns.Where(col =>
@@ -150,22 +151,22 @@ namespace vcdb.SqlServer.Scripting
             return objectNameHelper.GetAutomaticConstraintName("DF", tableName.Name, column.Key, column.Value.DefaultObjectId ?? 0);
         }
 
-        private SqlScript GetDropDefaultScript(ObjectName tableName, string constraintName)
+        private IScriptTask GetDropDefaultScript(ObjectName tableName, string constraintName)
         {
             return new SqlScript($@"ALTER TABLE {tableName.SqlSafeName()}
 DROP CONSTRAINT {constraintName.SqlSafeName()}
-GO");
+GO").Requiring().Table(tableName).ToBeCreatedOrAltered();
         }
 
-        private IEnumerable<IOutputable> GetAlterDefaultScript(ObjectName tableName, NamedItem<string, ColumnDetails> columnDetails, string currentConstraintName)
+        private IEnumerable<IScriptTask> GetAlterDefaultScript(ObjectName tableName, NamedItem<string, ColumnDetails> columnDetails, string currentConstraintName)
         {
             var columnName = columnDetails.Key;
             var column = columnDetails.Value;
             yield return GetDropDefaultScript(tableName, currentConstraintName);
-            yield return new OutputableCollection(GetAddDefaultScript(tableName, columnName, column));
+            yield return new ScriptBlock(GetAddDefaultScript(tableName, columnName, column));
         }
 
-        private IEnumerable<IOutputable> GetAddDefaultScript(ObjectName tableName, string columnName, ColumnDetails column)
+        private IEnumerable<IScriptTask> GetAddDefaultScript(ObjectName tableName, string columnName, ColumnDetails column)
         {
             if (column.Default == null)
                 yield break;
@@ -175,7 +176,9 @@ GO");
 ADD CONSTRAINT {(column.DefaultName ?? unnamedDefaultConstraint).SqlSafeName()}
 DEFAULT ({GetDefaultValue(column.Default)})
 FOR {columnName.SqlSafeName()}
-GO");
+GO")
+    .Requiring().Table(tableName).ToBeCreatedOrAltered()
+    .Requiring().Columns(tableName.Component(columnName)).ToBeCreatedOrAltered();
 
             if (column.DefaultName == null)
             {
@@ -195,7 +198,8 @@ EXEC sp_rename
     @objname = '{unnamedDefaultConstraint}', 
     @newname = @newName, 
     @objtype = 'OBJECT'
-GO");
+GO").Requiring().Table(tableName).ToBeCreatedOrAltered()
+    .Requiring().Columns(tableName.Component(columnName)).ToBeCreatedOrAltered();
             }
         }
 
@@ -207,7 +211,7 @@ GO");
             return defaultValue;
         }
 
-        private SqlScript GetRenameDefaultScript(
+        private IScriptTask GetRenameDefaultScript(
             ObjectName currentTableName,
             ObjectName requiredTableName,
             NamedItem<string, ColumnDetails> currentColumn,
@@ -225,7 +229,8 @@ GO");
     @objname = '{currentTableName.Schema.SqlSafeName()}.{(currentConstraintName).SqlSafeName()}', 
     @newname = '{(requiredConstraintName ?? requiredAutomaticConstraintName).SqlSafeName()}', 
     @objtype = 'OBJECT'
-GO");
+GO").Requiring().Table(requiredTableName).ToBeCreatedOrAltered()
+    .Requiring().Columns(requiredTableName.Component(requiredColumn.Key)).ToBeCreatedOrAltered();
         }
     }
 }

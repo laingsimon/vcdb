@@ -1,10 +1,10 @@
 ﻿using System.Collections.Generic;
-using vcdb.Output;
+using vcdb.Scripting.ExecutionPlan;
 
 namespace vcdb.Scripting.Index
 {
     public interface IIndexScriptBuilder
     {
-        IEnumerable<IOutputable> CreateUpgradeScripts(ObjectName requiredTableName, IReadOnlyCollection<IndexDifference> indexDifferences);
+        IEnumerable<IScriptTask> CreateUpgradeScripts(ObjectName requiredTableName, IReadOnlyCollection<IndexDifference> indexDifferences);
     }
 }

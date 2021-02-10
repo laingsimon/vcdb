@@ -3,6 +3,7 @@ using System.Linq;
 using vcdb.Models;
 using vcdb.Output;
 using vcdb.Scripting;
+using vcdb.Scripting.ExecutionPlan;
 using vcdb.Scripting.Index;
 
 namespace vcdb.SqlServer.Scripting
@@ -16,13 +17,13 @@ namespace vcdb.SqlServer.Scripting
             this.descriptionScriptBuilder = descriptionScriptBuilder;
         }
 
-        public IEnumerable<IOutputable> CreateUpgradeScripts(ObjectName requiredTableName, IReadOnlyCollection<IndexDifference> indexDifferences)
+        public IEnumerable<IScriptTask> CreateUpgradeScripts(ObjectName requiredTableName, IReadOnlyCollection<IndexDifference> indexDifferences)
         {
             foreach (var indexDifference in indexDifferences)
             {
                 if (indexDifference.IndexAdded)
                 {
-                    yield return new OutputableCollection(GetAddIndexScript(requiredTableName, indexDifference.RequiredIndex.Key, indexDifference.RequiredIndex.Value));
+                    yield return new MultiScriptTask(GetAddIndexScript(requiredTableName, indexDifference.RequiredIndex.Key, indexDifference.RequiredIndex.Value));
                     continue;
                 }
 
@@ -36,7 +37,7 @@ namespace vcdb.SqlServer.Scripting
                 {
                     //Indexes cannot be altered, they have to be dropped and re-created
                     yield return GetDropIndexScript(requiredTableName, indexDifference.CurrentIndex.Key);
-                    yield return new OutputableCollection(GetAddIndexScript(requiredTableName, indexDifference.RequiredIndex.Key, indexDifference.RequiredIndex.Value));
+                    yield return new MultiScriptTask(GetAddIndexScript(requiredTableName, indexDifference.RequiredIndex.Key, indexDifference.RequiredIndex.Value));
                 }
                 else if (indexDifference.IndexRenamedTo != null)
                 {
@@ -54,13 +55,13 @@ namespace vcdb.SqlServer.Scripting
             }
         }
 
-        private SqlScript GetDropIndexScript(ObjectName requiredTableName, string indexName)
+        private IScriptTask GetDropIndexScript(ObjectName requiredTableName, string indexName)
         {
             return new SqlScript($@"DROP INDEX {indexName.SqlSafeName()} ON {requiredTableName.SqlSafeName()}
-GO");
+GO").Drops().Index(requiredTableName.Component(indexName));
         }
 
-        private IEnumerable<IOutputable> GetAddIndexScript(ObjectName tableName, string indexName, IndexDetails index)
+        private IEnumerable<IScriptTask> GetAddIndexScript(ObjectName tableName, string indexName, IndexDetails index)
         {
             var uniqueClause = index.Unique
                 ? "UNIQUE "
@@ -84,7 +85,9 @@ GO");
 
             yield return new SqlScript($@"CREATE {uniqueClause}{clusteredClause}INDEX {indexName.SqlSafeName()}
 ON {tableName.SqlSafeName()} ({columns}){includeClause}
-GO");
+GO")
+    .Requiring().Table(tableName).ToBeCreatedOrAltered()
+    .CreatesOrAlters().Index(tableName.Component(indexName));
 
             if (index.Description != null)
             {
@@ -96,13 +99,13 @@ GO");
             }
         }
 
-        private SqlScript GetRenameIndexScript(ObjectName tableName, string currentName, string requiredName)
+        private IScriptTask GetRenameIndexScript(ObjectName tableName, string currentName, string requiredName)
         {
             return new SqlScript(@$"EXEC sp_rename
     @objname = '{tableName.Schema}.{tableName.Name}.{currentName}',
     @newname = '{requiredName}',
     @objtype = 'INDEX'
-GO");
+GO").CreatesOrAlters().Index(tableName.Component(requiredName));
         }
     }
 }

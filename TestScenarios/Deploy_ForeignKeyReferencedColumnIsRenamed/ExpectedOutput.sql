@@ -1,13 +1,13 @@
 ALTER TABLE [dbo].[Person]
 DROP CONSTRAINT [FK_Person_FavouriteCar]
 GO
-ALTER TABLE [dbo].[Car]
-DROP CONSTRAINT [PK__Car__3214EC07/[A-Z0-9]{8}/]
-GO
 EXEC sp_rename
     @objname = 'dbo.Person.FavouriteCar',
     @newname = 'FavouriteCarId',
     @objtype = 'COLUMN'
+GO
+ALTER TABLE [dbo].[Car]
+DROP CONSTRAINT [PK__Car__3214EC07/[A-Z0-9]{8}/]
 GO
 EXEC sp_rename
     @objname = 'dbo.Car.Id',

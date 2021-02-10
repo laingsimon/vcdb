@@ -1,48 +1,57 @@
 ﻿using vcdb.Output;
 using vcdb.Scripting;
+using vcdb.Scripting.ExecutionPlan;
 
 namespace vcdb.SqlServer.Scripting
 {
     public class SqlServerDescriptionScriptBuilder : IDescriptionScriptBuilder
     {
-        public SqlScript ChangeDatabaseDescription(string current, string required)
+        public IScriptTask ChangeDatabaseDescription(string current, string required)
         {
-            return GetChangeDescriptionScript(null, null, null, null, current, required);
+            return GetChangeDescriptionScript(null, null, null, null, current, required)
+                .AsTask();
         }
 
-        public SqlScript ChangeSchemaDescription(string requiredSchemaName, string current, string required)
+        public IScriptTask ChangeSchemaDescription(string requiredSchemaName, string current, string required)
         {
-            return GetChangeDescriptionScript(requiredSchemaName, null, null, null, current, required);
+            return GetChangeDescriptionScript(requiredSchemaName, null, null, null, current, required)
+                .Requiring().Schema(requiredSchemaName).ToBeCreatedOrAltered();
         }
 
-        public SqlScript ChangeTableDescription(ObjectName requiredTableName, string current, string required)
+        public IScriptTask ChangeTableDescription(ObjectName requiredTableName, string current, string required)
         {
-            return GetChangeDescriptionScript(requiredTableName.Schema, requiredTableName.Name, null, null, current, required);
+            return GetChangeDescriptionScript(requiredTableName.Schema, requiredTableName.Name, null, null, current, required)
+                .Requiring().Table(requiredTableName).ToBeCreatedOrAltered();
         }
 
-        public SqlScript ChangeColumnDescription(ObjectName requiredTableName, string requiredColumnName, string current, string required)
+        public IScriptTask ChangeColumnDescription(ObjectName requiredTableName, string requiredColumnName, string current, string required)
         {
-            return GetChangeDescriptionScript(requiredTableName.Schema, requiredTableName.Name, "COLUMN", requiredColumnName, current, required);
+            return GetChangeDescriptionScript(requiredTableName.Schema, requiredTableName.Name, "COLUMN", requiredColumnName, current, required)
+                .Requiring().Columns(requiredTableName.Component(requiredColumnName)).ToBeCreatedOrAltered();
         }
 
-        public SqlScript ChangeIndexDescription(ObjectName requiredTableName, string requiredIndexName, string current, string required)
+        public IScriptTask ChangeIndexDescription(ObjectName requiredTableName, string requiredIndexName, string current, string required)
         {
-            return GetChangeDescriptionScript(requiredTableName.Schema, requiredTableName.Name, "INDEX", requiredIndexName, current, required);
+            return GetChangeDescriptionScript(requiredTableName.Schema, requiredTableName.Name, "INDEX", requiredIndexName, current, required)
+                .Requiring().Index(requiredTableName.Component(requiredIndexName)).ToBeCreatedOrAltered();
         }
 
-        public SqlScript ChangePrimaryKeyDescription(ObjectName requiredTableName, string requiredKeyName, string current, string required)
+        public IScriptTask ChangePrimaryKeyDescription(ObjectName requiredTableName, string requiredKeyName, string current, string required)
         {
-            return GetChangeDescriptionScript(requiredTableName.Schema, requiredTableName.Name, "CONSTRAINT", requiredKeyName, current, required);
+            return GetChangeDescriptionScript(requiredTableName.Schema, requiredTableName.Name, "CONSTRAINT", requiredKeyName, current, required)
+                .Requiring().PrimaryKeyOn(requiredTableName).ToBeCreatedOrAltered();
         }
 
-        public SqlScript ChangeProcedureDescription(ObjectName requiredProcedureName, string current, string required)
+        public IScriptTask ChangeProcedureDescription(ObjectName requiredProcedureName, string current, string required)
         {
-            return GetChangeDescriptionScript(requiredProcedureName.Schema, requiredProcedureName.Name, null, null, current, required, objectType: "PROCEDURE");
+            return GetChangeDescriptionScript(requiredProcedureName.Schema, requiredProcedureName.Name, null, null, current, required, objectType: "PROCEDURE")
+                .Requiring().Procedure(requiredProcedureName).ToBeCreatedOrAltered();
         }
 
-        public SqlScript ChangeForeignKeyDescription(ObjectName requiredTableName, string requiredForeignKeyName, string current, string required)
+        public IScriptTask ChangeForeignKeyDescription(ObjectName requiredTableName, string requiredForeignKeyName, string current, string required)
         {
-            return GetChangeDescriptionScript(requiredTableName.Schema, requiredTableName.Name, "CONSTRAINT", requiredForeignKeyName, current, required);
+            return GetChangeDescriptionScript(requiredTableName.Schema, requiredTableName.Name, "CONSTRAINT", requiredForeignKeyName, current, required)
+                .Requiring().Table(requiredTableName).ToBeCreatedOrAltered();
         }
 
         private SqlScript GetChangeDescriptionScript(

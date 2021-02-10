@@ -8,6 +8,7 @@ using TestFramework.Execution;
 using TestFramework.Input;
 using vcdb.Output;
 using vcdb.Scripting.Database;
+using vcdb.Scripting.ExecutionPlan;
 
 namespace vcdb.IntegrationTests.Framework
 {
@@ -46,6 +47,9 @@ namespace vcdb.IntegrationTests.Framework
             services.AddSingleton(scenario);
             services.ReplaceSingleton<IDatabaseComparer, EmittingDatabaseComparer>();
             services.AddSingleton<DatabaseComparer>();
+
+            services.ReplaceSingleton<IScriptExecutionPlanManager, InterceptingScriptExecutionPlanManager>();
+            services.AddSingleton<ScriptExecutionPlanManager>();
         }
 
         private static CommandLine.Options GetOptions(DirectoryInfo scenario, ScenarioSettings settings)

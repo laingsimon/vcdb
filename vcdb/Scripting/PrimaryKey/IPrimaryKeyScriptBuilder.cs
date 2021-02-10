@@ -1,13 +1,12 @@
 ﻿using System.Collections.Generic;
-using vcdb.Output;
+using vcdb.Scripting.ExecutionPlan;
 
 namespace vcdb.Scripting.PrimaryKey
 {
     public interface IPrimaryKeyScriptBuilder
     {
-        IEnumerable<IOutputable> CreateUpgradeScripts(
+        IEnumerable<IScriptTask> CreateUpgradeScripts(
             ObjectName tableName,
-            PrimaryKeyDifference primaryKeyDifference,
-            ScriptingPhase phase);
+            PrimaryKeyDifference primaryKeyDifference);
     }
 }

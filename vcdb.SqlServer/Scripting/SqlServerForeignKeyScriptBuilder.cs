@@ -3,6 +3,7 @@ using System.Linq;
 using vcdb.Models;
 using vcdb.Output;
 using vcdb.Scripting;
+using vcdb.Scripting.ExecutionPlan;
 using vcdb.Scripting.ForeignKey;
 
 namespace vcdb.SqlServer.Scripting
@@ -16,7 +17,7 @@ namespace vcdb.SqlServer.Scripting
             this.descriptionScriptBuilder = descriptionScriptBuilder;
         }
 
-        public IEnumerable<IOutputable> CreateUpgradeScripts(ObjectName requiredTableName, IReadOnlyCollection<ForeignKeyDifference> foreignKeyDifferences, ScriptingPhase phase)
+        public IEnumerable<IScriptTask> CreateUpgradeScripts(ObjectName requiredTableName, IReadOnlyCollection<ForeignKeyDifference> foreignKeyDifferences)
         {
             if (foreignKeyDifferences == null)
             {
@@ -25,33 +26,34 @@ namespace vcdb.SqlServer.Scripting
 
             foreach (var difference in foreignKeyDifferences)
             {
-                if ((difference.ForeignKeyDeleted || difference.ChangedColumns?.Any() == true) && phase == ScriptingPhase.DropReferences)
+                if ((difference.ForeignKeyDeleted || difference.ChangedColumns?.Any() == true))
                 {
                     yield return GetDropForeignKeyScript(requiredTableName, difference.CurrentForeignKey);
                 }
 
-                if ((difference.ForeignKeyAdded || difference.ChangedColumns?.Any() == true) && phase == ScriptingPhase.Recreate)
+                if ((difference.ForeignKeyAdded || difference.ChangedColumns?.Any() == true))
                 {
-                    yield return new OutputableCollection(GetAddForeignKeyScripts(requiredTableName, difference.RequiredForeignKey));
+                    yield return GetAddForeignKeyScripts(requiredTableName, difference.RequiredForeignKey);
                 }
 
-                if (difference.ForeignKeyRenamedTo != null && phase == ScriptingPhase.Recreate)
+                if (difference.ForeignKeyRenamedTo != null)
                 {
                     yield return GetRenameForeignKeyScript(requiredTableName, difference.CurrentForeignKey, difference.RequiredForeignKey);
                 }
 
-                if (difference.DescriptionChangedTo != null && phase == ScriptingPhase.Recreate)
+                if (difference.DescriptionChangedTo != null)
                 {
                     yield return descriptionScriptBuilder.ChangeForeignKeyDescription(
                         requiredTableName,
                         difference.RequiredForeignKey.Key,
                         difference.CurrentForeignKey.Value.Description,
-                        difference.RequiredForeignKey.Value.Description);
+                        difference.RequiredForeignKey.Value.Description)
+                        .Requiring().ForeignKeyReferencing(difference.RequiredForeignKey.Value.ReferencedTable).ToBeCreatedOrAltered();
                 }
             }
         }
 
-        private SqlScript GetRenameForeignKeyScript(
+        private IScriptTask GetRenameForeignKeyScript(
             ObjectName requiredTableName,
             NamedItem<string, ForeignKeyDetails> currentForeignKey,
             NamedItem<string, ForeignKeyDetails> requiredForeignKey)
@@ -60,36 +62,48 @@ namespace vcdb.SqlServer.Scripting
     @objname = '{requiredTableName.Schema}.{currentForeignKey.Key}',
     @newname = '{requiredForeignKey.Key}', 
     @objtype = 'OBJECT'
-GO");
+GO").AsTask();
         }
 
-        private IEnumerable<IOutputable> GetAddForeignKeyScripts(ObjectName requiredTableName, NamedItem<string, ForeignKeyDetails> requiredForeignKey)
+        private IScriptTask GetAddForeignKeyScripts(ObjectName requiredTableName, NamedItem<string, ForeignKeyDetails> requiredForeignKey)
         {
             var columns = requiredForeignKey.Value.Columns;
             var sourceColumns = columns.Keys.Select(columnName => columnName.SqlSafeName());
             var referencedColumns = columns.Values.Select(columnName => columnName.SqlSafeName());
 
-            yield return new SqlScript($@"ALTER TABLE {requiredTableName.SqlSafeName()}
+            var addForeignKey = new SqlScript($@"ALTER TABLE {requiredTableName.SqlSafeName()}
 ADD CONSTRAINT {requiredForeignKey.Key.SqlSafeName()} 
 FOREIGN KEY ({string.Join(", ", sourceColumns)}) 
 REFERENCES {requiredForeignKey.Value.ReferencedTable.SqlSafeName()} ({string.Join(", ", referencedColumns)})
-GO");
+GO")
+    .Requiring().Table(requiredTableName).ToBeCreatedOrAltered()
+    .Requiring().Columns(requiredTableName.Components(columns.Keys)).ToBeCreatedOrAltered()
+    .Requiring().Columns(requiredForeignKey.Value.ReferencedTable.Components(columns.Values)).ToBeCreatedOrAltered()
+    .Requiring().PrimaryKeyOn(requiredForeignKey.Value.ReferencedTable).ToBeCreatedOrAltered()
+    .CreatesOrAlters().ForeignKeyReferencing(requiredForeignKey.Value.ReferencedTable)
+    .CreatesOrAlters().ForeignKeyOn(requiredTableName.Components(requiredForeignKey.Value.Columns.Keys));
 
             if (!string.IsNullOrEmpty(requiredForeignKey.Value.Description))
             {
-                yield return descriptionScriptBuilder.ChangeForeignKeyDescription(
+                var addDescription = descriptionScriptBuilder.ChangeForeignKeyDescription(
                     requiredTableName,
                     requiredForeignKey.Key,
                     null,
                     requiredForeignKey.Value.Description);
+
+                return new ScriptBlock(new[] { addForeignKey, addDescription });
             }
+
+            return addForeignKey;
         }
 
-        private SqlScript GetDropForeignKeyScript(ObjectName requiredTableName, NamedItem<string, ForeignKeyDetails> currentForeignKey)
+        private IScriptTask GetDropForeignKeyScript(ObjectName requiredTableName, NamedItem<string, ForeignKeyDetails> currentForeignKey)
         {
             return new SqlScript($@"ALTER TABLE {requiredTableName.SqlSafeName()}
 DROP CONSTRAINT {currentForeignKey.Key.SqlSafeName()}
-GO");
+GO")
+    .Drops().ForeignKeyReferencing(currentForeignKey.Value.ReferencedTable)
+    .Drops().ForeignKeyOn(requiredTableName.Components(currentForeignKey.Value.Columns.Keys));
         }
     }
 }

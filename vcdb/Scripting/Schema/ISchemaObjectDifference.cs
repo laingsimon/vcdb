@@ -1,4 +1,7 @@
-﻿namespace vcdb.Scripting.Schema
+﻿using vcdb.Output;
+using vcdb.Scripting.ExecutionPlan;
+
+namespace vcdb.Scripting.Schema
 {
     public interface ISchemaObjectDifference
     {
@@ -7,5 +10,7 @@
         ObjectName ObjectRenamedTo { get; }
         ObjectName CurrentName { get; }
         ObjectName RequiredName { get; }
+
+        IScriptTask GetScriptTask(IScriptTask script);
     }
 }

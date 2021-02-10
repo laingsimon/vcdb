@@ -5,6 +5,7 @@ using vcdb.Models;
 using vcdb.Output;
 using vcdb.Scripting;
 using vcdb.Scripting.Database;
+using vcdb.Scripting.ExecutionPlan;
 using vcdb.Scripting.Permission;
 using vcdb.Scripting.Programmability;
 using vcdb.Scripting.Schema;
@@ -44,7 +45,7 @@ namespace vcdb.SqlServer.Scripting
             this.procedureScriptBuilder = procedureScriptBuilder;
         }
 
-        public IEnumerable<IOutputable> CreateUpgradeScripts(DatabaseDetails current, DatabaseDetails required)
+        public IEnumerable<IScriptTask> CreateUpgradeScripts(DatabaseDetails current, DatabaseDetails required)
         {
             var comparerContext = new ComparerContext();
             var databaseDifferences = databaseComparer.GetDatabaseDifferences(comparerContext, current, required);
@@ -55,22 +56,22 @@ namespace vcdb.SqlServer.Scripting
             if (databaseDifferences.DescriptionChangedTo != null)
                 yield return descriptionScriptBuilder.ChangeDatabaseDescription(current.Description, databaseDifferences.DescriptionChangedTo.Value);
 
-            yield return new OutputableCollection(userScriptBuilder.CreateUpgradeScripts(databaseDifferences.UserDifferences));
-            yield return new OutputableCollection(permissionScriptBuilder.CreateDatabasePermissionScripts(databaseDifferences.PermissionDifferences));
+            yield return new MultiScriptTask(userScriptBuilder.CreateUpgradeScripts(databaseDifferences.UserDifferences));
+            yield return new MultiScriptTask(permissionScriptBuilder.CreateDatabasePermissionScripts(databaseDifferences.PermissionDifferences));
 
             var schemaObjectDifferences = databaseDifferences.TableDifferences.Cast<ISchemaObjectDifference>()
                 .Concat(databaseDifferences.ProcedureDifferences.Cast<ISchemaObjectDifference>())
                 .ToArray();
-            yield return new OutputableCollection(schemaScriptBuilder.CreateUpgradeScripts(databaseDifferences.SchemaDifferences, schemaObjectDifferences));
-            yield return new OutputableCollection(tableScriptBuilder.CreateUpgradeScripts(databaseDifferences.TableDifferences));
-            yield return new OutputableCollection(procedureScriptBuilder.CreateUpgradeScripts(databaseDifferences.ProcedureDifferences));
+            yield return new MultiScriptTask(schemaScriptBuilder.CreateUpgradeScripts(databaseDifferences.SchemaDifferences, schemaObjectDifferences));
+            yield return new MultiScriptTask(tableScriptBuilder.CreateUpgradeScripts(databaseDifferences.TableDifferences));
+            yield return new MultiScriptTask(procedureScriptBuilder.CreateUpgradeScripts(databaseDifferences.ProcedureDifferences));
         }
 
-        private SqlScript GetChangeDatabaseCollationScript(string requiredCollation)
+        private IScriptTask GetChangeDatabaseCollationScript(string requiredCollation)
         {
             return new SqlScript($@"ALTER DATABASE {options.Database.SqlSafeName()}
 COLLATE {requiredCollation}
-GO");
+GO").AsTask();
         }
     }
 }

@@ -1,11 +1,13 @@
 ﻿using Microsoft.Extensions.Logging;
 using System;
+using System.Linq;
 using System.Threading.Tasks;
 using vcdb.CommandLine;
 using vcdb.Models;
 using vcdb.Output;
 using vcdb.SchemaBuilding;
 using vcdb.Scripting.Database;
+using vcdb.Scripting.ExecutionPlan;
 
 namespace vcdb
 {
@@ -19,6 +21,7 @@ namespace vcdb
         private readonly IInput input;
         private readonly IDatabaseScriptBuilder scriptBuilder;
         private readonly IScriptOutputHeader outputHeader;
+        private readonly IScriptExecutionPlanManager executionPlanManager;
 
         public Executor(
             IConnectionFactory connectionFactory,
@@ -28,7 +31,8 @@ namespace vcdb
             ILogger<Executor> logger,
             IInput input,
             IDatabaseScriptBuilder scriptBuilder,
-            IScriptOutputHeader outputHeader)
+            IScriptOutputHeader outputHeader,
+            IScriptExecutionPlanManager executionPlanManager)
         {
             this.connectionFactory = connectionFactory;
             this.options = options;
@@ -38,6 +42,7 @@ namespace vcdb
             this.input = input;
             this.scriptBuilder = scriptBuilder;
             this.outputHeader = outputHeader;
+            this.executionPlanManager = executionPlanManager;
         }
 
         public async Task Execute()
@@ -69,13 +74,15 @@ namespace vcdb
         private async Task<IOutputable> ConstructUpgradeScriptOutput(DatabaseDetails currentDatabaseRepresentation)
         {
             var requiredDatabaseRepresentation = await input.Read<DatabaseDetails>();
-            var databaseScripts = scriptBuilder.CreateUpgradeScripts(
+            var scriptTasks = scriptBuilder.CreateUpgradeScripts(
                 currentDatabaseRepresentation,
-                requiredDatabaseRepresentation);
+                requiredDatabaseRepresentation).ToArray();
+
+            var executionPlan = executionPlanManager.CreateExecutionPlan(scriptTasks);
 
             return new OutputableCollection(
                 outputHeader,
-                new EnumerableOutput<IOutputable>(databaseScripts));
+                executionPlan);
         }
 
         private Task<IOutputable> ConstructRepresentationOutput(DatabaseDetails database)

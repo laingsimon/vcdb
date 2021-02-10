@@ -17,6 +17,7 @@ using vcdb.Scripting.CheckConstraint;
 using vcdb.Scripting.Collation;
 using vcdb.Scripting.Column;
 using vcdb.Scripting.Database;
+using vcdb.Scripting.ExecutionPlan;
 using vcdb.Scripting.ForeignKey;
 using vcdb.Scripting.Index;
 using vcdb.Scripting.Permission;
@@ -126,6 +127,7 @@ namespace vcdb
             var version = options.GetDatabaseVersion();
             services.AddSingleton(version);
             services.AddSingleton<IScriptOutputHeader, ScriptOutputHeader>();
+            services.AddSingleton<IScriptExecutionPlanManager, ScriptExecutionPlanManager>();
 
             services.InNamespace<IExecutor>().AddAsSingleton();
 

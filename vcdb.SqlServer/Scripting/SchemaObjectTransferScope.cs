@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using vcdb.Output;
+using vcdb.Scripting.ExecutionPlan;
 using vcdb.Scripting.Schema;
 
 namespace vcdb.SqlServer.Scripting
@@ -15,34 +16,34 @@ namespace vcdb.SqlServer.Scripting
             this.differences = differences;
         }
 
-        public IEnumerable<IOutputable> CreateTransferScriptsIntoCreatedSchema(string createdSchemaName)
+        public IEnumerable<IScriptTask> CreateTransferScriptsIntoCreatedSchema(string createdSchemaName)
         {
             foreach (var transfer in CreateTransferScripts(null, createdSchemaName, differences))
             {
                 processedDifferences.Add(transfer.Difference);
-                yield return transfer.SqlScript;
+                yield return transfer.Task;
             }
         }
 
-        public IEnumerable<IOutputable> CreateTransferScriptsAwayFromDroppedSchema(string droppedSchemaName)
+        public IEnumerable<IScriptTask> CreateTransferScriptsAwayFromDroppedSchema(string droppedSchemaName)
         {
             foreach (var transfer in CreateTransferScripts(droppedSchemaName, null, differences))
             {
                 processedDifferences.Add(transfer.Difference);
-                yield return transfer.SqlScript;
+                yield return transfer.Task;
             }
         }
 
-        public IEnumerable<IOutputable> CreateTransferScriptsForRenamedSchema(string currentName, string requiredName)
+        public IEnumerable<IScriptTask> CreateTransferScriptsForRenamedSchema(string currentName, string requiredName)
         {
             foreach (var transfer in CreateTransferScripts(currentName, requiredName, differences))
             {
                 processedDifferences.Add(transfer.Difference);
-                yield return transfer.SqlScript;
+                yield return transfer.Task;
             }
         }
 
-        public IEnumerable<IOutputable> CreateTransferScriptsForUnProcessedObjects()
+        public IEnumerable<IScriptTask> CreateTransferScriptsForUnProcessedObjects()
         {
             var unprocessedDifferences = differences.Except(processedDifferences).ToArray();
             foreach (var difference in unprocessedDifferences)
@@ -53,7 +54,7 @@ namespace vcdb.SqlServer.Scripting
                 //transfer objects...
                 foreach (var transfer in CreateTransferScripts(difference.CurrentName.Schema, difference.RequiredName.Schema, unprocessedDifferences))
                 {
-                    yield return transfer.SqlScript;
+                    yield return transfer.Task;
                 }
             }
         }
@@ -75,29 +76,41 @@ namespace vcdb.SqlServer.Scripting
                 if (currentSchemaName != null && oldName.Schema == currentSchemaName)
                 {
                     //schema is being removed or renamed
-                    yield return new SchemaConstiuentTransfer(new SqlScript(@$"ALTER SCHEMA {newName.Schema.SqlSafeName()}
+                    yield return new SchemaConstiuentTransfer(
+                        new SqlScript(@$"ALTER SCHEMA {newName.Schema.SqlSafeName()}
 TRANSFER {oldName.SqlSafeName()}
-GO"), difference);
+GO"), 
+                        difference);
                 }
                 else if (requiredSchemaName != null && newName.Schema == requiredSchemaName)
                 {
                     //schema has been created, tables are supposed to be moved to it
-                    yield return new SchemaConstiuentTransfer(new SqlScript(@$"ALTER SCHEMA {newName.Schema.SqlSafeName()}
+                    yield return new SchemaConstiuentTransfer(
+                        new SqlScript(@$"ALTER SCHEMA {newName.Schema.SqlSafeName()}
 TRANSFER {oldName.SqlSafeName()}
-GO"), difference);
+GO"), 
+                        difference);
                 }
             }
         }
 
         private class SchemaConstiuentTransfer
         {
-            public SqlScript SqlScript { get; }
+            private readonly IScriptTask task;
             public ISchemaObjectDifference Difference { get; }
 
-            public SchemaConstiuentTransfer(SqlScript sqlScript, ISchemaObjectDifference difference)
+            public SchemaConstiuentTransfer(SqlScript script, ISchemaObjectDifference difference)
             {
-                SqlScript = sqlScript;
+                task = script.AsTask();
                 Difference = difference;
+            }
+
+            public IScriptTask Task
+            {
+                get
+                {
+                    return Difference.GetScriptTask(task);
+                }
             }
         }
     }

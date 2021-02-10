@@ -1,10 +1,10 @@
 ﻿using System.Collections.Generic;
-using vcdb.Output;
+using vcdb.Scripting.ExecutionPlan;
 
 namespace vcdb.Scripting.User
 {
     public interface IUserScriptBuilder
     {
-        IEnumerable<IOutputable> CreateUpgradeScripts(IReadOnlyCollection<UserDifference> userDifferences);
+        IEnumerable<IScriptTask> CreateUpgradeScripts(IReadOnlyCollection<UserDifference> userDifferences);
     }
 }

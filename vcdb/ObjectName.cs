@@ -8,7 +8,7 @@ using System.Text.RegularExpressions;
 namespace vcdb
 {
     [TypeConverter(typeof(TypeConverter))]
-    [DebuggerDisplay("[{Schema,nq}].[{Name,nq}]")]
+    [DebuggerDisplay("{DebugString()}")]
     public class ObjectName : IEquatable<ObjectName>
     {
         [JsonIgnore]
@@ -32,6 +32,11 @@ namespace vcdb
             return other != null
                 && other.Schema == Schema
                 && other.Name == Name;
+        }
+
+        internal string DebugString()
+        {
+            return $"[{Schema}].[{Name}]";
         }
 
         public static ObjectName Parse(string tableName)

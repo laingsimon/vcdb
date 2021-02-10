@@ -1,4 +1,5 @@
 ﻿using vcdb.Models;
+using vcdb.Scripting.ExecutionPlan;
 using vcdb.Scripting.Permission;
 using vcdb.Scripting.Schema;
 
@@ -38,5 +39,13 @@ namespace vcdb.Scripting.Programmability
         ObjectName ISchemaObjectDifference.ObjectRenamedTo => ProcedureRenamedTo;
         ObjectName ISchemaObjectDifference.CurrentName => CurrentProcedure?.Key;
         ObjectName ISchemaObjectDifference.RequiredName => RequiredProcedure?.Key;
+
+        IScriptTask ISchemaObjectDifference.GetScriptTask(IScriptTask script)
+        {
+            if (ProcedureDeleted)
+                return script.Drops().Procedure(CurrentProcedure.Key);
+
+            return script.CreatesOrAlters().Procedure(RequiredProcedure.Key);
+        }
     }
 }

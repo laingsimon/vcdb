@@ -1,10 +1,10 @@
 ﻿using System.Collections.Generic;
-using vcdb.Output;
+using vcdb.Scripting.ExecutionPlan;
 
 namespace vcdb.Scripting.Programmability
 {
     public interface IProcedureScriptBuilder
     {
-        IEnumerable<IOutputable> CreateUpgradeScripts(IReadOnlyCollection<ProcedureDifference> procedureDifferences);
+        IEnumerable<IScriptTask> CreateUpgradeScripts(IReadOnlyCollection<ProcedureDifference> procedureDifferences);
     }
 }

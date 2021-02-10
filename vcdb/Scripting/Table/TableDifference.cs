@@ -3,6 +3,7 @@ using System.Linq;
 using vcdb.Models;
 using vcdb.Scripting.CheckConstraint;
 using vcdb.Scripting.Column;
+using vcdb.Scripting.ExecutionPlan;
 using vcdb.Scripting.ForeignKey;
 using vcdb.Scripting.Index;
 using vcdb.Scripting.Permission;
@@ -50,5 +51,13 @@ namespace vcdb.Scripting.Table
         ObjectName ISchemaObjectDifference.ObjectRenamedTo => TableRenamedTo;
         ObjectName ISchemaObjectDifference.CurrentName => CurrentTable?.Key;
         ObjectName ISchemaObjectDifference.RequiredName => RequiredTable?.Key;
+
+        IScriptTask ISchemaObjectDifference.GetScriptTask(IScriptTask script)
+        {
+            if (TableDeleted)
+                return script.Drops().Table(CurrentTable.Key);
+
+            return script.CreatesOrAlters().Table(RequiredTable.Key);
+        }
     }
 }

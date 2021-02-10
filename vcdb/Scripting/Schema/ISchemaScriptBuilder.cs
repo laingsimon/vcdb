@@ -1,11 +1,11 @@
 ﻿using System.Collections.Generic;
-using vcdb.Output;
+using vcdb.Scripting.ExecutionPlan;
 
 namespace vcdb.Scripting.Schema
 {
     public interface ISchemaScriptBuilder
     {
-        IEnumerable<IOutputable> CreateUpgradeScripts(
+        IEnumerable<IScriptTask> CreateUpgradeScripts(
             IReadOnlyCollection<SchemaDifference> schemaDifferences,
             IReadOnlyCollection<ISchemaObjectDifference> schemaObjectDifferences);
     }

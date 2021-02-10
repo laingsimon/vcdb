@@ -3,6 +3,7 @@ using System.Linq;
 using vcdb.Models;
 using vcdb.Output;
 using vcdb.Scripting;
+using vcdb.Scripting.ExecutionPlan;
 using vcdb.Scripting.Permission;
 using vcdb.Scripting.Schema;
 
@@ -21,7 +22,7 @@ namespace vcdb.SqlServer.Scripting
             this.permissionScriptBuilder = permissionScriptBuilder;
         }
 
-        public IEnumerable<IOutputable> CreateUpgradeScripts(
+        public IEnumerable<IScriptTask> CreateUpgradeScripts(
             IReadOnlyCollection<SchemaDifference> schemaDifferences,
             IReadOnlyCollection<ISchemaObjectDifference> schemaObjectDifferences)
         {
@@ -31,12 +32,12 @@ namespace vcdb.SqlServer.Scripting
             {
                 if (difference.SchemaAdded)
                 {
-                    yield return new OutputableCollection(
+                    yield return new MultiScriptTask(
                         new[] { GetCreateSchemaScript(difference.RequiredSchema) }
                         .Concat(transferScope.CreateTransferScriptsIntoCreatedSchema(difference.RequiredSchema.Key))
                         .Concat(permissionScriptBuilder.CreateSchemaPermissionScripts(
-                                    difference.RequiredSchema.Key,
-                                    PermissionDifferences.From(difference.RequiredSchema.Value.Permissions)))
+                            difference.RequiredSchema.Key,
+                            PermissionDifferences.From(difference.RequiredSchema.Value.Permissions)))
                     );
 
                     continue;
@@ -44,7 +45,7 @@ namespace vcdb.SqlServer.Scripting
 
                 if (difference.SchemaDeleted)
                 {
-                    yield return new OutputableCollection(
+                    yield return new MultiScriptTask(
                         transferScope.CreateTransferScriptsAwayFromDroppedSchema(difference.CurrentSchema.Key)
                         .Concat(new[] { GetDropSchemaScript(difference.CurrentSchema) }));
                     continue;
@@ -52,7 +53,7 @@ namespace vcdb.SqlServer.Scripting
 
                 if (difference.SchemaRenamedTo != null)
                 {
-                    yield return new OutputableCollection(
+                    yield return new MultiScriptTask(
                         new[] { GetCreateSchemaScript(difference.RequiredSchema) }
                         .Concat(transferScope.CreateTransferScriptsForRenamedSchema(difference.CurrentSchema.Key, difference.RequiredSchema.Key))
                         .Concat(new[] { GetDropSchemaScript(difference.CurrentSchema) }));
@@ -66,24 +67,24 @@ namespace vcdb.SqlServer.Scripting
                         difference.DescriptionChangedTo.Value);
                 }
 
-                yield return new OutputableCollection(permissionScriptBuilder.CreateSchemaPermissionScripts(
+                yield return new MultiScriptTask(permissionScriptBuilder.CreateSchemaPermissionScripts(
                     difference.RequiredSchema.Key,
                     difference.PermissionDifferences));
             }
 
-            yield return new OutputableCollection(transferScope.CreateTransferScriptsForUnProcessedObjects());
+            yield return new MultiScriptTask(transferScope.CreateTransferScriptsForUnProcessedObjects());
         }
 
-        private IOutputable GetDropSchemaScript(NamedItem<string, SchemaDetails> currentSchema)
+        private IScriptTask GetDropSchemaScript(NamedItem<string, SchemaDetails> currentSchema)
         {
             return new SqlScript($@"DROP SCHEMA [{currentSchema.Key}]
-GO");
+GO").Drops().Schema(currentSchema.Key);
         }
 
-        private IOutputable GetCreateSchemaScript(NamedItem<string, SchemaDetails> requiredSchema)
+        private IScriptTask GetCreateSchemaScript(NamedItem<string, SchemaDetails> requiredSchema)
         {
             return new SqlScript($@"CREATE SCHEMA [{requiredSchema.Key}]
-GO");
+GO").CreatesOrAlters().Schema(requiredSchema.Key);
         }
     }
 }

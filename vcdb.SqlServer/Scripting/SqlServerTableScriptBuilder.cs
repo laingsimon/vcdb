@@ -6,6 +6,7 @@ using vcdb.Output;
 using vcdb.Scripting;
 using vcdb.Scripting.CheckConstraint;
 using vcdb.Scripting.Column;
+using vcdb.Scripting.ExecutionPlan;
 using vcdb.Scripting.ForeignKey;
 using vcdb.Scripting.Index;
 using vcdb.Scripting.Permission;
@@ -42,7 +43,7 @@ namespace vcdb.SqlServer.Scripting
             this.foreignKeyScriptBuilder = foreignKeyScriptBuilder;
         }
 
-        public IEnumerable<IOutputable> CreateUpgradeScripts(IReadOnlyCollection<TableDifference> tableDifferences)
+        public IEnumerable<IScriptTask> CreateUpgradeScripts(IReadOnlyCollection<TableDifference> tableDifferences)
         {
             var processedDifferences = new List<TableDifference>();
 
@@ -61,123 +62,69 @@ namespace vcdb.SqlServer.Scripting
                 if (tableDifference.TableAdded)
                 {
                     processedDifferences.Add(tableDifference);
-                    yield return new OutputableCollection(GetCreateTableScript(requiredTable.Value, requiredTable.Key));
-                    yield return new OutputableCollection(GetCreateTableScripts(tableDifference));
-
+                    yield return new MultiScriptTask(GetCreateTableScripts(requiredTable.Value, requiredTable.Key, tableDifference));
                     continue;
                 }
-
-                yield return new OutputableCollection(foreignKeyScriptBuilder.CreateUpgradeScripts(currentTable.Key, tableDifference.ForeignKeyDifferences, ScriptingPhase.DropReferences));
-            }
-
-            //Drop dependencies phase
-            foreach (var tableDifference in tableDifferences.Where(diff => diff.CurrentTable != null))
-            {
-                var requiredTable = tableDifference.RequiredTable;
-                var currentTable = tableDifference.CurrentTable;
-
-                yield return new OutputableCollection(primaryKeyScriptBuilder.CreateUpgradeScripts(currentTable.Key, tableDifference.PrimaryKeyDifference, ScriptingPhase.DropDependencies));
 
                 if (tableDifference.ColumnDifferences?.Any() == true)
                 {
                     var drops = tableDifference.ColumnDifferences.Where(diff => diff.ColumnDeleted || RequiresDropAndReAdd(diff)).ToArray();
                     if (drops.Any())
                     {
-                        yield return new SqlScript($@"ALTER TABLE {currentTable.Key.SqlSafeName()}
+                        yield return DropsColumns(new SqlScript($@"ALTER TABLE {currentTable.Key.SqlSafeName()}
 {string.Join(",", drops.Select(col => $"DROP COLUMN {col.CurrentColumn.SqlSafeName()}"))}
-GO");
+GO"), currentTable.Key, drops);
                     }
                 }
-            }
-
-            //Alter phase
-            foreach (var tableDifference in tableDifferences.Except(processedDifferences))
-            {
-                var requiredTable = tableDifference.RequiredTable;
-                var currentTable = tableDifference.CurrentTable;
 
                 if (tableDifference.TableRenamedTo != null)
                 {
-                    yield return new OutputableCollection(GetRenameTableScript(currentTable.Key, requiredTable.Key));
+                    yield return new MultiScriptTask(GetRenameTableScript(currentTable.Key, requiredTable.Key));
                 }
 
                 foreach (var rename in tableDifference.ColumnDifferences.Where(difference => difference.ColumnRenamedTo != null && !RequiresDropAndReAdd(difference)))
                 {
-                    yield return new OutputableCollection(checkConstraintScriptBuilder.CreateUpgradeScriptsBeforeColumnChanges(tableDifference, rename));
-
                     var requiredColumn = rename.RequiredColumn;
                     var currentColumn = rename.CurrentColumn;
-                    yield return new OutputableCollection(GetRenameColumnScript(requiredTable.Key, currentColumn.Key, requiredColumn.Key));
+                    yield return GetRenameColumnScript(requiredTable.Key, currentColumn.Key, requiredColumn.Key);
                 }
 
-                yield return new OutputableCollection(GetAlterTableScript(tableDifference));
-            }
 
-            //Recreate depdencies phase
-            foreach (var tableDifference in tableDifferences.Except(processedDifferences))
-            {
-                yield return new OutputableCollection(primaryKeyScriptBuilder.CreateUpgradeScripts(tableDifference.RequiredTable.Key, tableDifference.PrimaryKeyDifference, ScriptingPhase.RecreateDependencies));
-            }
+                yield return new MultiScriptTask(GetAlterTableScript(tableDifference));
 
-            //Recreate phase
-            foreach (var tableDifference in tableDifferences.Except(processedDifferences))
-            {
-                yield return new OutputableCollection(GetChangeTableScripts(tableDifference));
+                if (tableDifference.DescriptionChangedTo != null)
+                {
+                    yield return descriptionScriptBuilder.ChangeTableDescription(
+                        tableDifference.RequiredTable.Key,
+                        tableDifference.CurrentTable.Value.Description,
+                        tableDifference.DescriptionChangedTo.Value);
+                }
             }
         }
 
-        private IEnumerable<IOutputable> GetCreateTableScripts(TableDifference tableDifference)
+        private IScriptTask DropsColumns(SqlScript sqlScript, ObjectName tableName, IEnumerable<ColumnDifference> droppedColumns)
         {
-            var requiredTable = tableDifference.RequiredTable;
-
-            yield return new OutputableCollection(indexScriptBuilder.CreateUpgradeScripts(requiredTable.Key, tableDifference.IndexDifferences.OrEmptyCollection()));
-            yield return new OutputableCollection(defaultConstraintScriptBuilder.CreateUpgradeScripts(tableDifference));
-            yield return new OutputableCollection(checkConstraintScriptBuilder.CreateUpgradeScripts(tableDifference));
-            yield return new OutputableCollection(primaryKeyScriptBuilder.CreateUpgradeScripts(requiredTable.Key, tableDifference.PrimaryKeyDifference, ScriptingPhase.Recreate));
-            yield return new OutputableCollection(foreignKeyScriptBuilder.CreateUpgradeScripts(requiredTable.Key, tableDifference.ForeignKeyDifferences, ScriptingPhase.Recreate));
-            yield return new OutputableCollection(permissionScriptBuilder.CreateTablePermissionScripts(
-                requiredTable.Key,
-                PermissionDifferences.From(requiredTable.Value.Permissions)));
+            return droppedColumns.Select(col => col.CurrentColumn.Key).Aggregate(
+                sqlScript.AsTask(),
+                (task, droppedColumnName) => task.ResultingIn(new ScriptTaskDependency(DependencyAction.Drop, tableName.Component(droppedColumnName))));
         }
 
-        private IEnumerable<IOutputable> GetChangeTableScripts(TableDifference tableDifference)
-        {
-            var requiredTable = tableDifference.RequiredTable;
-
-            yield return new OutputableCollection(indexScriptBuilder.CreateUpgradeScripts(requiredTable.Key, tableDifference.IndexDifferences.OrEmptyCollection()));
-            yield return new OutputableCollection(defaultConstraintScriptBuilder.CreateUpgradeScripts(tableDifference)); 
-            yield return new OutputableCollection(checkConstraintScriptBuilder.CreateUpgradeScripts(tableDifference)); 
-            yield return new OutputableCollection(primaryKeyScriptBuilder.CreateUpgradeScripts(requiredTable.Key, tableDifference.PrimaryKeyDifference, ScriptingPhase.Recreate)); 
-            yield return new OutputableCollection(foreignKeyScriptBuilder.CreateUpgradeScripts(requiredTable.Key, tableDifference.ForeignKeyDifferences, ScriptingPhase.Recreate)); 
-
-            if (tableDifference.DescriptionChangedTo != null)
-            {
-                yield return descriptionScriptBuilder.ChangeTableDescription(
-                    tableDifference.RequiredTable.Key,
-                    tableDifference.CurrentTable.Value.Description,
-                    tableDifference.DescriptionChangedTo.Value);
-            }
-
-            yield return new OutputableCollection(permissionScriptBuilder.CreateTablePermissionScripts(
-                requiredTable.Key,
-                tableDifference.PermissionDifferences)); 
-        }
-
-        private SqlScript GetDropTableScript(ObjectName table)
+        private IScriptTask GetDropTableScript(ObjectName table)
         {
             return new SqlScript(@$"
 DROP TABLE {table.SqlSafeName()}
-GO");
+GO").Drops().Table(table)
+.Requiring().CheckConstraintOn(table.Components()).ToBeDropped();
         }
 
-        private IEnumerable<IOutputable> GetAlterTableScript(TableDifference tableDifference)
+        private IEnumerable<IScriptTask> GetAlterTableScript(TableDifference tableDifference)
         {
             var requiredTableName = tableDifference.RequiredTable.Key;
             var columnDifferences = tableDifference.ColumnDifferences;
 
             foreach (var add in columnDifferences.Where(diff => diff.ColumnAdded || RequiresDropAndReAdd(diff)))
             {
-                yield return new OutputableCollection(GetAddColumnScript(requiredTableName, add.RequiredColumn.Key, add.RequiredColumn.Value));
+                yield return GetAddColumnScript(requiredTableName, add.RequiredColumn.Key, add.RequiredColumn.Value);
 
                 if (add.DescriptionChangedTo != null)
                 {
@@ -188,7 +135,7 @@ GO");
                         add.DescriptionChangedTo.Value);
                 }
 
-                yield return new OutputableCollection(permissionScriptBuilder.CreateColumnPermissionScripts(
+                yield return new MultiScriptTask(permissionScriptBuilder.CreateColumnPermissionScripts(
                     requiredTableName,
                     add.RequiredColumn.Key,
                     PermissionDifferences.From(add.RequiredColumn.Value.Permissions)));
@@ -197,8 +144,17 @@ GO");
             var alterations = columnDifferences.Where(IsAlteration);
             foreach (var alteration in alterations)
             {
-                yield return new OutputableCollection(GetAlterColumnScript(requiredTableName, alteration));
+                yield return new MultiScriptTask(GetAlterColumnScript(requiredTableName, alteration));
             }
+
+            yield return new MultiScriptTask(indexScriptBuilder.CreateUpgradeScripts(requiredTableName, tableDifference.IndexDifferences.OrEmptyCollection()));
+            yield return new MultiScriptTask(defaultConstraintScriptBuilder.CreateUpgradeScripts(tableDifference));
+            yield return new MultiScriptTask(checkConstraintScriptBuilder.CreateUpgradeScripts(tableDifference));
+            yield return new MultiScriptTask(primaryKeyScriptBuilder.CreateUpgradeScripts(requiredTableName, tableDifference.PrimaryKeyDifference));
+            yield return new MultiScriptTask(foreignKeyScriptBuilder.CreateUpgradeScripts(requiredTableName, tableDifference.ForeignKeyDifferences));
+            yield return new MultiScriptTask(permissionScriptBuilder.CreateTablePermissionScripts(
+                requiredTableName,
+                tableDifference.PermissionDifferences));
         }
 
         private bool RequiresDropAndReAdd(ColumnDifference difference)
@@ -215,7 +171,7 @@ GO");
                 && !RequiresDropAndReAdd(difference);
         }
 
-        private IEnumerable<IOutputable> GetAlterColumnScript(
+        private IEnumerable<IScriptTask> GetAlterColumnScript(
             ObjectName tableName, 
             ColumnDifference columnDifference)
         {
@@ -226,10 +182,11 @@ GO");
             {
                 yield return new SqlScript($@"ALTER TABLE {tableName.SqlSafeName()}
 ALTER COLUMN {ColumnClause(columnName, column, columnDifference.CollationChangedTo)}
-GO");
+GO").CreatesOrAlters().Columns(tableName.Component(columnName))
+.Requiring().CheckConstraintOn(tableName.Component(columnName)).ToBeDropped();
             }
 
-            yield return new OutputableCollection(defaultConstraintScriptBuilder.CreateUpgradeScripts(tableName, columnDifference));
+            yield return new MultiScriptTask(defaultConstraintScriptBuilder.CreateUpgradeScripts(tableName, columnDifference));
 
             if (columnDifference.DescriptionChangedTo != null)
             {
@@ -240,27 +197,30 @@ GO");
                     columnDifference.DescriptionChangedTo.Value);
             }
 
-            yield return new OutputableCollection(permissionScriptBuilder.CreateColumnPermissionScripts(
+            yield return new MultiScriptTask(permissionScriptBuilder.CreateColumnPermissionScripts(
                 tableName,
                 columnName,
                 columnDifference.PermissionDifferences));
         }
 
-        private SqlScript GetRenameColumnScript(
+        private IScriptTask GetRenameColumnScript(
             ObjectName tableName,
             string currentColumnName,
             string requiredColumnName)
         {
-            //TODO: If there are anly check constraints bound to this column, drop it first.
-
             return new SqlScript(@$"EXEC sp_rename
     @objname = '{tableName.Schema}.{tableName.Name}.{currentColumnName}',
     @newname = '{requiredColumnName}',
     @objtype = 'COLUMN'
-GO");
+GO").CreatesOrAlters().Columns(tableName.Component(requiredColumnName))
+.Drops().Columns(tableName.Component(currentColumnName))
+.Requiring().CheckConstraintOn(tableName.Component(currentColumnName)).ToBeDropped()
+.Requiring().ForeignKeyOn(tableName.Component(currentColumnName)).ToBeDropped()
+.Requiring().ForeignKeyReferencing(tableName).ToBeDropped()
+.Requiring().PrimaryKeyOn(tableName).ToBeDropped();
         }
 
-        private IEnumerable<IOutputable> GetRenameTableScript(ObjectName current, ObjectName required)
+        private IEnumerable<IScriptTask> GetRenameTableScript(ObjectName current, ObjectName required)
         {
             if (current.Name != required.Name)
             {
@@ -270,17 +230,17 @@ GO");
     @objname = '{required.Schema}.{current.Name}', 
     @newname = '{required.Name}', 
     @objtype = 'OBJECT'
-GO");
+GO").CreatesOrAlters().Table(required);
             }
         }
 
-        private IEnumerable<IOutputable> GetCreateTableScript(TableDetails requiredTable, ObjectName tableName)
+        private IEnumerable<IScriptTask> GetCreateTableScripts(TableDetails requiredTable, ObjectName tableName, TableDifference tableDifference)
         {
             var columns = requiredTable.Columns.Select(pair => ColumnClause(pair.Key, pair.Value));
             yield return new SqlScript($@"CREATE TABLE {tableName.SqlSafeName()} (
 {string.Join("," + Environment.NewLine, columns)}
 )
-GO");
+GO").CreatesOrAlters().Table(tableName);
 
             if (requiredTable.Description != null)
             {
@@ -303,19 +263,36 @@ GO");
 
                 if (column.Value.Permissions != null)
                 {
-                    yield return new OutputableCollection(permissionScriptBuilder.CreateColumnPermissionScripts(
+                    yield return new MultiScriptTask(permissionScriptBuilder.CreateColumnPermissionScripts(
                         tableName,
                         column.Key,
                         PermissionDifferences.From(column.Value.Permissions)));
                 }
             }
+
+            yield return new MultiScriptTask(indexScriptBuilder.CreateUpgradeScripts(tableName, tableDifference.IndexDifferences.OrEmptyCollection()));
+            yield return new MultiScriptTask(defaultConstraintScriptBuilder.CreateUpgradeScripts(tableDifference));
+            yield return new MultiScriptTask(checkConstraintScriptBuilder.CreateUpgradeScripts(tableDifference));
+            yield return new MultiScriptTask(primaryKeyScriptBuilder.CreateUpgradeScripts(tableName, tableDifference.PrimaryKeyDifference));
+            yield return new MultiScriptTask(foreignKeyScriptBuilder.CreateUpgradeScripts(tableName, tableDifference.ForeignKeyDifferences));
+            yield return new MultiScriptTask(permissionScriptBuilder.CreateTablePermissionScripts(
+                tableName,
+                PermissionDifferences.From(requiredTable.Permissions)));
+
+            if (tableDifference.DescriptionChangedTo != null)
+            {
+                yield return descriptionScriptBuilder.ChangeTableDescription(
+                    tableName,
+                    tableDifference.CurrentTable.Value.Description,
+                    tableDifference.DescriptionChangedTo.Value);
+            }
         }
 
-        private SqlScript GetAddColumnScript(ObjectName tableName, string columnName, ColumnDetails column)
+        private IScriptTask GetAddColumnScript(ObjectName tableName, string columnName, ColumnDetails column)
         {
             return new SqlScript($@"ALTER TABLE {tableName.SqlSafeName()}
 ADD {ColumnClause(columnName, column)}
-GO");
+GO").CreatesOrAlters().Columns(tableName.Component(columnName));
         }
 
         private string ColumnClause(string columnName, ColumnDetails column, string collationOverride = null)
