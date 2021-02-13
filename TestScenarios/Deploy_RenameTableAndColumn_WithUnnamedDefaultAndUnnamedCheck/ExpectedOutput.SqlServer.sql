@@ -4,7 +4,7 @@ EXEC sp_rename
     @objtype = 'OBJECT'
 GO
 ALTER TABLE [dbo].[People]
-DROP CONSTRAINT [CK__Person__Name__35BCFE0A]
+DROP CONSTRAINT [CK__Person__Name__/[A-F0-9]{8}/]
 GO
 EXEC sp_rename 
     @objname = 'dbo.People.Name', 
@@ -12,8 +12,8 @@ EXEC sp_rename
     @objtype = 'COLUMN'
 GO
 EXEC sp_rename 
-    @objname = '[dbo].[DF__Person__Name__36B12243]', 
-    @newname = '[DF__People__FullName__36B12243]', 
+    @objname = '[dbo].[DF__Person__Name__/[A-F0-9]{8}/]', 
+    @newname = '[DF__People__FullName__/[A-F0-9]{8}/]', 
     @objtype = 'OBJECT'
 GO
 ALTER TABLE [dbo].[People]

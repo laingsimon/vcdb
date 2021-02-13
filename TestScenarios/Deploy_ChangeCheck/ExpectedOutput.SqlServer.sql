@@ -27,5 +27,5 @@ ADD CONSTRAINT [CK_Person_ValidName]
 CHECK (LEN([Name])>5)
 GO
 ALTER TABLE [dbo].[Person]
-DROP CONSTRAINT [CK__Person__Age__35BCFE0A]
+DROP CONSTRAINT [CK__Person__Age__/[A-F0-9]{8}/]
 GO

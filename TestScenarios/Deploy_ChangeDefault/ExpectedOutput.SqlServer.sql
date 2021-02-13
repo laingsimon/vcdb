@@ -7,7 +7,7 @@ DEFAULT ('Jane Doe')
 FOR [Name]
 GO
 ALTER TABLE [dbo].[Person]
-DROP CONSTRAINT [DF__Person__Age__35BCFE0A]
+DROP CONSTRAINT [DF__Person__Age__/[A-F0-9]{8}/]
 GO
 ALTER TABLE [dbo].[Person]
 ADD CONSTRAINT [DF__Person__Age]

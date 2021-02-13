@@ -18,7 +18,9 @@ namespace vcdb.IntegrationTests
 
         private readonly Framework.IExecutor processExecutor = ExecutorFactory.GetExecutor();
 
+#if DEBUG
         [TestCaseSource(nameof(ScenarioNames))]
+#endif
         public async Task ExecuteSqlServerScenarios(string scenarioName)
         {
             var result = await processExecutor.ExecuteProcess("SqlServer", scenarioName);
@@ -28,7 +30,6 @@ namespace vcdb.IntegrationTests
             Assert.That(result.ExitCode, Is.EqualTo(0), $"{string.Join("\r\n", result.StdOut)}\r\n{string.Join("\r\n", result.StdErr)}\r\nProcess exited with non-success code");
         }
 
-        [Explicit]
         [TestCase("SqlServer")]
         public async Task ExecuteAllAtOnce(string productName)
         {

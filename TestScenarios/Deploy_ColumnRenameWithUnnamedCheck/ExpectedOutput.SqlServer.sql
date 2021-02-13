@@ -1,5 +1,5 @@
 ALTER TABLE [dbo].[Person]
-DROP CONSTRAINT [CK__Person__Name__35BCFE0A]
+DROP CONSTRAINT [CK__Person__Name__/[A-F0-9]{8}/]
 GO
 EXEC sp_rename 
     @objname = 'dbo.Person.Name', 

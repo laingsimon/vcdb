@@ -13,7 +13,7 @@ namespace vcdb.IntegrationTests.Framework
             if (!Directory.Exists(workingDirectory))
                 throw new DirectoryNotFoundException($"WorkingDirectory could not be found: {workingDirectory}");
 
-            var executable = Path.GetFullPath(Path.Combine(workingDirectory, "..\\TestFramework\\bin\\Debug\\netcoreapp3.1\\TestFramework.dll"));
+            var executable = Path.GetFullPath(Path.Combine(workingDirectory, $"..\\TestFramework\\bin\\{BuildConfiguration.Current}\\netcoreapp3.1\\TestFramework.dll"));
             if (!File.Exists(executable))
                 throw new FileNotFoundException($"Executable could not be found: {executable}", executable);
 

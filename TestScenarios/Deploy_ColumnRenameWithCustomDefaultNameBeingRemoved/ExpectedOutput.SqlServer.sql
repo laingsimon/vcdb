@@ -5,6 +5,6 @@ EXEC sp_rename
 GO
 EXEC sp_rename 
     @objname = '[dbo].[DF_PersonActiveByDefault]', 
-    @newname = '[DF__Person__IsDeleted__35BCFE0A]', 
+    @newname = '[DF__Person__IsDeleted__/[A-F0-9]{8}/]', 
     @objtype = 'OBJECT'
 GO

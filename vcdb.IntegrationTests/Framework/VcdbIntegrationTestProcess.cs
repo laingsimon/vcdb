@@ -67,7 +67,7 @@ namespace vcdb.IntegrationTests.Framework
             var options = new CommandLine.Options
             {
                 WorkingDirectory = scenario.FullName,
-                AssemblySearchPaths = new[] { Path.GetFullPath(Path.Combine(typeof(VcdbIntegrationTestProcess).Assembly.Location, @"..\..\..\..\..\vcdb\bin\Debug\netcoreapp3.1")) }
+                AssemblySearchPaths = new[] { Path.GetFullPath(Path.Combine(typeof(VcdbIntegrationTestProcess).Assembly.Location, $@"..\..\..\..\..\vcdb\bin\{BuildConfiguration.Current}\netcoreapp3.1")) }
             };
 
             var result = new Parser(settings =>

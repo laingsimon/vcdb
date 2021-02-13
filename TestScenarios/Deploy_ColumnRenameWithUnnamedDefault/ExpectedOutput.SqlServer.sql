@@ -4,7 +4,7 @@ EXEC sp_rename
     @objtype = 'COLUMN'
 GO
 EXEC sp_rename
-    @objname = '[dbo].[DF__Person__Name__35BCFE0A]',
-    @newname = '[DF__Person__FullName__35BCFE0A]',
+    @objname = '[dbo].[DF__Person__Name__/[A-F0-9]{8}/]',
+    @newname = '[DF__Person__FullName__/[A-F0-9]{8}/]',
     @objtype = 'OBJECT'
 GO

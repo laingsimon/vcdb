@@ -49,11 +49,9 @@ namespace vcdb
         {
             using (var connection = await connectionFactory.CreateConnection())
             {
-                logger.LogInformation($"Reading database objects...");
                 var database = await databaseRepository.GetDatabaseDetails(connection);
                 var outputtable = await GetOutput(database);
 
-                logger.LogInformation($"Writing output...");
                 await outputtable.WriteToOutput(output);
             }
         }
