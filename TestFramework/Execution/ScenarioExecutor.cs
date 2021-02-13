@@ -219,7 +219,7 @@ namespace TestFramework.Execution
 
         private async Task InitialiseDatabase(DirectoryInfo scenario)
         {
-            await sql.ExecuteBatchedSql(new StringReader(productName.InitialiseDatabase(scenario)));
+            await Retry(async () => await sql.ExecuteBatchedSql(new StringReader(productName.InitialiseDatabase(scenario))));
 
             var databaseInitialisationFile = scenario.GetFiles($"Database.{productName.Name}.sql").SingleOrDefault();
             if (databaseInitialisationFile != null)
@@ -233,20 +233,32 @@ namespace TestFramework.Execution
             if (options.KeepDatabases)
                 return;
 
-            for (var count = 0; count < 3; count++)
+            await Retry(async () => await productName.DropDatabase(scenario, sql));
+        }
+
+        private async Task Retry(Func<Task> action, int times = 3)
+        {
+            Exception lastException = null;
+            for (var count = 0; count < times; count++)
             {
                 try
                 {
-                    await productName.DropDatabase(scenario, sql);
+                    await action();
 
                     return;
                 }
                 catch (Exception exc)
                 {
+                    lastException = exc;
                     log.LogDebug(exc.Message);
 
                     await Task.Delay(TimeSpan.FromSeconds(0.5));
                 }
+            }
+
+            if (lastException != null)
+            {
+                throw lastException;
             }
         }
     }
