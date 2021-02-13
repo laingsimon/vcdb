@@ -11,7 +11,11 @@ namespace vcdb.IntegrationTests
     [TestFixture]
     public class TestScenarios
     {
-        internal const string ConnectionString = "server=localhost;user id=sa;password=vcdb_2020";
+        private const string DockerSqlServerConnectionString = "server=localhost;user id=sa;password=vcdb_2020";
+
+        internal static string ConnectionString { get; set; } = EnvironmentVariable.Get<string>("Vcdb_ConnectionString") ?? DockerSqlServerConnectionString;
+        internal static bool UseLocalDatabase { get; set; } = EnvironmentVariable.Get<bool?>("Vcdb_UseLocalDatabase") ?? false;
+
         private readonly Framework.IExecutor processExecutor = ExecutorFactory.GetExecutor();
 
         [TestCaseSource(nameof(ScenarioNames))]

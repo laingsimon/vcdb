@@ -42,7 +42,7 @@ namespace TestFramework
             {
                 var serviceCollection = new ServiceCollection();
                 serviceCollection.AddSingleton(o);
-                ConfigureServices(serviceCollection);
+                ConfigureServices(serviceCollection, o.UseLocalDatabase);
                 modifyServices?.Invoke(serviceCollection);
 
                 using (var serviceProvider = serviceCollection.BuildServiceProvider())
@@ -70,7 +70,7 @@ namespace TestFramework
             }
         }
 
-        private static void ConfigureServices(ServiceCollection services)
+        private static void ConfigureServices(ServiceCollection services, bool useLocalDatabase)
         {
             services.AddSingleton<ITestFramework, Execution.TestFramework>();
             services.AddSingleton<ISql, Sql>();
@@ -80,7 +80,11 @@ namespace TestFramework
             services.AddSingleton<ExecutionContext>();
             services.AddSingleton<IJsonEqualityComparer, Comparer>();
             services.AddSingleton<IInlineDiffBuilder>(InlineDiffBuilder.Instance);
-            services.AddSingleton<IDocker, Docker>();
+            services.AddSingleton(
+                typeof(IDocker),
+                useLocalDatabase
+                    ? typeof(NullDocker)
+                    : typeof(Docker));
             services.AddSingleton<ILogger, ConsoleLogger>();
             services.AddSingleton<ITaskGate, TaskGate>();
             services.AddSingleton<IVcdbProcess, VcdbProcess>();

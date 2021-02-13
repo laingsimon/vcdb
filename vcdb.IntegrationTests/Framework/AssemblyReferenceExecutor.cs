@@ -21,7 +21,8 @@ namespace vcdb.IntegrationTests.Framework
                 MaxConcurrency = 10,
                 Porcelain = true,
                 ScenariosPath = Path.GetFullPath("..\\..\\..\\..\\TestScenarios"),
-                MinLogLevel = LogLevel.Information
+                MinLogLevel = LogLevel.Information,
+                UseLocalDatabase = TestScenarios.UseLocalDatabase
             };
             var result = new ExecutorResult();
 

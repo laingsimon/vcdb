@@ -38,5 +38,8 @@ namespace TestFramework.Input
 
         [Option("timeout", HelpText = "The maximum amount of time (in seconds) the vcdb process can execute for")]
         public int ProcessTimeout { get; set; } = 60;
+
+        [Option("useLocalDatabase", HelpText = "Use a custom database server, rather than one running in a docker container")]
+        public bool UseLocalDatabase { get; set; }
     }
 }
