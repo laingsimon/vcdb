@@ -1,5 +1,4 @@
 ﻿using CommandLine;
-using System;
 using TestFramework.Output;
 
 namespace TestFramework.Input
@@ -41,5 +40,8 @@ namespace TestFramework.Input
 
         [Option("useLocalDatabase", HelpText = "Use a custom database server, rather than one running in a docker container")]
         public bool UseLocalDatabase { get; set; }
+
+        [Option('t', "productName", HelpText = "The type of database to connect to, e.g. SqlServer")]
+        public string ProductName { get; set; } = "SqlServer";
     }
 }

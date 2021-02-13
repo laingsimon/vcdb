@@ -42,7 +42,7 @@ namespace TestFramework
             {
                 var serviceCollection = new ServiceCollection();
                 serviceCollection.AddSingleton(o);
-                ConfigureServices(serviceCollection, o.UseLocalDatabase);
+                ConfigureServices(serviceCollection, o.UseLocalDatabase, o.ProductName);
                 modifyServices?.Invoke(serviceCollection);
 
                 using (var serviceProvider = serviceCollection.BuildServiceProvider())
@@ -51,10 +51,13 @@ namespace TestFramework
 
                     try
                     {
-                        await executor.Execute();
+                        var scenarios = await executor.Execute();
 
                         var context = serviceProvider.GetRequiredService<ExecutionContext>();
-                        setExitCode(context.Fail); //report the number of failures in the exit code
+
+                        setExitCode(scenarios == 0 
+                            ? -3 
+                            : context.Fail); //report the number of failures in the exit code
                     }
                     catch (Exception exc)
                     {
@@ -70,8 +73,9 @@ namespace TestFramework
             }
         }
 
-        private static void ConfigureServices(ServiceCollection services, bool useLocalDatabase)
+        private static void ConfigureServices(ServiceCollection services, bool useLocalDatabase, string productName)
         {
+            services.AddSingleton(ProductNames.Lookup[productName]);
             services.AddSingleton<ITestFramework, Execution.TestFramework>();
             services.AddSingleton<ISql, Sql>();
             services.AddScoped<IJson, Json>();

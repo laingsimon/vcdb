@@ -4,6 +4,6 @@ namespace TestFramework.Execution
 {
     internal interface ITestFramework
     {
-        Task Execute();
+        Task<int> Execute();
     }
 }

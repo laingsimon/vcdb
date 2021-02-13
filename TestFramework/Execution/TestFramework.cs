@@ -18,6 +18,7 @@ namespace TestFramework.Execution
         private readonly ExecutionContext executionContext;
         private readonly IDocker docker;
         private readonly ITaskGate taskGate;
+        private readonly ProductName productName;
         private readonly IServiceProvider serviceProvider;
 
         public TestFramework(
@@ -27,7 +28,8 @@ namespace TestFramework.Execution
             ISql sql,
             ExecutionContext executionContext,
             IDocker docker,
-            ITaskGate taskGate)
+            ITaskGate taskGate,
+            ProductName productName)
         {
             this.options = options;
             this.logger = logger;
@@ -36,14 +38,15 @@ namespace TestFramework.Execution
             this.executionContext = executionContext;
             this.docker = docker;
             this.taskGate = taskGate;
+            this.productName = productName;
         }
 
-        public async Task Execute()
+        public async Task<int> Execute()
         {
             if (!docker.IsInstalled())
             {
                 logger.LogError("Docker is not installed");
-                return;
+                return -1;
             }
 
             if (!await docker.IsDockerHostRunning())
@@ -55,7 +58,7 @@ namespace TestFramework.Execution
                 ? new DirectoryInfo(Directory.GetCurrentDirectory())
                 : new DirectoryInfo(options.ScenariosPath);
 
-            if (!await docker.IsContainerRunning("testframework_sqlserver_1"))
+            if (!await docker.IsContainerRunning($"testframework_{productName.Name.ToLower()}_1"))
             {
                 var frameworkDirectory = Path.GetFullPath(Path.Combine(scenariosDirectory.FullName, "..\\TestFramework"));
                 await docker.StartDockerCompose(frameworkDirectory);
@@ -66,13 +69,14 @@ namespace TestFramework.Execution
             if (!scenariosDirectory.Exists)
             {
                 logger.LogError($"Scenarios directory not found: {scenariosDirectory.FullName}");
-                return;
+                return -2;
             }
 
             var scenarios = scenariosDirectory
                 .EnumerateDirectories()
                 .Where(DirectoryNotExcluded)
                 .Where(DirectoryIncluded)
+                .Where(directory => directory.GetFiles($"ExpectedOutput.{productName.Name}.sql").Any() || directory.GetFiles($"ExpectedOutput.json").Any())
                 .ToArray();
 
             logger.LogInformation($"Executing {scenarios.Length} scenario/s...");
@@ -81,6 +85,7 @@ namespace TestFramework.Execution
             await Task.WhenAll(tasks);
 
             executionContext.Finished();
+            return scenarios.Length;
         }
 
         private async Task ExecuteScenario(DirectoryInfo scenarioDirectory)

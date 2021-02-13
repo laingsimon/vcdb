@@ -49,6 +49,12 @@ namespace TestFramework.Execution
         public void Finished()
         {
             var total = (double)Pass + Fail;
+            if (total == 0)
+            {
+                log.LogError($"Finished: No scenarios found.");
+                return;
+            }
+
             var passPercentage = Pass / total * 100;
             if (Console.IsOutputRedirected || options.Porcelain)
             {

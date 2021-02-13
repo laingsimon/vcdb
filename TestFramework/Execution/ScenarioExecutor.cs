@@ -24,6 +24,7 @@ namespace TestFramework.Execution
         private readonly IScriptDiffer differ;
         private readonly IVcdbProcess vcdbProcess;
         private readonly IDifferenceFilter differenceFilter;
+        private readonly ProductName productName;
 
         public ScenarioExecutor(
             ILogger log,
@@ -34,7 +35,8 @@ namespace TestFramework.Execution
             Options options,
             IScriptDiffer differ,
             IVcdbProcess vcdbProcess,
-            IDifferenceFilter differenceFilter)
+            IDifferenceFilter differenceFilter,
+            ProductName productName)
         {
             this.log = log;
             this.sql = sql;
@@ -45,6 +47,7 @@ namespace TestFramework.Execution
             this.differ = differ;
             this.vcdbProcess = vcdbProcess;
             this.differenceFilter = differenceFilter;
+            this.productName = productName;
         }
 
         public async Task<ExecutionResultStatus> Execute(DirectoryInfo scenario)
@@ -83,7 +86,7 @@ namespace TestFramework.Execution
             else
             {
                 var executionResult = await CompareSqlScriptResult(result, scenario);
-                var actualOutputFilePath = Path.Combine(scenario.FullName, "ActualOutput.sql");
+                var actualOutputFilePath = Path.Combine(scenario.FullName, $"ActualOutput.{productName.Name}.sql");
 
                 if (executionResult == ExecutionResultStatus.Pass)
                 {
@@ -143,7 +146,7 @@ namespace TestFramework.Execution
 
         private async Task<ExecutionResultStatus> CompareSqlScriptResult(ExecutionResult result, DirectoryInfo scenario)
         {
-            using (var expectedReader = new StreamReader(Path.Combine(scenario.FullName, "ExpectedOutput.sql")))
+            using (var expectedReader = new StreamReader(Path.Combine(scenario.FullName, $"ExpectedOutput.{productName.Name}.sql")))
             {
                 var differences = differ.CompareScripts(await expectedReader.ReadToEndAsync(), result.Output);
                 var filteredDifferences = differenceFilter.FilterDifferences(differences).ToArray();
@@ -156,7 +159,7 @@ namespace TestFramework.Execution
                     executionContext.ScenarioComplete(
                         scenario,
                         executionResult,
-                        filteredDifferences.SelectMany(difference => difference.GetLineDifferences()));
+                        filteredDifferences.SelectMany(difference => difference.GetLineDifferences(productName.Name)));
                 }
 
                 return executionResult;
@@ -216,13 +219,9 @@ namespace TestFramework.Execution
 
         private async Task InitialiseDatabase(DirectoryInfo scenario)
         {
-            await sql.ExecuteBatchedSql(new StringReader($@"
-DROP DATABASE IF EXISTS [{scenario.Name}]
-GO
+            await sql.ExecuteBatchedSql(new StringReader(productName.InitialiseDatabase(scenario)));
 
-CREATE DATABASE [{scenario.Name}]"));
-
-            var databaseInitialisationFile = scenario.GetFiles("Database.sql").SingleOrDefault();
+            var databaseInitialisationFile = scenario.GetFiles($"Database.{productName.Name}.sql").SingleOrDefault();
             if (databaseInitialisationFile != null)
             {
                 await sql.ExecuteBatchedSql(databaseInitialisationFile.OpenText(), scenario.Name);
@@ -238,9 +237,7 @@ CREATE DATABASE [{scenario.Name}]"));
             {
                 try
                 {
-                    await sql.ExecuteBatchedSql(new StringReader($@"
-DROP DATABASE IF EXISTS [{scenario.Name}]
-GO"), "master");
+                    await productName.DropDatabase(scenario, sql);
 
                     return;
                 }

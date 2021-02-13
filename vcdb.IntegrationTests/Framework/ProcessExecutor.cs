@@ -7,7 +7,7 @@ namespace vcdb.IntegrationTests.Framework
 {
     internal class ProcessExecutor : IExecutor
     {
-        public async Task<ExecutorResult> ExecuteProcess(string scenarioName = null)
+        public async Task<ExecutorResult> ExecuteProcess(string productName, string scenarioName = null)
         {
             var workingDirectory = Path.GetFullPath("..\\..\\..\\..\\TestScenarios");
             if (!Directory.Exists(workingDirectory))
@@ -26,7 +26,7 @@ namespace vcdb.IntegrationTests.Framework
                 StartInfo =
                 {
                     FileName = Environment.GetEnvironmentVariable("comspec"),
-                    Arguments = $"/c \"dotnet \"{executable}\" --connectionString \"{TestScenarios.ConnectionString}\" {commandLineArguments} \"",
+                    Arguments = $"/c \"dotnet \"{executable}\" -- productName {productName} --connectionString \"{TestScenarios.ConnectionString}\" {commandLineArguments} \"",
                     WorkingDirectory = workingDirectory,
                     RedirectStandardOutput = true,
                     RedirectStandardError = true

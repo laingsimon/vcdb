@@ -19,9 +19,9 @@ namespace vcdb.IntegrationTests
         private readonly Framework.IExecutor processExecutor = ExecutorFactory.GetExecutor();
 
         [TestCaseSource(nameof(ScenarioNames))]
-        public async Task ExecuteScenarios(string scenarioName)
+        public async Task ExecuteSqlServerScenarios(string scenarioName)
         {
-            var result = await processExecutor.ExecuteProcess(scenarioName);
+            var result = await processExecutor.ExecuteProcess("SqlServer", scenarioName);
 
             result.WriteStdOutTo(Console.Out);
             result.WriteStdErrTo(Console.Error);
@@ -29,10 +29,10 @@ namespace vcdb.IntegrationTests
         }
 
         [Explicit]
-        [Test]
-        public async Task ExecuteAllAtOnce()
+        [TestCase("SqlServer")]
+        public async Task ExecuteAllAtOnce(string productName)
         {
-            var result = await processExecutor.ExecuteProcess();
+            var result = await processExecutor.ExecuteProcess(productName);
 
             result.WriteStdOutTo(Console.Out);
             result.WriteStdErrTo(Console.Error);

@@ -9,12 +9,12 @@ namespace TestFramework.Comparison
         public IReadOnlyCollection<Line> Expected { get; set; }
         public IReadOnlyCollection<Line> Actual { get; set; }
 
-        public IEnumerable<string> GetLineDifferences()
+        public IEnumerable<string> GetLineDifferences(string productName)
         {
             var startingLine = Expected.FirstOrDefault()?.LineNumber ?? Actual.FirstOrDefault()?.LineNumber;
             var endingLine = Expected.LastOrDefault()?.LineNumber ?? Actual.LastOrDefault()?.LineNumber;
 
-            yield return $@"Lines {startingLine}..{endingLine} (vcdb output vs ExpectedOutput.json)";
+            yield return $@"Lines {startingLine}..{endingLine} (vcdb output vs ExpectedOutput.{productName}.sql)";
 
             foreach (var contextLine in Before.TakeLast(3))
             {

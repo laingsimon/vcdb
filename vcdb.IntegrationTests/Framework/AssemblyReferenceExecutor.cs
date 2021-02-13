@@ -10,7 +10,7 @@ namespace vcdb.IntegrationTests.Framework
 {
     internal class AssemblyReferenceExecutor : IExecutor
     {
-        public async Task<ExecutorResult> ExecuteProcess(string scenarioName = null)
+        public async Task<ExecutorResult> ExecuteProcess(string productName, string scenarioName = null)
         {
             var options = new Options
             {
@@ -22,7 +22,8 @@ namespace vcdb.IntegrationTests.Framework
                 Porcelain = true,
                 ScenariosPath = Path.GetFullPath("..\\..\\..\\..\\TestScenarios"),
                 MinLogLevel = LogLevel.Information,
-                UseLocalDatabase = TestScenarios.UseLocalDatabase
+                UseLocalDatabase = TestScenarios.UseLocalDatabase,
+                ProductName = productName
             };
             var result = new ExecutorResult();
 
