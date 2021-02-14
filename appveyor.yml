@@ -27,3 +27,6 @@ before_build:
 build:
   project: vcdb.sln
   verbosity: minimal
+on_failure:
+- cmd: 7z a TestResults-%APPVEYOR_BUILD_VERSION%.zip %APPVEYOR_BUILD_FOLDER%\TestScenarios\**\*.*
+- cmd: appveyor PushArtifact TestResults-%APPVEYOR_BUILD_VERSION%.zip
