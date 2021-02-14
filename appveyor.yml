@@ -18,7 +18,9 @@ environment:
   Vcdb_ConnectionString: server=(local)\SQL2017;User ID=sa;Password=Password12!
   Vcdb_UseLocalDatabase: true
   Vcdb_IncludeProcessOutputInFailureMessage: false
-services: mssql2017
+services: 
+- mssql2017
+- mysql
 nuget:
   disable_publish_on_pr: true
   disable_publish_octopus: true
