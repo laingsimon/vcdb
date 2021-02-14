@@ -1,6 +1,6 @@
 ﻿namespace vcdb.IntegrationTests
 {
-    public static class BuildConfiguration
+    internal static class BuildConfiguration
     {
         public static readonly string Current = "Release";
 

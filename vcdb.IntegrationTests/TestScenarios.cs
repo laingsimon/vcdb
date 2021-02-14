@@ -4,7 +4,8 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
-using vcdb.IntegrationTests.Framework;
+using vcdb.IntegrationTests.Execution;
+using vcdb.IntegrationTests.Output;
 
 namespace vcdb.IntegrationTests
 {
@@ -17,14 +18,25 @@ namespace vcdb.IntegrationTests
         internal static bool UseLocalDatabase { get; set; } = EnvironmentVariable.Get<bool?>("Vcdb_UseLocalDatabase") ?? false;
         internal static bool IncludeProcessOutputInFailureMessage { get; set; } = EnvironmentVariable.Get<bool?>("Vcdb_IncludeProcessOutputInFailureMessage") ?? true;
 
-        private readonly Framework.IExecutor processExecutor = ExecutorFactory.GetExecutor();
+        private readonly IntegrationTestExecutor processExecutor = new IntegrationTestExecutor();
 
 #if DEBUG
         [TestCaseSource(nameof(ScenarioNames))]
 #endif
         public async Task ExecuteSqlServerScenarios(string scenarioName)
         {
-            var result = await processExecutor.ExecuteProcess("SqlServer", scenarioName);
+            var options = new IntegrationTestOptions
+            {
+                ConnectionString = ConnectionString,
+                IncludeScenarioFilter = $"^{scenarioName}$",
+                MaxConcurrency = 10,
+                ScenariosPath = Path.GetFullPath("..\\..\\..\\..\\TestScenarios"),
+                MinLogLevel = LogLevel.Information,
+                UseLocalDatabase = UseLocalDatabase,
+                ProductName = "SqlServer"
+            };
+
+            var result = await processExecutor.ExecuteScenarios(options);
 
             result.WriteStdOutTo(Console.Out);
             result.WriteStdErrTo(Console.Error);
@@ -34,7 +46,18 @@ namespace vcdb.IntegrationTests
         [TestCase("SqlServer")]
         public async Task ExecuteAllAtOnce(string productName)
         {
-            var result = await processExecutor.ExecuteProcess(productName);
+            var options = new IntegrationTestOptions
+            {
+                ConnectionString = ConnectionString,
+                IncludeScenarioFilter = null,
+                MaxConcurrency = 10,
+                ScenariosPath = Path.GetFullPath("..\\..\\..\\..\\TestScenarios"),
+                MinLogLevel = LogLevel.Information,
+                UseLocalDatabase = UseLocalDatabase,
+                ProductName = productName
+            };
+
+            var result = await processExecutor.ExecuteScenarios(options);
 
             result.WriteStdOutTo(Console.Out);
             result.WriteStdErrTo(Console.Error);
