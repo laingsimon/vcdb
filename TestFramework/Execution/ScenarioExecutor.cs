@@ -226,6 +226,10 @@ namespace TestFramework.Execution
             {
                 await sql.ExecuteBatchedSql(databaseInitialisationFile.OpenText(), scenario.Name);
             }
+            else
+            {
+                log.LogWarning($"{scenario.Name}: Database.{productName.Name}.sql was not found in the database directory, the database will be empty when the scenario executes");
+            }
         }
 
         private async Task DropDatabase(DirectoryInfo scenario)
