@@ -96,7 +96,7 @@ namespace vcdb.IntegrationTests.Database
                     await connection.OpenAsync();
 
                     var command = connection.CreateCommand();
-                    command.CommandText = "select count(*) from sys.databases";
+                    command.CommandText = "select count(*) from information_schema.tables";
                     command.ExecuteNonQuery();
 
                     return true;
