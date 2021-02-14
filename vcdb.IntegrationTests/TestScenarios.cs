@@ -12,10 +12,6 @@ namespace vcdb.IntegrationTests
     [TestFixture]
     public class TestScenarios
     {
-        private const string DockerSqlServerConnectionString = "server=localhost;user id=sa;password=vcdb_2020";
-
-        internal static string ConnectionString { get; set; } = EnvironmentVariable.Get<string>("Vcdb_ConnectionString") ?? DockerSqlServerConnectionString;
-        internal static bool UseLocalDatabase { get; set; } = EnvironmentVariable.Get<bool?>("Vcdb_UseLocalDatabase") ?? false;
         internal static bool IncludeProcessOutputInFailureMessage { get; set; } = EnvironmentVariable.Get<bool?>("Vcdb_IncludeProcessOutputInFailureMessage") ?? true;
 
         private readonly IntegrationTestExecutor processExecutor = new IntegrationTestExecutor();
@@ -25,16 +21,7 @@ namespace vcdb.IntegrationTests
 #endif
         public async Task ExecuteScenarios(ProductNameScenario scenario)
         {
-            var options = new IntegrationTestOptions
-            {
-                ConnectionString = ConnectionString,
-                IncludeScenarioFilter = $"^{scenario.ScenarioName}$",
-                MaxConcurrency = 10,
-                ScenariosPath = Path.GetFullPath("..\\..\\..\\..\\TestScenarios"),
-                MinLogLevel = LogLevel.Information,
-                UseLocalDatabase = UseLocalDatabase,
-                ProductName = scenario.ProductName
-            };
+            var options = GetOptions(scenario.ProductName, $"^{scenario.ScenarioName}$");
 
             var result = await processExecutor.ExecuteScenarios(options);
 
@@ -46,16 +33,7 @@ namespace vcdb.IntegrationTests
         [TestCaseSource(nameof(ProductNames))]
         public async Task ExecuteAllAtOnce(ProductName productName)
         {
-            var options = new IntegrationTestOptions
-            {
-                ConnectionString = ConnectionString,
-                IncludeScenarioFilter = null,
-                MaxConcurrency = 10,
-                ScenariosPath = Path.GetFullPath("..\\..\\..\\..\\TestScenarios"),
-                MinLogLevel = LogLevel.Information,
-                UseLocalDatabase = UseLocalDatabase,
-                ProductName = productName
-            };
+            var options = GetOptions(productName, null);
 
             var result = await processExecutor.ExecuteScenarios(options);
 
@@ -66,6 +44,20 @@ namespace vcdb.IntegrationTests
                 ? $"{string.Join("\r\n", result.StdOut)}\r\n{string.Join("\r\n", result.StdErr)}\r\n"
                 : "";
             Assert.That(result.ExitCode, Is.EqualTo(0), $"{prefix}\r\nProcess exited with non-success code");
+        }
+
+        private static IntegrationTestOptions GetOptions(ProductName productName, string scenarioFilter)
+        {
+            return new IntegrationTestOptions
+            {
+                ConnectionString = EnvironmentVariable.Get<string>($"Vcdb_{productName}_ConnectionString"),
+                IncludeScenarioFilter = scenarioFilter,
+                MaxConcurrency = 10,
+                ScenariosPath = Path.GetFullPath("..\\..\\..\\..\\TestScenarios"),
+                MinLogLevel = LogLevel.Information,
+                UseLocalDatabase = EnvironmentVariable.Get<bool?>($"Vcdb_{productName}_UseLocalDatabase") ?? EnvironmentVariable.Get<bool?>($"Vcdb_UseLocalDatabase") ?? false,
+                ProductName = productName
+            };
         }
 
         public static IEnumerable<ProductNameScenario> ScenarioNames

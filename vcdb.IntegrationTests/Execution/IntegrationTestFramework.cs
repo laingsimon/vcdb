@@ -40,7 +40,7 @@ namespace vcdb.IntegrationTests.Execution
             this.productName = productName;
         }
 
-        public async Task<int> Execute()
+        public async Task<int> Execute(string connectionString)
         {
             if (!docker.IsInstalled())
             {
@@ -57,10 +57,10 @@ namespace vcdb.IntegrationTests.Execution
                 ? new DirectoryInfo(Directory.GetCurrentDirectory())
                 : new DirectoryInfo(options.ScenariosPath);
 
-            if (!await docker.IsContainerRunning($"testframework_{productName.Name.ToLower()}_1"))
+            if (!await docker.IsContainerRunning($"testframework_{productName.ToString().ToLower()}_1"))
             {
                 var frameworkDirectory = Path.GetFullPath(Path.Combine(scenariosDirectory.FullName, "..\\TestFramework"));
-                await docker.StartDockerCompose(frameworkDirectory);
+                await docker.StartDockerCompose(frameworkDirectory, productName);
             }
 
             await sql.WaitForReady(attempts: 10);
@@ -75,19 +75,19 @@ namespace vcdb.IntegrationTests.Execution
                 .EnumerateDirectories()
                 .Where(DirectoryNotExcluded)
                 .Where(DirectoryIncluded)
-                .Where(directory => directory.GetFiles($"ExpectedOutput.{productName.Name}.sql").Any() || directory.GetFiles($"ExpectedOutput.json").Any())
+                .Where(directory => directory.GetFiles($"ExpectedOutput.{productName}.sql").Any() || directory.GetFiles($"ExpectedOutput.json").Any())
                 .ToArray();
 
             logger.LogInformation($"Executing {scenarios.Length} scenario/s...");
 
-            var tasks = scenarios.Select(scenarioDirectory => ExecuteScenario(scenarioDirectory)).ToArray();
+            var tasks = scenarios.Select(scenarioDirectory => ExecuteScenario(scenarioDirectory, connectionString)).ToArray();
             await Task.WhenAll(tasks);
 
             executionContext.Finished();
             return scenarios.Length;
         }
 
-        private async Task ExecuteScenario(DirectoryInfo scenarioDirectory)
+        private async Task ExecuteScenario(DirectoryInfo scenarioDirectory, string connectionString)
         {
             using (taskGate.StartTask())
             using (var scope = serviceProvider.CreateScope())
@@ -104,7 +104,7 @@ namespace vcdb.IntegrationTests.Execution
 
                 try
                 {
-                    executionResult = await scenarioExecutor.Execute(scenarioDirectory);
+                    executionResult = await scenarioExecutor.Execute(scenarioDirectory, connectionString);
                 }
                 catch (Exception exc)
                 {

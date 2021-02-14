@@ -20,7 +20,7 @@ namespace vcdb.IntegrationTests.Database
             return true;
         }
 
-        public Task<bool> StartDockerCompose(string workingDirectory, CancellationToken cancellationToken = default)
+        public Task<bool> StartDockerCompose(string workingDirectory, ProductName productName, CancellationToken cancellationToken = default)
         {
             return Task.FromResult(true);
         }

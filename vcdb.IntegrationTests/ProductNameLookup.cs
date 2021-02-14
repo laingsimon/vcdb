@@ -9,7 +9,7 @@ namespace vcdb.IntegrationTests
     {
         public static readonly HashSet<ProductName> Lookup = new HashSet<ProductName>
         {
-            new ProductName("SqlServer", InitialiseDatabase.SqlServer, DropDatabase.SqlServer)
+            new ProductName("SqlServer", InitialiseDatabase.SqlServer, DropDatabase.SqlServer, DockerConnectionStrings.SqlServer)
         };
 
         private static class InitialiseDatabase

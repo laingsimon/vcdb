@@ -14,7 +14,7 @@ namespace vcdb.IntegrationTests.Execution
 {
     internal class Vcdb
     {
-        public async Task<ExecutionResult> Execute(ScenarioSettings settings, DirectoryInfo scenario)
+        public async Task<ExecutionResult> Execute(ScenarioSettings settings, DirectoryInfo scenario, string connectionString)
         {
             var standardOutput = new StringWriter();
             var errorOutput = new StringWriter();
@@ -24,7 +24,7 @@ namespace vcdb.IntegrationTests.Execution
                 ExitCode = 0
             };
 
-            var options = GetOptions(scenario, settings);
+            var options = GetOptions(scenario, settings, connectionString);
 
             await Program.ExecuteAsync(
                 options,
@@ -52,14 +52,14 @@ namespace vcdb.IntegrationTests.Execution
             services.AddSingleton<ScriptExecutionPlanManager>();
         }
 
-        private static CommandLine.Options GetOptions(DirectoryInfo scenario, ScenarioSettings settings)
+        private static CommandLine.Options GetOptions(DirectoryInfo scenario, ScenarioSettings settings, string connectionString)
         {
             var commandLine = new[]
             {
                 "--mode",
                 settings.Mode,
                 "--connectionString",
-                TestScenarios.ConnectionString,
+                connectionString,
                 "--database",
                 scenario.Name
             }.Concat(StringExtensions.SplitCommandLine(settings.CommandLine));

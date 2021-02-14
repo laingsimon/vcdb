@@ -12,7 +12,7 @@ namespace vcdb.IntegrationTests.Database
 {
     internal class Docker : IDocker
     {
-        private const string DockerDesktopPath = "C:\\Program Files\\Docker\\Docker\\Docker Desktop.exe";
+        private static readonly string DockerDesktopPath = EnvironmentVariable.Get<string>("DockerDesktopPath") ??  "C:\\Program Files\\Docker\\Docker\\Docker Desktop.exe";
         private readonly IntegrationTestOptions options;
         private readonly ILogger logger;
 
@@ -119,7 +119,7 @@ namespace vcdb.IntegrationTests.Database
             return false;
         }
 
-        public async Task<bool> StartDockerCompose(string workingDirectory, CancellationToken cancellationToken = default)
+        public async Task<bool> StartDockerCompose(string workingDirectory, ProductName productName, CancellationToken cancellationToken = default)
         {
             var process = new Process
             {
@@ -150,7 +150,7 @@ namespace vcdb.IntegrationTests.Database
                 var lines = args.Data.Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries);
                 foreach (var line in lines)
                 {
-                    if (Regex.IsMatch(line, @"^Attaching to testframework_sqlserver_1$"))
+                    if (Regex.IsMatch(line, $@"^Attaching to testframework_{productName}_1$"))
                     {
                         dockerContainerStarted.Set();
                     }

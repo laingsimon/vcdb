@@ -9,34 +9,38 @@ namespace vcdb.IntegrationTests
     [DebuggerDisplay("{Name,nq}")]
     public class ProductName
     {
+        private readonly string name;
+
         internal ProductName(
             string name,
             Func<DirectoryInfo, string> initialiseDatabase,
-            Func<DirectoryInfo, ISql, Task> dropDatabase)
+            Func<DirectoryInfo, ISql, Task> dropDatabase,
+            string fallbackConnectionString)
         {
-            Name = name;
+            this.name = name;
             InitialiseDatabase = initialiseDatabase;
             DropDatabase = dropDatabase;
+            FallbackConnectionString = fallbackConnectionString;
         }
 
         public override string ToString()
         {
-            return Name;
+            return name;
         }
 
-        public string Name { get; }
         internal Func<DirectoryInfo, string> InitialiseDatabase { get; }
         internal Func<DirectoryInfo, ISql, Task> DropDatabase { get; }
+        public string FallbackConnectionString { get; }
 
         public override bool Equals(object obj)
         {
             return (obj is ProductName productName)
-                && productName.Name.Equals(Name);
+                && productName.name.Equals(name);
         }
 
         public override int GetHashCode()
         {
-            return Name.GetHashCode();
+            return name.GetHashCode();
         }
     }
 }

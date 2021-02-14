@@ -49,7 +49,7 @@ namespace vcdb.IntegrationTests.Execution
             this.productName = productName;
         }
 
-        public async Task<ExecutionResultStatus> Execute(DirectoryInfo scenario)
+        public async Task<ExecutionResultStatus> Execute(DirectoryInfo scenario, string connectionString)
         {
             try
             {
@@ -61,7 +61,7 @@ namespace vcdb.IntegrationTests.Execution
             }
             var settings = ReadScenarioSettings(scenario) ?? ScenarioSettings.Default;
 
-            var result = await vcdbProcess.Execute(settings, scenario);
+            var result = await vcdbProcess.Execute(settings, scenario, connectionString);
             if (settings.ExpectedExitCode.HasValue && result.ExitCode != settings.ExpectedExitCode.Value)
             {
                 PrintReproductionStatement(scenario, result);
@@ -85,7 +85,7 @@ namespace vcdb.IntegrationTests.Execution
             else
             {
                 var executionResult = await CompareSqlScriptResult(result, scenario);
-                var actualOutputFilePath = Path.Combine(scenario.FullName, $"ActualOutput.{productName.Name}.sql");
+                var actualOutputFilePath = Path.Combine(scenario.FullName, $"ActualOutput.{productName}.sql");
 
                 if (executionResult == ExecutionResultStatus.Pass)
                 {
@@ -145,7 +145,7 @@ namespace vcdb.IntegrationTests.Execution
 
         private async Task<ExecutionResultStatus> CompareSqlScriptResult(ExecutionResult result, DirectoryInfo scenario)
         {
-            using (var expectedReader = new StreamReader(Path.Combine(scenario.FullName, $"ExpectedOutput.{productName.Name}.sql")))
+            using (var expectedReader = new StreamReader(Path.Combine(scenario.FullName, $"ExpectedOutput.{productName}.sql")))
             {
                 var differences = differ.CompareScripts(await expectedReader.ReadToEndAsync(), result.Output);
                 var filteredDifferences = differenceFilter.FilterDifferences(differences).ToArray();
@@ -158,7 +158,7 @@ namespace vcdb.IntegrationTests.Execution
                     executionContext.ScenarioComplete(
                         scenario,
                         executionResult,
-                        filteredDifferences.SelectMany(difference => difference.GetLineDifferences(productName.Name)));
+                        filteredDifferences.SelectMany(difference => difference.GetLineDifferences(productName.ToString())));
                 }
 
                 return executionResult;
@@ -220,14 +220,14 @@ namespace vcdb.IntegrationTests.Execution
         {
             await Retry(async () => await sql.ExecuteBatchedSql(new StringReader(productName.InitialiseDatabase(scenario))));
 
-            var databaseInitialisationFile = scenario.GetFiles($"Database.{productName.Name}.sql").SingleOrDefault();
+            var databaseInitialisationFile = scenario.GetFiles($"Database.{productName}.sql").SingleOrDefault();
             if (databaseInitialisationFile != null)
             {
                 await sql.ExecuteBatchedSql(databaseInitialisationFile.OpenText(), scenario.Name);
             }
             else
             {
-                log.LogWarning($"{scenario.Name}: Database.{productName.Name}.sql was not found in the database directory, the database will be empty when the scenario executes");
+                log.LogWarning($"{scenario.Name}: Database.{productName}.sql was not found in the database directory, the database will be empty when the scenario executes");
             }
         }
 

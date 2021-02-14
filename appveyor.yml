@@ -15,8 +15,8 @@ dotnet_csproj:
   file_version: '{version}'
   informational_version: '{version}'
 environment:
-  Vcdb_ConnectionString: server=(local)\SQL2017;User ID=sa;Password=Password12!
-  Vcdb_UseLocalDatabase: true
+  Vcdb_SqlServer_ConnectionString: server=(local)\SQL2017;User ID=sa;Password=Password12!
+  Vcdb_SqlServer_UseLocalDatabase: true
   Vcdb_IncludeProcessOutputInFailureMessage: false
 services: 
 - mssql2017

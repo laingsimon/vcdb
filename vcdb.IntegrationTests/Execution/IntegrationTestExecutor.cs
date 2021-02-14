@@ -32,7 +32,7 @@ namespace vcdb.IntegrationTests.Execution
 
                     try
                     {
-                        var scenarios = await executor.Execute();
+                        var scenarios = await executor.Execute(options.ConnectionString);
 
                         var context = serviceProvider.GetRequiredService<IntegrationTestExecutionContext>();
 
