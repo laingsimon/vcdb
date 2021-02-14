@@ -18,6 +18,8 @@ environment:
   Vcdb_SqlServer_ConnectionString: server=(local)\SQL2017;User ID=sa;Password=Password12!
   Vcdb_SqlServer_UseLocalDatabase: true
   Vcdb_IncludeProcessOutputInFailureMessage: false
+  Vcdb_MySql_ConnectionString: server=localhost;uid=root;pwd=Password12!
+  Vcdb_MySql_UseLocalDatabase: true
 services: 
 - mssql2017
 - mysql

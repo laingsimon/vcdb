@@ -71,9 +71,11 @@ namespace vcdb.IntegrationTests
                 foreach (var productName in ProductNames)
                 {
                     var testScenarios = Path.GetFullPath("..\\..\\..\\..\\TestScenarios");
+                    var filter = new ScenarioFilter(productName);
+
                     foreach (var directory in Directory.GetDirectories(testScenarios))
                     {
-                        if (File.Exists(Path.Combine(directory, $"ExpectedOutput.{productName}.sql")) || File.Exists(Path.Combine(directory, $"Database.{productName}.sql")))
+                        if (filter.IsValidScenario(directory))
                         {
                             yield return new ProductNameScenario(productName, Path.GetFileName(directory));
                         }

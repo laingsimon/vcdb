@@ -134,6 +134,7 @@ namespace vcdb.IntegrationTests.Database
             };
 
             logger.LogInformation($"Starting docker-compose in {workingDirectory}");
+            var directoryName = Path.GetFileName(workingDirectory);
 
             var errorData = new StringBuilder();
             process.ErrorDataReceived += (sender, args) =>
@@ -150,7 +151,7 @@ namespace vcdb.IntegrationTests.Database
                 var lines = args.Data.Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries);
                 foreach (var line in lines)
                 {
-                    if (Regex.IsMatch(line, $@"^Attaching to testframework_{productName}_1$"))
+                    if (Regex.IsMatch(line, @"^Attaching to") && Regex.IsMatch(line, $"{directoryName.ToLower().Replace(".", "")}_{productName.ToString().ToLower()}_1"))
                     {
                         dockerContainerStarted.Set();
                     }

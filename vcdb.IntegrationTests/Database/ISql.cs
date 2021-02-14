@@ -1,4 +1,4 @@
-﻿using System.Data.SqlClient;
+﻿using System.Data.Common;
 using System.IO;
 using System.Threading.Tasks;
 
@@ -9,6 +9,6 @@ namespace vcdb.IntegrationTests.Database
         Task WaitForReady(int attempts);
         Task ExecuteBatchedSql(TextReader sqlContent, string database = null);
         Task ExecuteSql(string sql, string database = null);
-        Task ExecuteSql(string sql, SqlConnection connection);
+        Task ExecuteSql(string sql, DbConnection connection);
     }
 }

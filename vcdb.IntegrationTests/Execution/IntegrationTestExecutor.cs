@@ -69,6 +69,7 @@ namespace vcdb.IntegrationTests.Execution
             services.AddSingleton<IntegrationTestExecutionContext>();
             services.AddSingleton<IJsonEqualityComparer, Comparer>();
             services.AddSingleton<IInlineDiffBuilder>(InlineDiffBuilder.Instance);
+            services.AddSingleton<ScenarioFilter>();
             services.AddSingleton(
                 typeof(IDocker),
                 options.UseLocalDatabase

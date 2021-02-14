@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Data.Common;
 using System.Diagnostics;
 using System.IO;
 using System.Threading.Tasks;
@@ -10,17 +11,24 @@ namespace vcdb.IntegrationTests
     public class ProductName
     {
         private readonly string name;
+        private readonly Func<DirectoryInfo, string> initialiseDatabase;
+        private readonly Func<DirectoryInfo, ISql, Task> dropDatabase;
+        private readonly Func<string, DbConnection> createConnection;
+
+        internal string FallbackConnectionString { get; }
 
         internal ProductName(
             string name,
             Func<DirectoryInfo, string> initialiseDatabase,
             Func<DirectoryInfo, ISql, Task> dropDatabase,
-            string fallbackConnectionString)
+            string fallbackConnectionString,
+            Func<string, DbConnection> createConnection)
         {
             this.name = name;
-            InitialiseDatabase = initialiseDatabase;
-            DropDatabase = dropDatabase;
+            this.initialiseDatabase = initialiseDatabase;
+            this.dropDatabase = dropDatabase;
             FallbackConnectionString = fallbackConnectionString;
+            this.createConnection = createConnection;
         }
 
         public override string ToString()
@@ -28,9 +36,15 @@ namespace vcdb.IntegrationTests
             return name;
         }
 
-        internal Func<DirectoryInfo, string> InitialiseDatabase { get; }
-        internal Func<DirectoryInfo, ISql, Task> DropDatabase { get; }
-        public string FallbackConnectionString { get; }
+        internal string InitialiseDatabase(DirectoryInfo scenario)
+        {
+            return initialiseDatabase(scenario);
+        }
+
+        internal Task DropDatabase(DirectoryInfo scenario, ISql sql)
+        {
+            return dropDatabase(scenario, sql);
+        }
 
         public override bool Equals(object obj)
         {
@@ -41,6 +55,11 @@ namespace vcdb.IntegrationTests
         public override int GetHashCode()
         {
             return name.GetHashCode();
+        }
+
+        internal DbConnection CreateConnection(string connectionString)
+        {
+            return createConnection(connectionString);
         }
     }
 }

@@ -2,7 +2,6 @@
 using System;
 using System.IO;
 using System.Linq;
-using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using vcdb.IntegrationTests.Database;
 using vcdb.IntegrationTests.Output;
@@ -18,6 +17,7 @@ namespace vcdb.IntegrationTests.Execution
         private readonly IDocker docker;
         private readonly TaskGate taskGate;
         private readonly ProductName productName;
+        private readonly ScenarioFilter scenarioFilter;
         private readonly IServiceProvider serviceProvider;
 
         public IntegrationTestFramework(
@@ -28,7 +28,8 @@ namespace vcdb.IntegrationTests.Execution
             IntegrationTestExecutionContext executionContext,
             IDocker docker,
             TaskGate taskGate,
-            ProductName productName)
+            ProductName productName,
+            ScenarioFilter scenarioFilter)
         {
             this.options = options;
             this.logger = logger;
@@ -38,6 +39,7 @@ namespace vcdb.IntegrationTests.Execution
             this.docker = docker;
             this.taskGate = taskGate;
             this.productName = productName;
+            this.scenarioFilter = scenarioFilter;
         }
 
         public async Task<int> Execute(string connectionString)
@@ -59,7 +61,7 @@ namespace vcdb.IntegrationTests.Execution
 
             if (!await docker.IsContainerRunning($"testframework_{productName.ToString().ToLower()}_1"))
             {
-                var frameworkDirectory = Path.GetFullPath(Path.Combine(scenariosDirectory.FullName, "..\\TestFramework"));
+                var frameworkDirectory = Path.GetFullPath(Path.Combine(scenariosDirectory.FullName, "..\\vcdb.IntegrationTests"));
                 await docker.StartDockerCompose(frameworkDirectory, productName);
             }
 
@@ -73,7 +75,7 @@ namespace vcdb.IntegrationTests.Execution
 
             var scenarios = scenariosDirectory
                 .EnumerateDirectories()
-                .Where(d => d.Name == options.ScenarioName || options.ScenarioName == null)
+                .Where(d => d.Name == options.ScenarioName || (options.ScenarioName == null && scenarioFilter.IsValidScenario(d)))
                 .ToArray();
 
             logger.LogInformation($"Executing {scenarios.Length} scenario/s...");

@@ -1,4 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using MySql.Data.MySqlClient;
+using System.Collections.Generic;
+using System.Data.SqlClient;
 using System.IO;
 using System.Threading.Tasks;
 using vcdb.IntegrationTests.Database;
@@ -9,7 +11,19 @@ namespace vcdb.IntegrationTests
     {
         public static readonly HashSet<ProductName> Lookup = new HashSet<ProductName>
         {
-            new ProductName("SqlServer", InitialiseDatabase.SqlServer, DropDatabase.SqlServer, DockerConnectionStrings.SqlServer)
+            new ProductName(
+                "SqlServer",
+                InitialiseDatabase.SqlServer,
+                DropDatabase.SqlServer,
+                DockerConnectionStrings.SqlServer,
+                cs => new SqlConnection(cs)),
+
+            new ProductName(
+                "MySql",
+                InitialiseDatabase.MySql,
+                DropDatabase.MySql,
+                DockerConnectionStrings.MySql,
+                cs => new MySqlConnection(cs))
         };
 
         private static class InitialiseDatabase
@@ -22,6 +36,15 @@ GO
 
 CREATE DATABASE [{scenario.Name}]";
             }
+
+            public static string MySql(DirectoryInfo scenario)
+            {
+                return $@"
+DROP DATABASE IF EXISTS `{scenario.Name}`
+GO
+
+CREATE DATABASE `{scenario.Name}`";
+            }
         }
 
         private static class DropDatabase
@@ -31,6 +54,13 @@ CREATE DATABASE [{scenario.Name}]";
                 await sql.ExecuteBatchedSql(new StringReader($@"
 DROP DATABASE IF EXISTS [{scenario.Name}]
 GO"), "master");
+            }
+
+            public static async Task MySql(DirectoryInfo scenario, ISql sql)
+            {
+                await sql.ExecuteBatchedSql(new StringReader($@"
+DROP DATABASE IF EXISTS `{scenario.Name}`
+GO"), "information_schema");
             }
         }
     }

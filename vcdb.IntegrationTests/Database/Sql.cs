@@ -1,5 +1,5 @@
 ﻿using System;
-using System.Data.SqlClient;
+using System.Data.Common;
 using System.IO;
 using System.Text;
 using System.Threading.Tasks;
@@ -12,16 +12,18 @@ namespace vcdb.IntegrationTests.Database
     {
         private readonly string connectionString;
         private readonly ILogger log;
+        private readonly ProductName productName;
 
-        public Sql(IntegrationTestOptions options, ILogger log)
+        public Sql(IntegrationTestOptions options, ILogger log, ProductName productName)
         {
             connectionString = options.ConnectionString;
             this.log = log;
+            this.productName = productName;
         }
 
         public async Task ExecuteBatchedSql(TextReader sqlContent, string database = null)
         {
-            using (var connection = new SqlConnection(connectionString))
+            using (var connection = productName.CreateConnection(connectionString))
             {
                 await connection.OpenAsync();
                 if (!string.IsNullOrEmpty(database))
@@ -48,7 +50,7 @@ namespace vcdb.IntegrationTests.Database
             }
         }
 
-        public async Task ExecuteSql(string sql, SqlConnection connection)
+        public async Task ExecuteSql(string sql, DbConnection connection)
         {
             var command = connection.CreateCommand();
             command.CommandText = sql;
@@ -57,7 +59,7 @@ namespace vcdb.IntegrationTests.Database
 
         public async Task ExecuteSql(string sql, string database = null)
         {
-            using (var connection = new SqlConnection(connectionString))
+            using (var connection = productName.CreateConnection(connectionString))
             {
                 await connection.OpenAsync();
                 if (!string.IsNullOrEmpty(database))
@@ -89,7 +91,7 @@ namespace vcdb.IntegrationTests.Database
         {
             try
             {
-                using (var connection = new SqlConnection(connectionString))
+                using (var connection = productName.CreateConnection(connectionString))
                 {
                     await connection.OpenAsync();
 
