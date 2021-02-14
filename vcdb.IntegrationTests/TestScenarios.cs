@@ -15,6 +15,7 @@ namespace vcdb.IntegrationTests
 
         internal static string ConnectionString { get; set; } = EnvironmentVariable.Get<string>("Vcdb_ConnectionString") ?? DockerSqlServerConnectionString;
         internal static bool UseLocalDatabase { get; set; } = EnvironmentVariable.Get<bool?>("Vcdb_UseLocalDatabase") ?? false;
+        internal static bool IncludeProcessOutputInFailureMessage { get; set; } = EnvironmentVariable.Get<bool?>("Vcdb_IncludeProcessOutputInFailureMessage") ?? true;
 
         private readonly Framework.IExecutor processExecutor = ExecutorFactory.GetExecutor();
 
@@ -37,7 +38,11 @@ namespace vcdb.IntegrationTests
 
             result.WriteStdOutTo(Console.Out);
             result.WriteStdErrTo(Console.Error);
-            Assert.That(result.ExitCode, Is.EqualTo(0), $"{string.Join("\r\n", result.StdOut)}\r\nProcess exited with non-success code");
+
+            var prefix = IncludeProcessOutputInFailureMessage
+                ? $"{string.Join("\r\n", result.StdOut)}\r\n{string.Join("\r\n", result.StdErr)}\r\n"
+                : "";
+            Assert.That(result.ExitCode, Is.EqualTo(0), $"{prefix}\r\nProcess exited with non-success code");
         }
 
         public static IEnumerable<string> ScenarioNames
