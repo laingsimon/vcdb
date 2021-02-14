@@ -36,9 +36,7 @@ namespace vcdb.IntegrationTests.Execution
 
                         var context = serviceProvider.GetRequiredService<IntegrationTestExecutionContext>();
 
-                        result.ExitCode = scenarios == 0
-                            ? -3
-                            : context.Fail; //report the number of failures in the exit code
+                        result.ExitCode = context.Fail; //report the number of failures in the exit code
                     }
                     catch (Exception exc)
                     {
