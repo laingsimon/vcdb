@@ -97,12 +97,17 @@ namespace vcdb.Scripting.Programmability
         {
             var requiredDefinition = GetDefinition(requiredProcedure, currentProcedure.Key);
             var definitionChanged = !procedureDefinitionComparer.Equals(
-                new NamedItem<ObjectName, string>(currentProcedure.Key, currentProcedure.Value.Definition),
+                new NamedItem<ObjectName, string>(currentProcedure.Key, NormaliseDefinition(currentProcedure.Value.Definition)),
                 new NamedItem<ObjectName, string>(requiredProcedure.Key, requiredDefinition));
 
             return definitionChanged
                 ? requiredDefinition
                 : null;
+        }
+
+        private static string NormaliseDefinition(string definition)
+        {
+            return definition?.Replace("\r\n", "\n");
         }
 
         private string GetDefinition(NamedItem<ObjectName, ProcedureDetails> procedure, ObjectName otherAllowedName)
@@ -113,6 +118,9 @@ namespace vcdb.Scripting.Programmability
 
             if (string.IsNullOrEmpty(definition))
                 throw new InvalidDefinitionException($"Definition could not be read/found for {procedure.Key.Schema}.{procedure.Key.Name}");
+
+            //normalise line-endings
+            definition = NormaliseDefinition(definition);
 
             var validationErrors = definitionValidator.ValidateDefinition(definition, procedure, otherAllowedName).ToArray();
             if (validationErrors.Any())
