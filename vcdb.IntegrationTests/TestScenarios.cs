@@ -23,17 +23,17 @@ namespace vcdb.IntegrationTests
 #if DEBUG
         [TestCaseSource(nameof(ScenarioNames))]
 #endif
-        public async Task ExecuteSqlServerScenarios(string scenarioName)
+        public async Task ExecuteScenarios(ProductNameScenario scenario)
         {
             var options = new IntegrationTestOptions
             {
                 ConnectionString = ConnectionString,
-                IncludeScenarioFilter = $"^{scenarioName}$",
+                IncludeScenarioFilter = $"^{scenario.ScenarioName}$",
                 MaxConcurrency = 10,
                 ScenariosPath = Path.GetFullPath("..\\..\\..\\..\\TestScenarios"),
                 MinLogLevel = LogLevel.Information,
                 UseLocalDatabase = UseLocalDatabase,
-                ProductName = "SqlServer"
+                ProductName = scenario.ProductName
             };
 
             var result = await processExecutor.ExecuteScenarios(options);
@@ -43,8 +43,8 @@ namespace vcdb.IntegrationTests
             Assert.That(result.ExitCode, Is.EqualTo(0), $"{string.Join("\r\n", result.StdOut)}\r\n{string.Join("\r\n", result.StdErr)}\r\nProcess exited with non-success code");
         }
 
-        [TestCase("SqlServer")]
-        public async Task ExecuteAllAtOnce(string productName)
+        [TestCaseSource(nameof(ProductNames))]
+        public async Task ExecuteAllAtOnce(ProductName productName)
         {
             var options = new IntegrationTestOptions
             {
@@ -68,12 +68,29 @@ namespace vcdb.IntegrationTests
             Assert.That(result.ExitCode, Is.EqualTo(0), $"{prefix}\r\nProcess exited with non-success code");
         }
 
-        public static IEnumerable<string> ScenarioNames
+        public static IEnumerable<ProductNameScenario> ScenarioNames
         {
             get
             {
-                var testScenarios = Path.GetFullPath("..\\..\\..\\..\\TestScenarios");
-                return Directory.GetDirectories(testScenarios).Select(dir => Path.GetFileName(dir));
+                foreach (var productName in ProductNames)
+                {
+                    var testScenarios = Path.GetFullPath("..\\..\\..\\..\\TestScenarios");
+                    foreach (var directory in Directory.GetDirectories(testScenarios))
+                    {
+                        if (File.Exists(Path.Combine(directory, $"ExpectedOutput.{productName}.sql")) || File.Exists(Path.Combine(directory, $"Database.{productName}.sql")))
+                        {
+                            yield return new ProductNameScenario(productName, Path.GetFileName(directory));
+                        }
+                    }
+                }
+            }
+        }
+
+        public static IEnumerable<ProductName> ProductNames
+        {
+            get
+            {
+                return ProductNameLookup.Lookup;
             }
         }
     }

@@ -60,7 +60,7 @@ namespace vcdb.IntegrationTests.Execution
         {
             var outputWriter = new ListWrappingWriter(result.StdOut);
 
-            services.AddSingleton(ProductNames.Lookup[options.ProductName]);
+            services.AddSingleton(options.ProductName);
             services.AddSingleton<IntegrationTestFramework>();
             services.AddSingleton<ISql, Sql>();
             services.AddScoped<IJson, Json>();

@@ -5,11 +5,11 @@ using vcdb.IntegrationTests.Database;
 
 namespace vcdb.IntegrationTests
 {
-    internal static class ProductNames
+    internal static class ProductNameLookup
     {
-        public static readonly IDictionary<string, ProductName> Lookup = new Dictionary<string, ProductName>
+        public static readonly HashSet<ProductName> Lookup = new HashSet<ProductName>
         {
-            { "SqlServer", new ProductName("SqlServer", InitialiseDatabase.SqlServer, DropDatabase.SqlServer) }
+            new ProductName("SqlServer", InitialiseDatabase.SqlServer, DropDatabase.SqlServer)
         };
 
         private static class InitialiseDatabase

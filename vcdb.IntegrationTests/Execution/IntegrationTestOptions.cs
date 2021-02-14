@@ -15,6 +15,6 @@ namespace vcdb.IntegrationTests.Execution
         public int? MaxConcurrency { get; set; }
         public int ProcessTimeout { get; set; } = 60;
         public bool UseLocalDatabase { get; set; }
-        public string ProductName { get; set; } = "SqlServer";
+        public ProductName ProductName { get; set; }
     }
 }

@@ -7,9 +7,9 @@ using vcdb.IntegrationTests.Database;
 namespace vcdb.IntegrationTests
 {
     [DebuggerDisplay("{Name,nq}")]
-    internal class ProductName
+    public class ProductName
     {
-        public ProductName(
+        internal ProductName(
             string name,
             Func<DirectoryInfo, string> initialiseDatabase,
             Func<DirectoryInfo, ISql, Task> dropDatabase)
@@ -19,8 +19,24 @@ namespace vcdb.IntegrationTests
             DropDatabase = dropDatabase;
         }
 
+        public override string ToString()
+        {
+            return Name;
+        }
+
         public string Name { get; }
-        public Func<DirectoryInfo, string> InitialiseDatabase { get; }
-        public Func<DirectoryInfo, ISql, Task> DropDatabase { get; }
+        internal Func<DirectoryInfo, string> InitialiseDatabase { get; }
+        internal Func<DirectoryInfo, ISql, Task> DropDatabase { get; }
+
+        public override bool Equals(object obj)
+        {
+            return (obj is ProductName productName)
+                && productName.Name.Equals(Name);
+        }
+
+        public override int GetHashCode()
+        {
+            return Name.GetHashCode();
+        }
     }
 }
