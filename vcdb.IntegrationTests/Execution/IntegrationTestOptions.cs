@@ -6,8 +6,6 @@ namespace vcdb.IntegrationTests.Execution
     {
         public string ConnectionString { get; set; }
         public string ScenariosPath { get; set; }
-        public string ExcludeScenarioFilter { get; set; }
-        public string IncludeScenarioFilter { get; set; }
         public LogLevel MinLogLevel { get; set; }
         public bool ShowVcdbProgress { get; set; }
         public string DockerDesktopPath { get; set; }
@@ -16,5 +14,6 @@ namespace vcdb.IntegrationTests.Execution
         public int ProcessTimeout { get; set; } = 60;
         public bool UseLocalDatabase { get; set; }
         public ProductName ProductName { get; set; }
+        public string ScenarioName { get; set; }
     }
 }

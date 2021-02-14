@@ -6,7 +6,7 @@ using vcdb.IntegrationTests.Database;
 
 namespace vcdb.IntegrationTests
 {
-    [DebuggerDisplay("{Name,nq}")]
+    [DebuggerDisplay("{name,nq}")]
     public class ProductName
     {
         private readonly string name;

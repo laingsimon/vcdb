@@ -34,6 +34,10 @@ namespace vcdb.IntegrationTests
         public async Task ExecuteAllAtOnce(ProductName productName)
         {
             var options = GetOptions(productName, null);
+            if (string.IsNullOrEmpty(options.ConnectionString))
+            {
+                Assert.Fail("Connection string not found");
+            }
 
             var result = await processExecutor.ExecuteScenarios(options);
 
@@ -46,12 +50,12 @@ namespace vcdb.IntegrationTests
             Assert.That(result.ExitCode, Is.EqualTo(0), $"{prefix}\r\nProcess exited with non-success code");
         }
 
-        private static IntegrationTestOptions GetOptions(ProductName productName, string scenarioFilter)
+        private static IntegrationTestOptions GetOptions(ProductName productName, string scenarioName)
         {
             return new IntegrationTestOptions
             {
-                ConnectionString = EnvironmentVariable.Get<string>($"Vcdb_{productName}_ConnectionString"),
-                IncludeScenarioFilter = scenarioFilter,
+                ConnectionString = EnvironmentVariable.Get<string>($"Vcdb_{productName}_ConnectionString") ?? productName.FallbackConnectionString,
+                ScenarioName = scenarioName,
                 MaxConcurrency = 10,
                 ScenariosPath = Path.GetFullPath("..\\..\\..\\..\\TestScenarios"),
                 MinLogLevel = LogLevel.Information,

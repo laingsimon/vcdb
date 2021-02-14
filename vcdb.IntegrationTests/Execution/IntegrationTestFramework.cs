@@ -73,9 +73,7 @@ namespace vcdb.IntegrationTests.Execution
 
             var scenarios = scenariosDirectory
                 .EnumerateDirectories()
-                .Where(DirectoryNotExcluded)
-                .Where(DirectoryIncluded)
-                .Where(directory => directory.GetFiles($"ExpectedOutput.{productName}.sql").Any() || directory.GetFiles($"ExpectedOutput.json").Any())
+                .Where(d => d.Name == options.ScenarioName || options.ScenarioName == null)
                 .ToArray();
 
             logger.LogInformation($"Executing {scenarios.Length} scenario/s...");
@@ -111,18 +109,6 @@ namespace vcdb.IntegrationTests.Execution
                     executionContext.ScenarioComplete(scenarioDirectory, ExecutionResultStatus.Exception, new[] { exc.Message });
                 }
             }
-        }
-
-        private bool DirectoryNotExcluded(DirectoryInfo scenarioDirectory)
-        {
-            return string.IsNullOrEmpty(options.ExcludeScenarioFilter)
-                || !Regex.IsMatch(scenarioDirectory.Name, options.ExcludeScenarioFilter);
-        }
-
-        private bool DirectoryIncluded(DirectoryInfo scenarioDirectory)
-        {
-            return string.IsNullOrEmpty(options.IncludeScenarioFilter)
-                || Regex.IsMatch(scenarioDirectory.Name, options.IncludeScenarioFilter);
         }
     }
 }
