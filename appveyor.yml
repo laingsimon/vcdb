@@ -1,0 +1,28 @@
+version: 1.0.{build}
+pull_requests:
+  do_not_increment_build_number: true
+skip_tags: true
+image: Visual Studio 2019
+configuration: Release
+shallow_clone: true
+dotnet_csproj:
+  patch: true
+  file: '**\*.csproj'
+  version: '{version}'
+  version_prefix: '{version}'
+  package_version: '{version}'
+  assembly_version: '{version}'
+  file_version: '{version}'
+  informational_version: '{version}'
+environment:
+  Vcdb_ConnectionString: server=(local)\SQL2017;User ID=sa;Password=Password12!
+  Vcdb_UseLocalDatabase: true
+services: mssql2017
+nuget:
+  disable_publish_on_pr: true
+  disable_publish_octopus: true
+before_build:
+- cmd: dotnet restore
+build:
+  project: vcdb.sln
+  verbosity: minimal
