@@ -8,7 +8,18 @@ namespace vcdb.IntegrationTests.Execution
 {
     internal class IntegrationTestExecutionContext
     {
+        private readonly TextWriter output;
+        private readonly TextWriter error;
+
         public Dictionary<IntegrationTestStatus, int> Results { get; } = new Dictionary<IntegrationTestStatus, int>();
+
+        public IntegrationTestExecutionContext(
+            TextWriter output = null,
+            TextWriter error = null)
+        {
+            this.output = output ?? Console.Out;
+            this.error = error ?? Console.Error;
+        }
 
         public IntegrationTestStatus ScenarioComplete(DirectoryInfo scenario, IntegrationTestStatus result, IEnumerable<string> differences)
         {
@@ -24,9 +35,9 @@ namespace vcdb.IntegrationTests.Execution
                 return result;
             }
 
-            Console.Error.WriteLine($"Scenario {scenario.Name} unsuccessful: {result}");
+            error.WriteLine($"Scenario {scenario.Name} unsuccessful: {result}");
             foreach (var difference in differences)
-                Console.Error.WriteLine(difference);
+                error.WriteLine(difference);
             return result;
         }
 
@@ -45,7 +56,7 @@ namespace vcdb.IntegrationTests.Execution
             }
 
             var passPercentage = Pass / total * 100;
-            Console.WriteLine($"Finished: Pass: {Pass} ({passPercentage:n0}%), Fail: {Fail} ({100 - passPercentage:n0}%)");
+            output.WriteLine($"Finished: Pass: {Pass} ({passPercentage:n0}%), Fail: {Fail} ({100 - passPercentage:n0}%)");
         }
     }
 }

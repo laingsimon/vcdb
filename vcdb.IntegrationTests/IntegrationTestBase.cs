@@ -30,7 +30,7 @@ namespace vcdb.IntegrationTests
         {
             var options = GetOptions(scenario);
 
-            var result = await processExecutor.ExecuteScenarios(options);
+            var result = await processExecutor.ExecuteScenario(options);
 
             Assert.That(result.Fail, Is.EqualTo(0), "Scenario failed");
         }

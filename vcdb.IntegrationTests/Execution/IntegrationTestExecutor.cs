@@ -3,6 +3,8 @@ using JsonEqualityComparer;
 using Microsoft.Extensions.DependencyInjection;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
+using NUnit.Framework;
+using System.IO;
 using System.Threading.Tasks;
 using vcdb.IntegrationTests.Comparison;
 using vcdb.IntegrationTests.Content;
@@ -12,11 +14,21 @@ namespace vcdb.IntegrationTests.Execution
 {
     internal class IntegrationTestExecutor
     {
-        public async Task<IntegrationTestExecutionContext> ExecuteScenarios(IntegrationTestOptions options)
+        public async Task<IntegrationTestExecutionContext> ExecuteScenario(IntegrationTestOptions options, bool throwIfTestFails = true)
+        {
+            var allOutput = new StringWriter();
+            var result = await ExecuteScenarios(options, allOutput, allOutput);
+            if (result.Fail > 0 && throwIfTestFails)
+                Assert.Fail(allOutput.GetStringBuilder().ToString());
+
+            return result;
+        }
+
+        public async Task<IntegrationTestExecutionContext> ExecuteScenarios(IntegrationTestOptions options, TextWriter output = null, TextWriter error = null)
         {
             var serviceCollection = new ServiceCollection();
             serviceCollection.AddSingleton(options);
-            ConfigureServices(serviceCollection, options);
+            ConfigureServices(serviceCollection, options, output, error);
 
             using (var serviceProvider = serviceCollection.BuildServiceProvider())
             {
@@ -29,7 +41,7 @@ namespace vcdb.IntegrationTests.Execution
             }
         }
 
-        private static void ConfigureServices(ServiceCollection services, IntegrationTestOptions options)
+        private static void ConfigureServices(ServiceCollection services, IntegrationTestOptions options, TextWriter output = null, TextWriter error = null)
         {
             services.AddSingleton(options.DatabaseProduct);
             services.AddSingleton<IntegrationTestFramework>();
@@ -37,7 +49,7 @@ namespace vcdb.IntegrationTests.Execution
             services.AddScoped<IJson, Json>();
             services.AddScoped<ScenarioDirectoryFactory>();
             services.AddScoped(factory => factory.GetRequiredService<ScenarioDirectoryFactory>().ScenarioDirectory);
-            services.AddSingleton<IntegrationTestExecutionContext>();
+            services.AddSingleton(new IntegrationTestExecutionContext(output, error));
             services.AddSingleton<IJsonEqualityComparer, Comparer>();
             services.AddSingleton<IInlineDiffBuilder>(InlineDiffBuilder.Instance);
             services.AddSingleton<ScenarioFilter>();
