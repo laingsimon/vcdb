@@ -4,11 +4,11 @@ namespace vcdb.IntegrationTests.Execution
 {
     internal class ScenarioFilter
     {
-        private readonly ProductName productName;
+        private readonly IDatabaseProduct databaseProduct;
 
-        public ScenarioFilter(ProductName productName)
+        public ScenarioFilter(IDatabaseProduct databaseProduct)
         {
-            this.productName = productName;
+            this.databaseProduct = databaseProduct;
         }
 
         public bool IsValidScenario(DirectoryInfo directory)
@@ -18,8 +18,8 @@ namespace vcdb.IntegrationTests.Execution
 
         public bool IsValidScenario(string directory)
         {
-            return File.Exists(Path.Combine(directory, $"ExpectedOutput.{productName}.sql"))
-                || File.Exists(Path.Combine(directory, $"Database.{productName}.sql"));
+            return File.Exists(Path.Combine(directory, $"ExpectedOutput.{databaseProduct.Name}.sql"))
+                || File.Exists(Path.Combine(directory, $"Database.{databaseProduct.Name}.sql"));
         }
     }
 }

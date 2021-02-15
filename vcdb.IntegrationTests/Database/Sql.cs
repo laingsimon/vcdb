@@ -11,39 +11,25 @@ namespace vcdb.IntegrationTests.Database
     internal class Sql : ISql
     {
         private readonly string connectionString;
-        private readonly ProductName productName;
+        private readonly IDatabaseProduct databaseProduct;
 
-        public Sql(IntegrationTestOptions options, ProductName productName)
+        public Sql(IntegrationTestOptions options, IDatabaseProduct databaseProduct)
         {
             this.connectionString = options.ConnectionString;
-            this.productName = productName;
+            this.databaseProduct = databaseProduct;
         }
 
         public async Task ExecuteBatchedSql(TextReader sqlContent, string database = null)
         {
-            using (var connection = productName.CreateConnection(connectionString))
+            using (var connection = databaseProduct.CreateConnection(connectionString))
             {
                 await connection.OpenAsync();
                 if (!string.IsNullOrEmpty(database))
-                    await ExecuteSql($"USE [{database}]", connection);
+                    await ExecuteSql($"USE {databaseProduct.EscapeIdentifier(database)}", connection);
 
-                var sqlBatch = new StringBuilder();
-                string line;
-                while ((line = await sqlContent.ReadLineAsync()) != null)
+                await foreach (var batch in databaseProduct.SplitStatementIntoBatches(sqlContent))
                 {
-                    if (line.Trim().Equals("go", StringComparison.OrdinalIgnoreCase))
-                    {
-                        await ExecuteSql(sqlBatch.ToString(), connection);
-                        sqlBatch.Clear();
-                        continue;
-                    }
-
-                    sqlBatch.AppendLine(line);
-                }
-
-                if (sqlBatch.Length > 0)
-                {
-                    await ExecuteSql(sqlBatch.ToString(), connection);
+                    await ExecuteSql(batch, connection);
                 }
             }
         }
@@ -57,11 +43,11 @@ namespace vcdb.IntegrationTests.Database
 
         public async Task ExecuteSql(string sql, string database = null)
         {
-            using (var connection = productName.CreateConnection(connectionString))
+            using (var connection = databaseProduct.CreateConnection(connectionString))
             {
                 await connection.OpenAsync();
                 if (!string.IsNullOrEmpty(database))
-                    await ExecuteSql($"USE [{database}]", connection);
+                    await ExecuteSql($"USE {databaseProduct.EscapeIdentifier(database)}", connection);
 
                 await ExecuteSql(sql, connection);
             }
@@ -69,14 +55,14 @@ namespace vcdb.IntegrationTests.Database
 
         public async Task WaitForReady(int attempts)
         {
-            Debug.WriteLine("Waiting for SQL server to be available...");
+            Debug.WriteLine("Waiting for database server to be available...");
             var count = 0;
             while (count++ <= attempts)
             {
                 var success = await TestConnection(count == attempts);
                 if (success)
                 {
-                    Debug.WriteLine("SQL server is available");
+                    Debug.WriteLine("Database server is available");
                     return;
                 }
                 await Task.Delay(TimeSpan.FromSeconds(count));
@@ -89,12 +75,12 @@ namespace vcdb.IntegrationTests.Database
         {
             try
             {
-                using (var connection = productName.CreateConnection(connectionString))
+                using (var connection = databaseProduct.CreateConnection(connectionString))
                 {
                     await connection.OpenAsync();
 
                     var command = connection.CreateCommand();
-                    command.CommandText = "select count(*) from information_schema.tables";
+                    command.CommandText = databaseProduct.TestConnectionStatement;
                     command.ExecuteNonQuery();
 
                     return true;

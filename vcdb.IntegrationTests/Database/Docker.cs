@@ -15,10 +15,12 @@ namespace vcdb.IntegrationTests.Database
 
         private static readonly string DockerDesktopPath = EnvironmentVariable.Get<string>("DockerDesktopPath") ??  "C:\\Program Files\\Docker\\Docker\\Docker Desktop.exe";
         private readonly IntegrationTestOptions options;
+        private readonly IDatabaseProduct databaseProduct;
 
-        public Docker(IntegrationTestOptions options)
+        public Docker(IntegrationTestOptions options, IDatabaseProduct databaseProduct)
         {
             this.options = options;
+            this.databaseProduct = databaseProduct;
         }
 
         public bool IsInstalled()
@@ -56,7 +58,7 @@ namespace vcdb.IntegrationTests.Database
             return true;
         }
 
-        public async Task<bool> IsContainerRunning(ProductName productName)
+        public async Task<bool> IsContainerRunning()
         {
             var process = new Process
             {
@@ -83,7 +85,7 @@ namespace vcdb.IntegrationTests.Database
             }
 
             var stdOut = process.StandardOutput.ReadToEnd();
-            var containerName = GetContainerName(productName);
+            var containerName = GetContainerName();
             return stdOut.Contains(containerName);
         }
 
@@ -118,7 +120,7 @@ namespace vcdb.IntegrationTests.Database
             return false;
         }
 
-        public async Task<bool> StartDockerCompose(ProductName productName, CancellationToken cancellationToken = default)
+        public async Task<bool> StartDockerCompose(CancellationToken cancellationToken = default)
         {
             var process = new Process
             {
@@ -149,7 +151,7 @@ namespace vcdb.IntegrationTests.Database
                 var lines = args.Data.Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries);
                 foreach (var line in lines)
                 {
-                    if (Regex.IsMatch(line, @"^Attaching to") && Regex.IsMatch(line, GetContainerName(productName)))
+                    if (Regex.IsMatch(line, @"^Attaching to") && Regex.IsMatch(line, GetContainerName()))
                     {
                         dockerContainerStarted.Set();
                     }
@@ -183,12 +185,12 @@ namespace vcdb.IntegrationTests.Database
             return Path.Combine(scenariosDirectory.FullName, @$"..\{DockerComposeFolderName}");
         }
 
-        private string GetContainerName(ProductName productName, string suffix = "_1")
+        private string GetContainerName(string suffix = "_1")
         {
             var dockerComposeDirectoryName = Path.GetFileName(GetDockerComposeDirectoryPath());
 
             var normalisedDirectoryName = dockerComposeDirectoryName.Replace(".", "").ToLower();
-            var normalisedProductName = productName.ToString().ToLower();
+            var normalisedProductName = databaseProduct.Name.ToLower();
 
             return $"{normalisedDirectoryName}_{normalisedProductName}{suffix}";
         }

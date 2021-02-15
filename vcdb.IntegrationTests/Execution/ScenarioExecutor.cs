@@ -22,7 +22,7 @@ namespace vcdb.IntegrationTests.Execution
         private readonly IScriptDiffer differ;
         private readonly Vcdb vcdbProcess;
         private readonly IDifferenceFilter differenceFilter;
-        private readonly ProductName productName;
+        private readonly IDatabaseProduct databaseProduct;
 
         public ScenarioExecutor(
             ISql sql,
@@ -33,7 +33,7 @@ namespace vcdb.IntegrationTests.Execution
             IScriptDiffer differ,
             Vcdb vcdbProcess,
             IDifferenceFilter differenceFilter,
-            ProductName productName)
+            IDatabaseProduct databaseProduct)
         {
             this.sql = sql;
             this.json = json;
@@ -43,7 +43,7 @@ namespace vcdb.IntegrationTests.Execution
             this.differ = differ;
             this.vcdbProcess = vcdbProcess;
             this.differenceFilter = differenceFilter;
-            this.productName = productName;
+            this.databaseProduct = databaseProduct;
         }
 
         public async Task<IntegrationTestStatus> Execute(DirectoryInfo scenario, string connectionString)
@@ -82,7 +82,7 @@ namespace vcdb.IntegrationTests.Execution
             else
             {
                 var executionResult = await CompareSqlScriptResult(result, scenario);
-                var actualOutputFilePath = Path.Combine(scenario.FullName, $"ActualOutput.{productName}.sql");
+                var actualOutputFilePath = Path.Combine(scenario.FullName, $"ActualOutput.{databaseProduct.Name}.sql");
 
                 if (executionResult == IntegrationTestStatus.Pass)
                 {
@@ -142,7 +142,7 @@ namespace vcdb.IntegrationTests.Execution
 
         private async Task<IntegrationTestStatus> CompareSqlScriptResult(VcdbExecutionResult result, DirectoryInfo scenario)
         {
-            using (var expectedReader = new StreamReader(Path.Combine(scenario.FullName, $"ExpectedOutput.{productName}.sql")))
+            using (var expectedReader = new StreamReader(Path.Combine(scenario.FullName, $"ExpectedOutput.{databaseProduct.Name}.sql")))
             {
                 var differences = differ.CompareScripts(await expectedReader.ReadToEndAsync(), result.Output);
                 var filteredDifferences = differenceFilter.FilterDifferences(differences).ToArray();
@@ -155,7 +155,7 @@ namespace vcdb.IntegrationTests.Execution
                     executionContext.ScenarioComplete(
                         scenario,
                         executionResult,
-                        filteredDifferences.SelectMany(difference => difference.GetLineDifferences(productName.ToString())));
+                        filteredDifferences.SelectMany(difference => difference.GetLineDifferences(databaseProduct)));
                 }
 
                 return executionResult;
@@ -215,16 +215,16 @@ namespace vcdb.IntegrationTests.Execution
 
         private async Task InitialiseDatabase(DirectoryInfo scenario)
         {
-            await Retry(async () => await sql.ExecuteBatchedSql(new StringReader(productName.InitialiseDatabase(scenario))));
+            await Retry(async () => await sql.ExecuteBatchedSql(new StringReader(databaseProduct.InitialiseDatabase(scenario.Name))));
 
-            var databaseInitialisationFile = scenario.GetFiles($"Database.{productName}.sql").SingleOrDefault();
+            var databaseInitialisationFile = scenario.GetFiles($"Database.{databaseProduct.Name}.sql").SingleOrDefault();
             if (databaseInitialisationFile != null)
             {
                 await sql.ExecuteBatchedSql(databaseInitialisationFile.OpenText(), scenario.Name);
             }
             else
             {
-                Console.WriteLine($"{scenario.Name}: Database.{productName}.sql was not found in the database directory, the database will be empty when the scenario executes");
+                Console.WriteLine($"{scenario.Name}: Database.{databaseProduct.Name}.sql was not found in the database directory, the database will be empty when the scenario executes");
             }
         }
 
@@ -233,7 +233,7 @@ namespace vcdb.IntegrationTests.Execution
             if (options.KeepDatabases)
                 return;
 
-            await Retry(async () => await productName.DropDatabase(scenario, sql));
+            await Retry(async () => await databaseProduct.DropDatabase(scenario.Name, sql));
         }
 
         private async Task Retry(Func<Task> action, int times = 3)

@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 
 namespace vcdb.IntegrationTests.Database
 {
-    internal interface ISql
+    public interface ISql
     {
         Task WaitForReady(int attempts);
         Task ExecuteBatchedSql(TextReader sqlContent, string database = null);

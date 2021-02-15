@@ -31,7 +31,7 @@ namespace vcdb.IntegrationTests.Execution
 
         private static void ConfigureServices(ServiceCollection services, IntegrationTestOptions options)
         {
-            services.AddSingleton(options.ProductName);
+            services.AddSingleton(options.DatabaseProduct);
             services.AddSingleton<IntegrationTestFramework>();
             services.AddSingleton<ISql, Sql>();
             services.AddScoped<IJson, Json>();

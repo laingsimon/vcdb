@@ -14,7 +14,7 @@ namespace vcdb.IntegrationTests.Execution
         private readonly IntegrationTestExecutionContext executionContext;
         private readonly IDocker docker;
         private readonly TaskGate taskGate;
-        private readonly ProductName productName;
+        private readonly IDatabaseProduct databaseProduct;
         private readonly ScenarioFilter scenarioFilter;
         private readonly IServiceProvider serviceProvider;
 
@@ -25,7 +25,7 @@ namespace vcdb.IntegrationTests.Execution
             IntegrationTestExecutionContext executionContext,
             IDocker docker,
             TaskGate taskGate,
-            ProductName productName,
+            IDatabaseProduct databaseProduct,
             ScenarioFilter scenarioFilter)
         {
             this.options = options;
@@ -34,7 +34,7 @@ namespace vcdb.IntegrationTests.Execution
             this.executionContext = executionContext;
             this.docker = docker;
             this.taskGate = taskGate;
-            this.productName = productName;
+            this.databaseProduct = databaseProduct;
             this.scenarioFilter = scenarioFilter;
         }
 
@@ -59,9 +59,9 @@ namespace vcdb.IntegrationTests.Execution
                 throw new DirectoryNotFoundException($"Scenarios directory not found: {scenariosDirectory.FullName}");
             }
 
-            if (!await docker.IsContainerRunning(productName))
+            if (!await docker.IsContainerRunning())
             {
-                await docker.StartDockerCompose(productName);
+                await docker.StartDockerCompose();
             }
 
             await sql.WaitForReady(attempts: 10);

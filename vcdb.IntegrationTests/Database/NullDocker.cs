@@ -5,7 +5,7 @@ namespace vcdb.IntegrationTests.Database
 {
     internal class NullDocker : IDocker
     {
-        public Task<bool> IsContainerRunning(ProductName productName)
+        public Task<bool> IsContainerRunning()
         {
             return Task.FromResult(true);
         }
@@ -20,7 +20,7 @@ namespace vcdb.IntegrationTests.Database
             return true;
         }
 
-        public Task<bool> StartDockerCompose(ProductName productName, CancellationToken cancellationToken = default)
+        public Task<bool> StartDockerCompose(CancellationToken cancellationToken = default)
         {
             return Task.FromResult(true);
         }

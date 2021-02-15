@@ -9,12 +9,12 @@ namespace vcdb.IntegrationTests.Comparison
         public IReadOnlyCollection<Line> Expected { get; set; }
         public IReadOnlyCollection<Line> Actual { get; set; }
 
-        public IEnumerable<string> GetLineDifferences(string productName)
+        public IEnumerable<string> GetLineDifferences(IDatabaseProduct databaseProduct)
         {
             var startingLine = Expected.FirstOrDefault()?.LineNumber ?? Actual.FirstOrDefault()?.LineNumber;
             var endingLine = Expected.LastOrDefault()?.LineNumber ?? Actual.LastOrDefault()?.LineNumber;
 
-            yield return $@"Lines {startingLine}..{endingLine} (vcdb output vs ExpectedOutput.{productName}.sql)";
+            yield return $@"Lines {startingLine}..{endingLine} (vcdb output vs ExpectedOutput.{databaseProduct.Name}.sql)";
 
             foreach (var contextLine in Before.TakeLast(3))
             {
