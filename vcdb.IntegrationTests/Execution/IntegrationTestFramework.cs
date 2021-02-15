@@ -42,8 +42,7 @@ namespace vcdb.IntegrationTests.Execution
         {
             if (!docker.IsInstalled())
             {
-                Console.Error.WriteLine("Docker is not installed");
-                return -1;
+                throw new InvalidOperationException("Docker is not installed");
             }
 
             if (!await docker.IsDockerHostRunning())
@@ -55,19 +54,17 @@ namespace vcdb.IntegrationTests.Execution
                 ? new DirectoryInfo(Directory.GetCurrentDirectory())
                 : new DirectoryInfo(options.ScenariosPath);
 
-            if (!await docker.IsContainerRunning($"testframework_{productName.ToString().ToLower()}_1"))
+            if (!scenariosDirectory.Exists)
             {
-                var frameworkDirectory = Path.GetFullPath(Path.Combine(scenariosDirectory.FullName, "..\\vcdb.IntegrationTests"));
-                await docker.StartDockerCompose(frameworkDirectory, productName);
+                throw new DirectoryNotFoundException($"Scenarios directory not found: {scenariosDirectory.FullName}");
+            }
+
+            if (!await docker.IsContainerRunning(productName))
+            {
+                await docker.StartDockerCompose(productName);
             }
 
             await sql.WaitForReady(attempts: 10);
-
-            if (!scenariosDirectory.Exists)
-            {
-                Console.Error.WriteLine($"Scenarios directory not found: {scenariosDirectory.FullName}");
-                return -2;
-            }
 
             var scenarios = scenariosDirectory
                 .EnumerateDirectories()

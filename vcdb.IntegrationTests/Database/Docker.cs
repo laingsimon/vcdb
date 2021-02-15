@@ -11,6 +11,8 @@ namespace vcdb.IntegrationTests.Database
 {
     internal class Docker : IDocker
     {
+        public const string DockerComposeFolderName = "vcdb.IntegrationTests";
+
         private static readonly string DockerDesktopPath = EnvironmentVariable.Get<string>("DockerDesktopPath") ??  "C:\\Program Files\\Docker\\Docker\\Docker Desktop.exe";
         private readonly IntegrationTestOptions options;
 
@@ -54,7 +56,7 @@ namespace vcdb.IntegrationTests.Database
             return true;
         }
 
-        public async Task<bool> IsContainerRunning(string containerName)
+        public async Task<bool> IsContainerRunning(ProductName productName)
         {
             var process = new Process
             {
@@ -81,6 +83,7 @@ namespace vcdb.IntegrationTests.Database
             }
 
             var stdOut = process.StandardOutput.ReadToEnd();
+            var containerName = GetContainerName(productName);
             return stdOut.Contains(containerName);
         }
 
@@ -115,7 +118,7 @@ namespace vcdb.IntegrationTests.Database
             return false;
         }
 
-        public async Task<bool> StartDockerCompose(string workingDirectory, ProductName productName, CancellationToken cancellationToken = default)
+        public async Task<bool> StartDockerCompose(ProductName productName, CancellationToken cancellationToken = default)
         {
             var process = new Process
             {
@@ -123,14 +126,13 @@ namespace vcdb.IntegrationTests.Database
                 {
                     FileName = Environment.GetEnvironmentVariable("comspec"),
                     Arguments = "/c \"docker-compose up\"",
-                    WorkingDirectory = workingDirectory,
+                    WorkingDirectory = GetDockerComposeDirectoryPath(),
                     RedirectStandardError = true,
                     RedirectStandardOutput = true
                 }
             };
 
-            Console.WriteLine($"Starting docker-compose in {workingDirectory}");
-            var directoryName = Path.GetFileName(workingDirectory);
+            Console.WriteLine($"Starting docker-compose in {process.StartInfo.WorkingDirectory}");
 
             var errorData = new StringBuilder();
             process.ErrorDataReceived += (sender, args) =>
@@ -147,7 +149,7 @@ namespace vcdb.IntegrationTests.Database
                 var lines = args.Data.Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries);
                 foreach (var line in lines)
                 {
-                    if (Regex.IsMatch(line, @"^Attaching to") && Regex.IsMatch(line, $"{directoryName.ToLower().Replace(".", "")}_{productName.ToString().ToLower()}_1"))
+                    if (Regex.IsMatch(line, @"^Attaching to") && Regex.IsMatch(line, GetContainerName(productName)))
                     {
                         dockerContainerStarted.Set();
                     }
@@ -170,6 +172,25 @@ namespace vcdb.IntegrationTests.Database
             });
 
             return dockerContainerWasStarted;
+        }
+
+        private string GetDockerComposeDirectoryPath()
+        {
+            var scenariosDirectory = string.IsNullOrEmpty(options.ScenariosPath)
+                ? new DirectoryInfo(Directory.GetCurrentDirectory())
+                : new DirectoryInfo(options.ScenariosPath);
+
+            return Path.Combine(scenariosDirectory.FullName, @$"..\{DockerComposeFolderName}");
+        }
+
+        private string GetContainerName(ProductName productName, string suffix = "_1")
+        {
+            var dockerComposeDirectoryName = Path.GetFileName(GetDockerComposeDirectoryPath());
+
+            var normalisedDirectoryName = dockerComposeDirectoryName.Replace(".", "").ToLower();
+            var normalisedProductName = productName.ToString().ToLower();
+
+            return $"{normalisedDirectoryName}_{normalisedProductName}{suffix}";
         }
     }
 }
