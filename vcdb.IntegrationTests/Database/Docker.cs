@@ -6,7 +6,6 @@ using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using vcdb.IntegrationTests.Execution;
-using vcdb.IntegrationTests.Output;
 
 namespace vcdb.IntegrationTests.Database
 {
@@ -14,12 +13,10 @@ namespace vcdb.IntegrationTests.Database
     {
         private static readonly string DockerDesktopPath = EnvironmentVariable.Get<string>("DockerDesktopPath") ??  "C:\\Program Files\\Docker\\Docker\\Docker Desktop.exe";
         private readonly IntegrationTestOptions options;
-        private readonly ILogger logger;
 
-        public Docker(IntegrationTestOptions options, ILogger logger)
+        public Docker(IntegrationTestOptions options)
         {
             this.options = options;
-            this.logger = logger;
         }
 
         public bool IsInstalled()
@@ -49,11 +46,11 @@ namespace vcdb.IntegrationTests.Database
 
             if (process.ExitCode != 0)
             {
-                logger.LogDebug(process.StandardError.ReadToEnd());
+                Debug.WriteLine(process.StandardError.ReadToEnd());
                 return false;
             }
 
-            logger.LogDebug(process.StandardOutput.ReadToEnd());
+            Debug.WriteLine(process.StandardOutput.ReadToEnd());
             return true;
         }
 
@@ -78,9 +75,8 @@ namespace vcdb.IntegrationTests.Database
             await process.WaitForExitAsync();
 
             if (process.ExitCode != 0)
-
             {
-                logger.LogWarning(process.StandardError.ReadToEnd());
+                Console.WriteLine(process.StandardError.ReadToEnd());
                 return false;
             }
 
@@ -100,7 +96,7 @@ namespace vcdb.IntegrationTests.Database
                 }
             };
 
-            logger.LogInformation("Starting docker desktop...");
+            Console.WriteLine("Starting docker desktop...");
             if (!process.Start())
             {
                 throw new InvalidOperationException("Could not start docker desktop - unable to start process");
@@ -133,13 +129,13 @@ namespace vcdb.IntegrationTests.Database
                 }
             };
 
-            logger.LogInformation($"Starting docker-compose in {workingDirectory}");
+            Console.WriteLine($"Starting docker-compose in {workingDirectory}");
             var directoryName = Path.GetFileName(workingDirectory);
 
             var errorData = new StringBuilder();
             process.ErrorDataReceived += (sender, args) =>
             {
-                logger.LogError(args.Data);
+                Console.Error.WriteLine(args.Data);
             };
 
             var dockerContainerStarted = new ManualResetEvent(false);

@@ -12,8 +12,6 @@ namespace vcdb.IntegrationTests
     [TestFixture]
     public class TestScenarios
     {
-        internal static bool IncludeProcessOutputInFailureMessage { get; set; } = EnvironmentVariable.Get<bool?>("Vcdb_IncludeProcessOutputInFailureMessage") ?? true;
-
         private readonly IntegrationTestExecutor processExecutor = new IntegrationTestExecutor();
 
 #if DEBUG
@@ -25,9 +23,7 @@ namespace vcdb.IntegrationTests
 
             var result = await processExecutor.ExecuteScenarios(options);
 
-            result.WriteStdOutTo(Console.Out);
-            result.WriteStdErrTo(Console.Error);
-            Assert.That(result.ExitCode, Is.EqualTo(0), $"{string.Join("\r\n", result.StdOut)}\r\n{string.Join("\r\n", result.StdErr)}\r\nProcess exited with non-success code");
+            Assert.That(result.Fail, Is.EqualTo(0), "Scenario failed");
         }
 
         [TestCaseSource(nameof(ProductNames))]
@@ -41,13 +37,7 @@ namespace vcdb.IntegrationTests
 
             var result = await processExecutor.ExecuteScenarios(options);
 
-            result.WriteStdOutTo(Console.Out);
-            result.WriteStdErrTo(Console.Error);
-
-            var prefix = IncludeProcessOutputInFailureMessage
-                ? $"{string.Join("\r\n", result.StdOut)}\r\n{string.Join("\r\n", result.StdErr)}\r\n"
-                : "";
-            Assert.That(result.ExitCode, Is.EqualTo(0), $"{prefix}\r\nProcess exited with non-success code");
+            Assert.That(result.Fail, Is.EqualTo(0), "Some scenarios failed");
         }
 
         private static IntegrationTestOptions GetOptions(ProductName productName, string scenarioName)

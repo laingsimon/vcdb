@@ -1,23 +1,21 @@
 ﻿using System;
 using System.Data.Common;
+using System.Diagnostics;
 using System.IO;
 using System.Text;
 using System.Threading.Tasks;
 using vcdb.IntegrationTests.Execution;
-using vcdb.IntegrationTests.Output;
 
 namespace vcdb.IntegrationTests.Database
 {
     internal class Sql : ISql
     {
         private readonly string connectionString;
-        private readonly ILogger log;
         private readonly ProductName productName;
 
-        public Sql(IntegrationTestOptions options, ILogger log, ProductName productName)
+        public Sql(IntegrationTestOptions options, ProductName productName)
         {
-            connectionString = options.ConnectionString;
-            this.log = log;
+            this.connectionString = options.ConnectionString;
             this.productName = productName;
         }
 
@@ -71,14 +69,14 @@ namespace vcdb.IntegrationTests.Database
 
         public async Task WaitForReady(int attempts)
         {
-            log.LogDebug("Waiting for SQL server to be available...");
+            Debug.WriteLine("Waiting for SQL server to be available...");
             var count = 0;
             while (count++ <= attempts)
             {
                 var success = await TestConnection(count == attempts);
                 if (success)
                 {
-                    log.LogDebug("SQL server is available");
+                    Debug.WriteLine("SQL server is available");
                     return;
                 }
                 await Task.Delay(TimeSpan.FromSeconds(count));

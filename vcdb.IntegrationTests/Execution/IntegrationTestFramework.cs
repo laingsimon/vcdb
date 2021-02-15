@@ -4,14 +4,12 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using vcdb.IntegrationTests.Database;
-using vcdb.IntegrationTests.Output;
 
 namespace vcdb.IntegrationTests.Execution
 {
     internal class IntegrationTestFramework
     {
         private readonly IntegrationTestOptions options;
-        private readonly ILogger logger;
         private readonly ISql sql;
         private readonly IntegrationTestExecutionContext executionContext;
         private readonly IDocker docker;
@@ -22,7 +20,6 @@ namespace vcdb.IntegrationTests.Execution
 
         public IntegrationTestFramework(
             IntegrationTestOptions options,
-            ILogger logger,
             IServiceProvider serviceProvider,
             ISql sql,
             IntegrationTestExecutionContext executionContext,
@@ -32,7 +29,6 @@ namespace vcdb.IntegrationTests.Execution
             ScenarioFilter scenarioFilter)
         {
             this.options = options;
-            this.logger = logger;
             this.serviceProvider = serviceProvider;
             this.sql = sql;
             this.executionContext = executionContext;
@@ -46,7 +42,7 @@ namespace vcdb.IntegrationTests.Execution
         {
             if (!docker.IsInstalled())
             {
-                logger.LogError("Docker is not installed");
+                Console.Error.WriteLine("Docker is not installed");
                 return -1;
             }
 
@@ -69,7 +65,7 @@ namespace vcdb.IntegrationTests.Execution
 
             if (!scenariosDirectory.Exists)
             {
-                logger.LogError($"Scenarios directory not found: {scenariosDirectory.FullName}");
+                Console.Error.WriteLine($"Scenarios directory not found: {scenariosDirectory.FullName}");
                 return -2;
             }
 
@@ -78,7 +74,7 @@ namespace vcdb.IntegrationTests.Execution
                 .Where(d => d.Name == options.ScenarioName || (options.ScenarioName == null && scenarioFilter.IsValidScenario(d)))
                 .ToArray();
 
-            logger.LogInformation($"Executing {scenarios.Length} scenario/s...");
+            Console.WriteLine($"Executing {scenarios.Length} scenario/s...");
 
             var tasks = scenarios.Select(scenarioDirectory => ExecuteScenario(scenarioDirectory, connectionString)).ToArray();
             await Task.WhenAll(tasks);
@@ -99,8 +95,8 @@ namespace vcdb.IntegrationTests.Execution
 
                 var logMessage = $" - {scenarioDirectory.Name}...";
 
-                logger.LogLine(logMessage);
-                var executionResult = (ExecutionResultStatus)0;
+                Console.WriteLine(logMessage);
+                var executionResult = (IntegrationTestStatus)0;
 
                 try
                 {
@@ -108,7 +104,7 @@ namespace vcdb.IntegrationTests.Execution
                 }
                 catch (Exception exc)
                 {
-                    executionContext.ScenarioComplete(scenarioDirectory, ExecutionResultStatus.Exception, new[] { exc.Message });
+                    executionContext.ScenarioComplete(scenarioDirectory, IntegrationTestStatus.Exception, new[] { exc.Message });
                 }
             }
         }

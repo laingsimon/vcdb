@@ -2,19 +2,18 @@
 using Newtonsoft.Json;
 using System;
 using System.Data.SqlClient;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using vcdb.IntegrationTests.Comparison;
 using vcdb.IntegrationTests.Content;
 using vcdb.IntegrationTests.Database;
-using vcdb.IntegrationTests.Output;
 
 namespace vcdb.IntegrationTests.Execution
 {
     internal class ScenarioExecutor
     {
-        private readonly ILogger log;
         private readonly ISql sql;
         private readonly IJson json;
         private readonly IntegrationTestExecutionContext executionContext;
@@ -26,7 +25,6 @@ namespace vcdb.IntegrationTests.Execution
         private readonly ProductName productName;
 
         public ScenarioExecutor(
-            ILogger log,
             ISql sql,
             IJson json,
             IntegrationTestExecutionContext executionContext,
@@ -37,7 +35,6 @@ namespace vcdb.IntegrationTests.Execution
             IDifferenceFilter differenceFilter,
             ProductName productName)
         {
-            this.log = log;
             this.sql = sql;
             this.json = json;
             this.executionContext = executionContext;
@@ -49,7 +46,7 @@ namespace vcdb.IntegrationTests.Execution
             this.productName = productName;
         }
 
-        public async Task<ExecutionResultStatus> Execute(DirectoryInfo scenario, string connectionString)
+        public async Task<IntegrationTestStatus> Execute(DirectoryInfo scenario, string connectionString)
         {
             try
             {
@@ -57,7 +54,7 @@ namespace vcdb.IntegrationTests.Execution
             }
             catch (Exception exc)
             {
-                return executionContext.ScenarioComplete(scenario, ExecutionResultStatus.InitialiseDatabaseError, new[] { $"Unable to initialise the database: {exc.Message}" });
+                return executionContext.ScenarioComplete(scenario, IntegrationTestStatus.InitialiseDatabaseError, new[] { $"Unable to initialise the database: {exc.Message}" });
             }
             var settings = ReadScenarioSettings(scenario) ?? ScenarioSettings.Default;
 
@@ -65,17 +62,17 @@ namespace vcdb.IntegrationTests.Execution
             if (settings.ExpectedExitCode.HasValue && result.ExitCode != settings.ExpectedExitCode.Value)
             {
                 PrintReproductionStatement(scenario, result);
-                return executionContext.ScenarioComplete(scenario, ExecutionResultStatus.UnexpectedExitCode, new[] { $"Expected process to exit with code {settings.ExpectedExitCode}, but it exited with {result.ExitCode}", result.ErrorOutput });
+                return executionContext.ScenarioComplete(scenario, IntegrationTestStatus.UnexpectedExitCode, new[] { $"Expected process to exit with code {settings.ExpectedExitCode}, but it exited with {result.ExitCode}", result.ErrorOutput });
             }
             else if (result.Timeout)
             {
                 PrintReproductionStatement(scenario, result);
-                return executionContext.ScenarioComplete(scenario, ExecutionResultStatus.Timeout, new[] { $"vcdb process did not exit within the given timeout", result.ErrorOutput });
+                return executionContext.ScenarioComplete(scenario, IntegrationTestStatus.Timeout, new[] { $"vcdb process did not exit within the given timeout", result.ErrorOutput });
             }
             else if (result.ExitCode != 0)
             {
                 PrintReproductionStatement(scenario, result);
-                return executionContext.ScenarioComplete(scenario, ExecutionResultStatus.UnexpectedExitCode, new[] { $"vcdb process exited with non-success exit code: {result.ExitCode}", result.ErrorOutput });
+                return executionContext.ScenarioComplete(scenario, IntegrationTestStatus.UnexpectedExitCode, new[] { $"vcdb process exited with non-success exit code: {result.ExitCode}", result.ErrorOutput });
             }
 
             if (settings.Mode == null || settings.Mode.Equals("Read", StringComparison.OrdinalIgnoreCase))
@@ -87,10 +84,10 @@ namespace vcdb.IntegrationTests.Execution
                 var executionResult = await CompareSqlScriptResult(result, scenario);
                 var actualOutputFilePath = Path.Combine(scenario.FullName, $"ActualOutput.{productName}.sql");
 
-                if (executionResult == ExecutionResultStatus.Pass)
+                if (executionResult == IntegrationTestStatus.Pass)
                 {
                     var scriptExecutionResult = await TestSqlScriptResult(settings, result, scenario);
-                    if (scriptExecutionResult == ExecutionResultStatus.Pass)
+                    if (scriptExecutionResult == IntegrationTestStatus.Pass)
                     {
                         File.Delete(actualOutputFilePath);
                         try
@@ -99,10 +96,10 @@ namespace vcdb.IntegrationTests.Execution
                         }
                         catch (Exception exc)
                         {
-                            log.LogError(exc, $"Unable to drop database for {scenario.Name}");
+                            Console.Error.WriteLine($"Unable to drop database for {scenario.Name}\r\n{exc}");
                         }
 
-                        return ExecutionResultStatus.Pass;
+                        return IntegrationTestStatus.Pass;
                     }
 
                     File.WriteAllText(actualOutputFilePath, result.Output);
@@ -117,43 +114,43 @@ namespace vcdb.IntegrationTests.Execution
             }
         }
 
-        private void PrintReproductionStatement(DirectoryInfo scenario, ExecutionResult result)
+        private void PrintReproductionStatement(DirectoryInfo scenario, VcdbExecutionResult result)
         {
-            log.LogInformation($"Execute vcdb with the following commandline to debug this scenario:\r\n{scenario.FullName}\r\n$ {result.CommandLine}");
+            Console.WriteLine($"Execute vcdb with the following commandline to debug this scenario:\r\n{scenario.FullName}\r\n$ {result.CommandLine}");
         }
 
-        private async Task<ExecutionResultStatus> TestSqlScriptResult(ScenarioSettings settings, ExecutionResult result, DirectoryInfo scenario)
+        private async Task<IntegrationTestStatus> TestSqlScriptResult(ScenarioSettings settings, VcdbExecutionResult result, DirectoryInfo scenario)
         {
             try
             {
-                log.LogDebug("Testing created sql script...");
+                Debug.WriteLine("Testing created sql script...");
                 await sql.ExecuteBatchedSql(new StringReader(result.Output), scenario.Name);
 
-                return executionContext.ScenarioComplete(scenario, ExecutionResultStatus.Pass, new string[0] { });
+                return executionContext.ScenarioComplete(scenario, IntegrationTestStatus.Pass, new string[0] { });
             }
             catch (SqlException exc)
             {
                 PrintReproductionStatement(scenario, result);
-                return executionContext.ScenarioComplete(scenario, ExecutionResultStatus.InvalidSql, new[] { exc.Message });
+                return executionContext.ScenarioComplete(scenario, IntegrationTestStatus.InvalidSql, new[] { exc.Message });
             }
             catch (Exception exc)
             {
                 PrintReproductionStatement(scenario, result);
-                return executionContext.ScenarioComplete(scenario, ExecutionResultStatus.Exception, new[] { exc.ToString() });
+                return executionContext.ScenarioComplete(scenario, IntegrationTestStatus.Exception, new[] { exc.ToString() });
             }
         }
 
-        private async Task<ExecutionResultStatus> CompareSqlScriptResult(ExecutionResult result, DirectoryInfo scenario)
+        private async Task<IntegrationTestStatus> CompareSqlScriptResult(VcdbExecutionResult result, DirectoryInfo scenario)
         {
             using (var expectedReader = new StreamReader(Path.Combine(scenario.FullName, $"ExpectedOutput.{productName}.sql")))
             {
                 var differences = differ.CompareScripts(await expectedReader.ReadToEndAsync(), result.Output);
                 var filteredDifferences = differenceFilter.FilterDifferences(differences).ToArray();
                 var executionResult = filteredDifferences.Any()
-                    ? ExecutionResultStatus.Different
-                    : ExecutionResultStatus.Pass;
+                    ? IntegrationTestStatus.Different
+                    : IntegrationTestStatus.Pass;
 
-                if (executionResult != ExecutionResultStatus.Pass)
+                if (executionResult != IntegrationTestStatus.Pass)
                 {
                     executionContext.ScenarioComplete(
                         scenario,
@@ -165,7 +162,7 @@ namespace vcdb.IntegrationTests.Execution
             }
         }
 
-        private Task<ExecutionResultStatus> CompareJsonResult(ScenarioSettings settings, ExecutionResult result, DirectoryInfo scenario)
+        private Task<IntegrationTestStatus> CompareJsonResult(ScenarioSettings settings, VcdbExecutionResult result, DirectoryInfo scenario)
         {
             return Task.Run(() =>
             {
@@ -186,8 +183,8 @@ namespace vcdb.IntegrationTests.Execution
                 executionContext.ScenarioComplete(
                     scenario,
                     context.Differences.Any()
-                        ? ExecutionResultStatus.Different
-                        : ExecutionResultStatus.Pass,
+                        ? IntegrationTestStatus.Different
+                        : IntegrationTestStatus.Pass,
                     context.Differences.Select(difference => $"- Found a difference: {difference}"));
 
                 var actualOutputFileName = Path.Combine(scenario.FullName, "ActualOutput.json");
@@ -202,8 +199,8 @@ namespace vcdb.IntegrationTests.Execution
                 }
 
                 return context.Differences.Any()
-                    ? ExecutionResultStatus.Different
-                    : ExecutionResultStatus.Pass;
+                    ? IntegrationTestStatus.Different
+                    : IntegrationTestStatus.Pass;
             });
         }
 
@@ -227,7 +224,7 @@ namespace vcdb.IntegrationTests.Execution
             }
             else
             {
-                log.LogWarning($"{scenario.Name}: Database.{productName}.sql was not found in the database directory, the database will be empty when the scenario executes");
+                Console.WriteLine($"{scenario.Name}: Database.{productName}.sql was not found in the database directory, the database will be empty when the scenario executes");
             }
         }
 
@@ -253,7 +250,7 @@ namespace vcdb.IntegrationTests.Execution
                 catch (Exception exc)
                 {
                     lastException = exc;
-                    log.LogDebug(exc.Message);
+                    Debug.WriteLine(exc.Message);
 
                     await Task.Delay(TimeSpan.FromSeconds(0.5));
                 }

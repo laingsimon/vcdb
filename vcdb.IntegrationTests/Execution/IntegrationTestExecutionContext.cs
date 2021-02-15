@@ -1,22 +1,16 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using vcdb.IntegrationTests.Output;
 
 namespace vcdb.IntegrationTests.Execution
 {
     internal class IntegrationTestExecutionContext
     {
-        private readonly ILogger log;
+        public Dictionary<IntegrationTestStatus, int> Results { get; } = new Dictionary<IntegrationTestStatus, int>();
 
-        public Dictionary<ExecutionResultStatus, int> Results { get; } = new Dictionary<ExecutionResultStatus, int>();
-
-        public IntegrationTestExecutionContext(ILogger log)
-        {
-            this.log = log;
-        }
-
-        public ExecutionResultStatus ScenarioComplete(DirectoryInfo scenario, ExecutionResultStatus result, IEnumerable<string> differences)
+        public IntegrationTestStatus ScenarioComplete(DirectoryInfo scenario, IntegrationTestStatus result, IEnumerable<string> differences)
         {
             if (!Results.ContainsKey(result))
             {
@@ -24,35 +18,34 @@ namespace vcdb.IntegrationTests.Execution
             }
             Results[result] = Results[result] + 1;
 
-            if (result == ExecutionResultStatus.Pass)
+            if (result == IntegrationTestStatus.Pass)
             {
-                log.LogDebug($"Scenario {scenario.Name} pass");
+                Debug.WriteLine($"Scenario {scenario.Name} pass");
                 return result;
             }
 
-            log.LogWarning($"Scenario {scenario.Name} unsuccessful: {result}");
+            Console.Error.WriteLine($"Scenario {scenario.Name} unsuccessful: {result}");
             foreach (var difference in differences)
-                log.LogWarning(difference);
+                Console.Error.WriteLine(difference);
             return result;
         }
 
-        public int Pass => Results.ContainsKey(ExecutionResultStatus.Pass)
-            ? Results[ExecutionResultStatus.Pass]
+        public int Pass => Results.ContainsKey(IntegrationTestStatus.Pass)
+            ? Results[IntegrationTestStatus.Pass]
             : 0;
 
-        public int Fail => Results.Where(pair => pair.Key != ExecutionResultStatus.Pass).Sum(pair => pair.Value);
+        public int Fail => Results.Where(pair => pair.Key != IntegrationTestStatus.Pass).Sum(pair => pair.Value);
 
         public void Finished()
         {
             var total = (double)Pass + Fail;
             if (total == 0)
             {
-                log.LogError($"Finished: No scenarios found.");
                 return;
             }
 
             var passPercentage = Pass / total * 100;
-            log.LogInformation($"Finished: Pass: {Pass} ({passPercentage:n0}%), Fail: {Fail} ({100 - passPercentage:n0}%)");
+            Console.WriteLine($"Finished: Pass: {Pass} ({passPercentage:n0}%), Fail: {Fail} ({100 - passPercentage:n0}%)");
         }
     }
 }

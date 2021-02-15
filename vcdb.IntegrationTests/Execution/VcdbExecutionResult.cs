@@ -1,6 +1,6 @@
 ﻿namespace vcdb.IntegrationTests.Execution
 {
-    internal class ExecutionResult
+    internal class VcdbExecutionResult
     {
         public string Output { get; set; }
         public string ErrorOutput { get; set; }

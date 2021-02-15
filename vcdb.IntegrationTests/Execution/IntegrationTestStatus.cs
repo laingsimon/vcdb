@@ -1,6 +1,6 @@
 ﻿namespace vcdb.IntegrationTests.Execution
 {
-    internal enum ExecutionResultStatus
+    internal enum IntegrationTestStatus
     {
         Pass,
         Timeout,

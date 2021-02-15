@@ -3,61 +3,34 @@ using JsonEqualityComparer;
 using Microsoft.Extensions.DependencyInjection;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
-using System;
-using System.IO;
 using System.Threading.Tasks;
 using vcdb.IntegrationTests.Comparison;
 using vcdb.IntegrationTests.Content;
 using vcdb.IntegrationTests.Database;
-using vcdb.IntegrationTests.Output;
 
 namespace vcdb.IntegrationTests.Execution
 {
     internal class IntegrationTestExecutor
     {
-        public async Task<IntegrationTestResult> ExecuteScenarios(IntegrationTestOptions options)
+        public async Task<IntegrationTestExecutionContext> ExecuteScenarios(IntegrationTestOptions options)
         {
-            var result = new IntegrationTestResult();
-            var errorOutput = new ListWrappingWriter(result.StdErr);
+            var serviceCollection = new ServiceCollection();
+            serviceCollection.AddSingleton(options);
+            ConfigureServices(serviceCollection, options);
 
-            try
+            using (var serviceProvider = serviceCollection.BuildServiceProvider())
             {
-                var serviceCollection = new ServiceCollection();
-                serviceCollection.AddSingleton(options);
-                ConfigureServices(serviceCollection, result, options, errorOutput);
+                var executor = serviceProvider.GetRequiredService<IntegrationTestFramework>();
 
-                using (var serviceProvider = serviceCollection.BuildServiceProvider())
-                {
-                    var executor = serviceProvider.GetRequiredService<IntegrationTestFramework>();
+                var scenarios = await executor.Execute(options.ConnectionString);
 
-                    try
-                    {
-                        var scenarios = await executor.Execute(options.ConnectionString);
-
-                        var context = serviceProvider.GetRequiredService<IntegrationTestExecutionContext>();
-
-                        result.ExitCode = context.Fail; //report the number of failures in the exit code
-                    }
-                    catch (Exception exc)
-                    {
-                        result.ExitCode = -1;
-                        errorOutput.WriteLine(exc.ToString());
-                    }
-                }
+                var context = serviceProvider.GetRequiredService<IntegrationTestExecutionContext>();
+                return context;
             }
-            catch (Exception exc)
-            {
-                result.ExitCode = -2;
-                errorOutput.WriteLine(exc.ToString());
-            }
-
-            return result;
         }
 
-        private static void ConfigureServices(ServiceCollection services, IntegrationTestResult result, IntegrationTestOptions options, TextWriter errorWriter)
+        private static void ConfigureServices(ServiceCollection services, IntegrationTestOptions options)
         {
-            var outputWriter = new ListWrappingWriter(result.StdOut);
-
             services.AddSingleton(options.ProductName);
             services.AddSingleton<IntegrationTestFramework>();
             services.AddSingleton<ISql, Sql>();
@@ -73,7 +46,6 @@ namespace vcdb.IntegrationTests.Execution
                 options.UseLocalDatabase
                     ? typeof(NullDocker)
                     : typeof(Docker));
-            services.ReplaceSingleton<ILogger, IntegrationTestLogger>(new IntegrationTestLogger(outputWriter, errorWriter, options.MinLogLevel));
 
             services.AddSingleton<TaskGate>();
             services.AddSingleton<IScriptDiffer, HeaderCommentIgnoringScriptDiffer>();

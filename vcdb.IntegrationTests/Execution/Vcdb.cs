@@ -1,5 +1,6 @@
 ﻿using CommandLine;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using System;
 using System.IO;
 using System.Linq;
@@ -14,12 +15,12 @@ namespace vcdb.IntegrationTests.Execution
 {
     internal class Vcdb
     {
-        public async Task<ExecutionResult> Execute(ScenarioSettings settings, DirectoryInfo scenario, string connectionString)
+        public async Task<VcdbExecutionResult> Execute(ScenarioSettings settings, DirectoryInfo scenario, string connectionString)
         {
             var standardOutput = new StringWriter();
             var errorOutput = new StringWriter();
 
-            var result = new ExecutionResult
+            var result = new VcdbExecutionResult
             {
                 ExitCode = 0
             };
@@ -45,10 +46,10 @@ namespace vcdb.IntegrationTests.Execution
         private void ModifyServices(IServiceCollection services, DirectoryInfo scenario)
         {
             services.AddSingleton(scenario);
-            services.ReplaceSingleton<IDatabaseComparer, EmittingDatabaseComparer>();
+            ReplaceSingleton<IDatabaseComparer, EmittingDatabaseComparer>(services);
             services.AddSingleton<DatabaseComparer>();
 
-            services.ReplaceSingleton<IScriptExecutionPlanManager, InterceptingScriptExecutionPlanManager>();
+            ReplaceSingleton<IScriptExecutionPlanManager, InterceptingScriptExecutionPlanManager>(services);
             services.AddSingleton<ScriptExecutionPlanManager>();
         }
 
@@ -80,6 +81,12 @@ namespace vcdb.IntegrationTests.Execution
                 return options;
 
             throw new InvalidOperationException("Unable to parse commandline");
+        }
+
+        private static IServiceCollection ReplaceSingleton<TInterface, TInstance>(IServiceCollection services)
+        {
+            var serviceDescriptor = new ServiceDescriptor(typeof(TInterface), typeof(TInstance), ServiceLifetime.Singleton);
+            return services.Replace(serviceDescriptor);
         }
 
         private string BuildCommandLine(CommandLine.Options options)
