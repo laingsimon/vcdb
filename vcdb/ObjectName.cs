@@ -3,7 +3,6 @@ using System;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Globalization;
-using System.Text.RegularExpressions;
 
 namespace vcdb
 {
@@ -11,6 +10,26 @@ namespace vcdb
     [DebuggerDisplay("{DebugString()}")]
     public class ObjectName : IEquatable<ObjectName>
     {
+        /// <summary>
+        /// This converter controls how names are formatted in the JSON file, also how they are then read from the JSON file.
+        /// To use a different format, replace the NameConverter here with a different instance
+        /// </summary>
+        public static IObjectNameConverter Converter = new ObjectNameConverter();
+
+        /// <summary>
+        /// This is the name converter that should be used for THIS INSTANCE, it must not change for the life of the object as otherwise the HashCode could change.
+        /// </summary>
+        internal readonly IObjectNameConverter nameConverter; 
+
+        public ObjectName()
+            :this(null)
+        { }
+
+        public ObjectName(IObjectNameConverter nameConverter = null)
+        {
+            this.nameConverter = nameConverter ?? Converter;
+        }
+
         [JsonIgnore]
         public string Name { get; set; }
 
@@ -19,7 +38,7 @@ namespace vcdb
 
         public override int GetHashCode()
         {
-            return $"[{Schema}].[{Name}]".GetHashCode();
+            return Name.GetHashCode() ^ Schema.GetHashCode();
         }
 
         public override bool Equals(object obj)
@@ -36,7 +55,7 @@ namespace vcdb
 
         internal string DebugString()
         {
-            return $"[{Schema}].[{Name}]";
+            return nameConverter.ConvertToString(Schema, Name);
         }
 
         public static ObjectName Parse(string tableName)
@@ -55,7 +74,7 @@ namespace vcdb
             public override object ConvertFrom(ITypeDescriptorContext context, CultureInfo culture, object originalValue)
             {
                 var value = (string)originalValue;
-                var match = Regex.Match(value, @"^\[?(?<schema>.+?)\]?\.\[?(?<table>.+?)\]?$");
+                var match = Converter.ExtractFromString(value);
                 if (!match.Success)
                     throw new FormatException($"TableName `{value}` is not a valid table name");
 
@@ -69,7 +88,7 @@ namespace vcdb
             public override object ConvertTo(ITypeDescriptorContext context, CultureInfo culture, object originalValue, Type destinationType)
             {
                 var value = (ObjectName)originalValue;
-                var formattedTableName = $"[{value.Schema}].[{value.Name}]";
+                var formattedTableName = Converter.ConvertToString(value.Schema, value.Name);
                 return formattedTableName;
             }
         }

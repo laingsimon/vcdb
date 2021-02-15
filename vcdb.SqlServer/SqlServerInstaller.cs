@@ -13,6 +13,11 @@ namespace vcdb.SqlServer
             services.InNamespace<SqlObjectNameHelper>().AddAsSingleton();
             services.InNamespace<SqlServerCheckConstraintRepository>().AddAsSingleton();
             services.InNamespace<SqlServerCheckConstraintScriptBuilder>().AddAsSingleton();
+
+            ObjectName.Converter = new ObjectNameConverter(
+                delimiter: ".",
+                startName: "[",
+                endName: "]");
         }
     }
 }

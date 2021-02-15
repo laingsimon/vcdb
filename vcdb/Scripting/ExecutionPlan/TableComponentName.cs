@@ -40,7 +40,7 @@ namespace vcdb.Scripting.ExecutionPlan
 
         internal string DebugString()
         {
-            return $"{Table.DebugString()}.[{Component}]";
+            return $"{Table.DebugString()}.{Table.nameConverter.ConvertToString(Component)}";
         }
     }
 }
