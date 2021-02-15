@@ -15,6 +15,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\vcdb.IntegrationTests\vcdb.IntegrationTests.csproj" />
+    <ProjectReference Include="..\vcdb.MySql\vcdb.MySql.csproj" />
   </ItemGroup>
 
 </Project>

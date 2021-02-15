@@ -5,6 +5,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="MySql.Data" Version="8.0.23" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\vcdb\vcdb.csproj" />
   </ItemGroup>
 
