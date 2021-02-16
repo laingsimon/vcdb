@@ -24,15 +24,13 @@ namespace vcdb.IntegrationTests
         }
 
 #if DEBUG
-        [TestCaseSource(typeof(IntegrationTestScenarios))]
+        [TestCaseSource(typeof(IntegrationTestScenarios)), Explicit]
 #endif
-        public async Task ExecuteScenarios(string scenario)
+        public async Task ExecuteScenario(string scenario)
         {
             var options = GetOptions(scenario);
 
-            var result = await processExecutor.ExecuteScenario(options);
-
-            Assert.That(result.Fail, Is.EqualTo(0), "Scenario failed");
+            await processExecutor.ExecuteScenario(options);
         }
 
         [Test]
@@ -47,6 +45,10 @@ namespace vcdb.IntegrationTests
             var result = await processExecutor.ExecuteScenarios(options);
 
             Assert.That(result.Fail, Is.EqualTo(0), "Some scenarios failed");
+            if (result.Pass == 0)
+            {
+                Assert.Inconclusive("No scenarios found");
+            }
         }
 
         private IntegrationTestOptions GetOptions(string scenarioName)

@@ -11,10 +11,9 @@ namespace vcdb.IntegrationTests.Execution
     {
         private readonly IntegrationTestOptions options;
         private readonly ISql sql;
-        private readonly IntegrationTestExecutionContext executionContext;
+        private readonly IIntegrationTestExecutionContext executionContext;
         private readonly IDocker docker;
         private readonly TaskGate taskGate;
-        private readonly IDatabaseProduct databaseProduct;
         private readonly ScenarioFilter scenarioFilter;
         private readonly IServiceProvider serviceProvider;
 
@@ -22,10 +21,9 @@ namespace vcdb.IntegrationTests.Execution
             IntegrationTestOptions options,
             IServiceProvider serviceProvider,
             ISql sql,
-            IntegrationTestExecutionContext executionContext,
+            IIntegrationTestExecutionContext executionContext,
             IDocker docker,
             TaskGate taskGate,
-            IDatabaseProduct databaseProduct,
             ScenarioFilter scenarioFilter)
         {
             this.options = options;
@@ -34,7 +32,6 @@ namespace vcdb.IntegrationTests.Execution
             this.executionContext = executionContext;
             this.docker = docker;
             this.taskGate = taskGate;
-            this.databaseProduct = databaseProduct;
             this.scenarioFilter = scenarioFilter;
         }
 
@@ -71,7 +68,7 @@ namespace vcdb.IntegrationTests.Execution
                 .Where(d => d.Name == options.ScenarioName || (options.ScenarioName == null && scenarioFilter.IsValidScenario(d)))
                 .ToArray();
 
-            Console.WriteLine($"Executing {scenarios.Length} scenario/s...");
+            options.StandardOutput.WriteLine($"Executing {scenarios.Length} scenario/s...");
 
             var tasks = scenarios.Select(scenarioDirectory => ExecuteScenario(scenarioDirectory, connectionString)).ToArray();
             await Task.WhenAll(tasks);
@@ -92,7 +89,7 @@ namespace vcdb.IntegrationTests.Execution
 
                 var logMessage = $" - {scenarioDirectory.Name}...";
 
-                Console.WriteLine(logMessage);
+                options.StandardOutput.WriteLine(logMessage);
                 var executionResult = (IntegrationTestStatus)0;
 
                 try

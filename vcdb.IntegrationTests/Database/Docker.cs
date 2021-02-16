@@ -80,7 +80,7 @@ namespace vcdb.IntegrationTests.Database
 
             if (process.ExitCode != 0)
             {
-                Console.WriteLine(process.StandardError.ReadToEnd());
+                options.ErrorOutput.WriteLine(process.StandardError.ReadToEnd());
                 return false;
             }
 
@@ -101,7 +101,7 @@ namespace vcdb.IntegrationTests.Database
                 }
             };
 
-            Console.WriteLine("Starting docker desktop...");
+            options.StandardOutput.WriteLine("Starting docker desktop...");
             if (!process.Start())
             {
                 throw new InvalidOperationException("Could not start docker desktop - unable to start process");
@@ -134,12 +134,12 @@ namespace vcdb.IntegrationTests.Database
                 }
             };
 
-            Console.WriteLine($"Starting docker-compose in {process.StartInfo.WorkingDirectory}");
+            options.StandardOutput.WriteLine($"Starting docker-compose in {process.StartInfo.WorkingDirectory}");
 
             var errorData = new StringBuilder();
             process.ErrorDataReceived += (sender, args) =>
             {
-                Console.Error.WriteLine(args.Data);
+                options.ErrorOutput.WriteLine(args.Data);
             };
 
             var dockerContainerStarted = new ManualResetEvent(false);

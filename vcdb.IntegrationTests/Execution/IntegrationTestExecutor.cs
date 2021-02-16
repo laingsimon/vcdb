@@ -14,34 +14,38 @@ namespace vcdb.IntegrationTests.Execution
 {
     internal class IntegrationTestExecutor
     {
-        public async Task<IntegrationTestExecutionContext> ExecuteScenario(IntegrationTestOptions options, bool throwIfTestFails = true)
+        public async Task ExecuteScenario(IntegrationTestOptions options)
         {
             var allOutput = new StringWriter();
-            var result = await ExecuteScenarios(options, allOutput, allOutput);
-            if (result.Fail > 0 && throwIfTestFails)
-                Assert.Fail(allOutput.GetStringBuilder().ToString());
+            var executionContext = new SingleIntegrationTestExecutionContext(allOutput);
+            options.StandardOutput = allOutput;
+            options.ErrorOutput = allOutput;
 
-            return result;
+            await Execute(options, executionContext);
         }
 
-        public async Task<IntegrationTestExecutionContext> ExecuteScenarios(IntegrationTestOptions options, TextWriter output = null, TextWriter error = null)
+        public async Task<MultipleIntegrationTestExecutionContext> ExecuteScenarios(IntegrationTestOptions options)
+        {
+            var executionContext = new MultipleIntegrationTestExecutionContext(options.StandardOutput, options.ErrorOutput);
+            await Execute(options, executionContext);
+            return executionContext;
+        }
+
+        private async Task Execute(IntegrationTestOptions options, IIntegrationTestExecutionContext executionContext)
         {
             var serviceCollection = new ServiceCollection();
             serviceCollection.AddSingleton(options);
-            ConfigureServices(serviceCollection, options, output, error);
+            ConfigureServices(serviceCollection, options, executionContext);
 
             using (var serviceProvider = serviceCollection.BuildServiceProvider())
             {
                 var executor = serviceProvider.GetRequiredService<IntegrationTestFramework>();
 
                 var scenarios = await executor.Execute(options.ConnectionString);
-
-                var context = serviceProvider.GetRequiredService<IntegrationTestExecutionContext>();
-                return context;
             }
         }
 
-        private static void ConfigureServices(ServiceCollection services, IntegrationTestOptions options, TextWriter output = null, TextWriter error = null)
+        private static void ConfigureServices(ServiceCollection services, IntegrationTestOptions options, IIntegrationTestExecutionContext executionContext)
         {
             services.AddSingleton(options.DatabaseProduct);
             services.AddSingleton<IntegrationTestFramework>();
@@ -49,7 +53,7 @@ namespace vcdb.IntegrationTests.Execution
             services.AddScoped<IJson, Json>();
             services.AddScoped<ScenarioDirectoryFactory>();
             services.AddScoped(factory => factory.GetRequiredService<ScenarioDirectoryFactory>().ScenarioDirectory);
-            services.AddSingleton(new IntegrationTestExecutionContext(output, error));
+            services.AddSingleton(executionContext);
             services.AddSingleton<IJsonEqualityComparer, Comparer>();
             services.AddSingleton<IInlineDiffBuilder>(InlineDiffBuilder.Instance);
             services.AddSingleton<ScenarioFilter>();

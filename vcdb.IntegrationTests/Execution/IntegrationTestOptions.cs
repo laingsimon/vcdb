@@ -1,4 +1,6 @@
-﻿using vcdb.IntegrationTests.Output;
+﻿using System;
+using System.IO;
+using vcdb.IntegrationTests.Output;
 
 namespace vcdb.IntegrationTests.Execution
 {
@@ -15,5 +17,7 @@ namespace vcdb.IntegrationTests.Execution
         public bool UseLocalDatabase { get; set; }
         public IDatabaseProduct DatabaseProduct { get; set; }
         public string ScenarioName { get; set; }
+        public TextWriter StandardOutput { get; set; } = Console.Out;
+        public TextWriter ErrorOutput { get; set; } = Console.Error;
     }
 }

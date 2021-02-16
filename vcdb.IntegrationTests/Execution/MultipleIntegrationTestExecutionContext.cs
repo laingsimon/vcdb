@@ -1,33 +1,34 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
 
 namespace vcdb.IntegrationTests.Execution
 {
-    internal class IntegrationTestExecutionContext
+    internal class MultipleIntegrationTestExecutionContext : IIntegrationTestExecutionContext
     {
         private readonly TextWriter output;
         private readonly TextWriter error;
+        private readonly Dictionary<IntegrationTestStatus, int> results = new Dictionary<IntegrationTestStatus, int>();
 
-        public Dictionary<IntegrationTestStatus, int> Results { get; } = new Dictionary<IntegrationTestStatus, int>();
-
-        public IntegrationTestExecutionContext(
-            TextWriter output = null,
-            TextWriter error = null)
+        public MultipleIntegrationTestExecutionContext(TextWriter output, TextWriter error)
         {
-            this.output = output ?? Console.Out;
-            this.error = error ?? Console.Error;
+            this.output = output;
+            this.error = error;
         }
+
+        public int Pass => results.ContainsKey(IntegrationTestStatus.Pass)
+            ? results[IntegrationTestStatus.Pass]
+            : 0;
+        public int Fail => results.Where(pair => pair.Key != IntegrationTestStatus.Pass).Sum(pair => pair.Value);
 
         public IntegrationTestStatus ScenarioComplete(DirectoryInfo scenario, IntegrationTestStatus result, IEnumerable<string> differences)
         {
-            if (!Results.ContainsKey(result))
+            if (!results.ContainsKey(result))
             {
-                Results.Add(result, 0);
+                results.Add(result, 0);
             }
-            Results[result] = Results[result] + 1;
+            results[result] = results[result] + 1;
 
             if (result == IntegrationTestStatus.Pass)
             {
@@ -40,12 +41,6 @@ namespace vcdb.IntegrationTests.Execution
                 error.WriteLine(difference);
             return result;
         }
-
-        public int Pass => Results.ContainsKey(IntegrationTestStatus.Pass)
-            ? Results[IntegrationTestStatus.Pass]
-            : 0;
-
-        public int Fail => Results.Where(pair => pair.Key != IntegrationTestStatus.Pass).Sum(pair => pair.Value);
 
         public void Finished()
         {

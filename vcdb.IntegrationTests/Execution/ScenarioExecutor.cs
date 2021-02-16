@@ -16,7 +16,7 @@ namespace vcdb.IntegrationTests.Execution
     {
         private readonly ISql sql;
         private readonly IJson json;
-        private readonly IntegrationTestExecutionContext executionContext;
+        private readonly IIntegrationTestExecutionContext executionContext;
         private readonly IJsonEqualityComparer jsonEqualityComparer;
         private readonly IntegrationTestOptions options;
         private readonly IScriptDiffer differ;
@@ -27,7 +27,7 @@ namespace vcdb.IntegrationTests.Execution
         public ScenarioExecutor(
             ISql sql,
             IJson json,
-            IntegrationTestExecutionContext executionContext,
+            IIntegrationTestExecutionContext executionContext,
             IJsonEqualityComparer jsonEqualityComparer,
             IntegrationTestOptions options,
             IScriptDiffer differ,
@@ -96,7 +96,7 @@ namespace vcdb.IntegrationTests.Execution
                         }
                         catch (Exception exc)
                         {
-                            Console.Error.WriteLine($"Unable to drop database for {scenario.Name}\r\n{exc}");
+                            options.ErrorOutput.WriteLine($"Unable to drop database for {scenario.Name}\r\n{exc}");
                         }
 
                         return IntegrationTestStatus.Pass;
@@ -116,7 +116,7 @@ namespace vcdb.IntegrationTests.Execution
 
         private void PrintReproductionStatement(DirectoryInfo scenario, VcdbExecutionResult result)
         {
-            Console.WriteLine($"Execute vcdb with the following commandline to debug this scenario:\r\n{scenario.FullName}\r\n$ {result.CommandLine}");
+            options.StandardOutput.WriteLine($"Execute vcdb with the following commandline to debug this scenario:\r\n{scenario.FullName}\r\n$ {result.CommandLine}");
         }
 
         private async Task<IntegrationTestStatus> TestSqlScriptResult(ScenarioSettings settings, VcdbExecutionResult result, DirectoryInfo scenario)
@@ -224,7 +224,7 @@ namespace vcdb.IntegrationTests.Execution
             }
             else
             {
-                Console.WriteLine($"{scenario.Name}: Database.{databaseProduct.Name}.sql was not found in the database directory, the database will be empty when the scenario executes");
+                options.StandardOutput.WriteLine($"{scenario.Name}: Database.{databaseProduct.Name}.sql was not found in the database directory, the database will be empty when the scenario executes");
             }
         }
 

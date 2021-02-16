@@ -8,8 +8,4 @@
     <ProjectReference Include="..\vcdb\vcdb.csproj" />
   </ItemGroup>
 
-  <Target Name="PostBuild" AfterTargets="PostBuildEvent">
-    <Exec Command="echo &quot;Copying files to vcdb build output: '$(TargetDir)..\..\..\..\vcdb\$(OutDir)'...&quot;&#xD;&#xA;xcopy /Y &quot;$(TargetDir)$(ProjectName).*&quot; &quot;$(TargetDir)..\..\..\..\vcdb\$(OutDir)&quot;&#xD;&#xA;&#xD;&#xA;echo &quot;Copying files to integration tests build output: '$(TargetDir)..\..\..\..\vcdb\$(OutDir)'...&quot;&#xD;&#xA;xcopy /Y &quot;$(TargetDir)$(ProjectName).*&quot; &quot;$(TargetDir)..\..\..\..\vcdb\$(OutDir)&quot;" />
-  </Target>
-
 </Project>
