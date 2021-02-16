@@ -1,6 +1,7 @@
 ﻿using CommandLine;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using Newtonsoft.Json;
 using System;
 using System.IO;
 using System.Linq;
@@ -15,6 +16,13 @@ namespace vcdb.IntegrationTests.Execution
 {
     internal class Vcdb
     {
+        private readonly IJson json;
+
+        public Vcdb(IJson json)
+        {
+            this.json = json;
+        }
+
         public async Task<VcdbExecutionResult> Execute(ScenarioSettings settings, DirectoryInfo scenario, string connectionString)
         {
             var standardOutput = new StringWriter();
@@ -26,6 +34,11 @@ namespace vcdb.IntegrationTests.Execution
             };
 
             var options = GetOptions(scenario, settings, connectionString);
+
+            if (!string.IsNullOrEmpty(options.InputFile))
+            {
+                ReformatInputFile(options.InputFile);
+            }
 
             await Program.ExecuteAsync(
                 options,
@@ -41,6 +54,12 @@ namespace vcdb.IntegrationTests.Execution
             result.CommandLine = $"dotnet vcdb.dll {BuildCommandLine(options)}";
 
             return result;
+        }
+
+        private void ReformatInputFile(string inputFile)
+        {
+            var jsonContent = json.ReadJsonFromFile<object>(inputFile);
+            json.WriteJsonContent(jsonContent, inputFile, Formatting.Indented);
         }
 
         private void ModifyServices(IServiceCollection services, DirectoryInfo scenario)

@@ -187,14 +187,15 @@ namespace vcdb.IntegrationTests.Execution
                         : IntegrationTestStatus.Pass,
                     context.Differences.Select(difference => $"- Found a difference: {difference}"));
 
-                var actualOutputFileName = Path.Combine(scenario.FullName, "ActualOutput.json");
+                var actualOutputRelativeFileName = $"ActualOutput.{databaseProduct.Name}.json";
                 if (context.Differences.Any())
                 {
-                    json.WriteJsonContent(actual, actualOutputFileName, Formatting.Indented);
+                    json.WriteJsonContent(actual, actualOutputRelativeFileName, Formatting.Indented);
                     PrintReproductionStatement(scenario, result);
                 }
                 else
                 {
+                    var actualOutputFileName = Path.Combine(scenario.FullName, actualOutputRelativeFileName);
                     File.Delete(actualOutputFileName);
                 }
 

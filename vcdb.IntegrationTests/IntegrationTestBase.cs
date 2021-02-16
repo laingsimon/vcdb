@@ -9,12 +9,18 @@ namespace vcdb.IntegrationTests
     [TestFixture]
     public abstract class IntegrationTestBase
     {
-        private readonly IntegrationTestExecutor processExecutor = new IntegrationTestExecutor();
+        private readonly IntegrationTestExecutor processExecutor;
         private readonly IDatabaseProduct databaseProduct;
 
-        protected IntegrationTestBase(IDatabaseProduct databaseProduct = null)
+        protected IntegrationTestBase(IDatabaseProduct databaseProduct = null, bool? reformatJson = null)
         {
             this.databaseProduct = databaseProduct ?? GetDatabaseProduct();
+            processExecutor = new IntegrationTestExecutor(reformatJson ?? GetReformatJsonOption());
+        }
+
+        private bool GetReformatJsonOption()
+        {
+            return EnvironmentVariable.Get<bool?>("Vcdb_ReformatJsonOnRead") ?? true;
         }
 
         private static IDatabaseProduct GetDatabaseProduct()

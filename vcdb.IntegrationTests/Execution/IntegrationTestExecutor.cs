@@ -3,7 +3,6 @@ using JsonEqualityComparer;
 using Microsoft.Extensions.DependencyInjection;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
-using NUnit.Framework;
 using System.IO;
 using System.Threading.Tasks;
 using vcdb.IntegrationTests.Comparison;
@@ -14,6 +13,13 @@ namespace vcdb.IntegrationTests.Execution
 {
     internal class IntegrationTestExecutor
     {
+        private readonly bool reformatJson;
+
+        public IntegrationTestExecutor(bool reformatJson)
+        {
+            this.reformatJson = reformatJson;
+        }
+
         public async Task ExecuteScenario(IntegrationTestOptions options)
         {
             var allOutput = new StringWriter();
@@ -45,14 +51,11 @@ namespace vcdb.IntegrationTests.Execution
             }
         }
 
-        private static void ConfigureServices(ServiceCollection services, IntegrationTestOptions options, IIntegrationTestExecutionContext executionContext)
+        private void ConfigureServices(ServiceCollection services, IntegrationTestOptions options, IIntegrationTestExecutionContext executionContext)
         {
             services.AddSingleton(options.DatabaseProduct);
             services.AddSingleton<IntegrationTestFramework>();
             services.AddSingleton<ISql, Sql>();
-            services.AddScoped<IJson, Json>();
-            services.AddScoped<ScenarioDirectoryFactory>();
-            services.AddScoped(factory => factory.GetRequiredService<ScenarioDirectoryFactory>().ScenarioDirectory);
             services.AddSingleton(executionContext);
             services.AddSingleton<IJsonEqualityComparer, Comparer>();
             services.AddSingleton<IInlineDiffBuilder>(InlineDiffBuilder.Instance);
@@ -62,12 +65,10 @@ namespace vcdb.IntegrationTests.Execution
                 options.UseLocalDatabase
                     ? typeof(NullDocker)
                     : typeof(Docker));
-
             services.AddSingleton<TaskGate>();
             services.AddSingleton<IScriptDiffer, HeaderCommentIgnoringScriptDiffer>();
             services.AddSingleton<ScriptDiffer>();
             services.AddSingleton<IDifferenceFilter, RegexDifferenceFilter>();
-            services.AddSingleton<Vcdb>();
 
             services.AddSingleton(new JsonSerializer
             {
@@ -78,6 +79,18 @@ namespace vcdb.IntegrationTests.Execution
             });
 
             services.AddScoped<ScenarioExecutor>();
+            services.AddScoped<Vcdb>();
+            if (reformatJson)
+            {
+                services.AddScoped<Json>();
+                services.AddScoped<IJson, ReformattingJson>();
+            }
+            else
+            {
+                services.AddScoped<IJson, Json>();
+            }
+            services.AddScoped<ScenarioDirectoryFactory>();
+            services.AddScoped(factory => factory.GetRequiredService<ScenarioDirectoryFactory>().ScenarioDirectory);
         }
     }
 }

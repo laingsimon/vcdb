@@ -8,6 +8,6 @@ namespace vcdb.IntegrationTests.Content
         JToken ReadJsonContent(string json);
         JToken ReadJsonFromFile(string scenarioRelativePath);
         T ReadJsonFromFile<T>(string scenarioRelativePath);
-        void WriteJsonContent(JToken actual, string fullPath, Formatting formatting);
+        void WriteJsonContent<T>(T actual, string scenarioRelativePath, Formatting formatting);
     }
 }

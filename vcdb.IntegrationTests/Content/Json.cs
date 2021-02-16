@@ -42,9 +42,9 @@ namespace vcdb.IntegrationTests.Content
             }
         }
 
-        public void WriteJsonContent(JToken actual, string fullPath, Formatting formatting)
+        public void WriteJsonContent<T>(T actual, string scenarioRelativePath, Formatting formatting)
         {
-            using (var writer = new StreamWriter(fullPath))
+            using (var writer = new StreamWriter(Path.Combine(scenarioDirectory.FullName, scenarioRelativePath)))
             using (var jsonWriter = new JsonTextWriter(writer)
             {
                 Formatting = formatting
