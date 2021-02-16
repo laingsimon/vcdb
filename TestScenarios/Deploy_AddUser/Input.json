@@ -4,12 +4,12 @@
   },
   "users": {
     "MyUser": {
-        "loginName": "MyLogin_Add"
+      "loginName": "MyLogin_Add"
     },
     "MyOtherUser": {
-        "loginName": "MyOtherLogin_Add",
-        "enabled": false,
-        "defaultSchema": "MySchema"
+      "loginName": "MyOtherLogin_Add",
+      "enabled": false,
+      "defaultSchema": "MySchema"
     }
   }
 }

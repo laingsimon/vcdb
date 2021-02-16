@@ -1,19 +1,25 @@
 {
   "tables": {
-	"dbo.Person": {
-		"columns": {
-			"Id": { "type": "int identity", "nullable": false },
-			"Name": { "type": "nvarchar(255)", "nullable": false },
-            "IsDeleted": {
-                "type": "bit",
-                "nullable": false,
-                "default": 0,
-                "previousNames": [
-                    "Deleted"
-                ]
-            }
-		},
-		"indexes": { }
-	}
+    "dbo.Person": {
+      "columns": {
+        "Id": {
+          "type": "int identity",
+          "nullable": false
+        },
+        "Name": {
+          "type": "nvarchar(255)",
+          "nullable": false
+        },
+        "IsDeleted": {
+          "type": "bit",
+          "nullable": false,
+          "default": 0,
+          "previousNames": [
+            "Deleted"
+          ]
+        }
+      },
+      "indexes": {}
+    }
   }
 }

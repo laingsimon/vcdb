@@ -2,10 +2,12 @@
   "procedures": {
     "[NewSchema].[RegularProcedure]": {
       "definition": "CREATE OR ALTER PROCEDURE [NewSchema].[RegularProcedure]\r\n(\r\n    @name varchar(255)\r\n)\r\nAS\r\nBEGIN\r\n    SELECT @name\r\nEND\r\n",
-      "previousNames": [ "[dbo].[RegularProcedure]" ]
+      "previousNames": [
+        "[dbo].[RegularProcedure]"
+      ]
     }
   },
   "schemas": {
-	"NewSchema": {}
+    "NewSchema": {}
   }
 }

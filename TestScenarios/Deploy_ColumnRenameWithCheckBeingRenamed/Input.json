@@ -1,20 +1,29 @@
 {
   "tables": {
-	"dbo.Person": {
-		"columns": {
-			"Id": { "type": "int identity", "nullable": false },
-			"Name": { 
-                "type": "nvarchar(255)", 
-                "nullable": false,
-                "previousNames": [ "FullName" ]
-            },
-		},
-		"indexes": { },
-        "checks": [ {
-            "check": "len([Name])>3",
-            "name": "CK_Person_ValidFullName",
-            "previousNames": [ "CK_Person_ValidName" ]
-        } ]
-	}
+    "dbo.Person": {
+      "columns": {
+        "Id": {
+          "type": "int identity",
+          "nullable": false
+        },
+        "Name": {
+          "type": "nvarchar(255)",
+          "nullable": false,
+          "previousNames": [
+            "FullName"
+          ]
+        }
+      },
+      "indexes": {},
+      "checks": [
+        {
+          "check": "len([Name])>3",
+          "name": "CK_Person_ValidFullName",
+          "previousNames": [
+            "CK_Person_ValidName"
+          ]
+        }
+      ]
+    }
   }
 }

@@ -1,15 +1,23 @@
 {
   "tables": {
-	"NewSchema.People": {
-		"columns": {
-			"Id": { "type": "int identity", "nullable": false },
-			"Name": { "type": "nvarchar(255)", "nullable": false }
-		},
-        "previousNames": [ "dbo.Person" ],
-		"indexes": { }
-	}
+    "NewSchema.People": {
+      "columns": {
+        "Id": {
+          "type": "int identity",
+          "nullable": false
+        },
+        "Name": {
+          "type": "nvarchar(255)",
+          "nullable": false
+        }
+      },
+      "previousNames": [
+        "dbo.Person"
+      ],
+      "indexes": {}
+    }
   },
   "schemas": {
-	"NewSchema": {}
+    "NewSchema": {}
   }
 }

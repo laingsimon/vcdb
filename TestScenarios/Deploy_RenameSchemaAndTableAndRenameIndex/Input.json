@@ -1,23 +1,37 @@
 {
   "tables": {
-	"NewSchema.People": {
-		"columns": {
-			"Id": { "type": "int identity", "nullable": false },
-			"Name": { "type": "nvarchar(255)", "nullable": false }
-		},
-        "previousNames": [ "OldSchema.Person" ],
-		"indexes": { 
-			"IX_People_Name": {
-				"unique": true,
-				"columns": { "Name": {} },
-				"previousNames": [ "IX_Person_Name" ]
-			}
-		}
-	}
+    "NewSchema.People": {
+      "columns": {
+        "Id": {
+          "type": "int identity",
+          "nullable": false
+        },
+        "Name": {
+          "type": "nvarchar(255)",
+          "nullable": false
+        }
+      },
+      "previousNames": [
+        "OldSchema.Person"
+      ],
+      "indexes": {
+        "IX_People_Name": {
+          "unique": true,
+          "columns": {
+            "Name": {}
+          },
+          "previousNames": [
+            "IX_Person_Name"
+          ]
+        }
+      }
+    }
   },
   "schemas": {
-	"NewSchema": {
-		"previousNames": [ "OldSchema" ]
-	}
+    "NewSchema": {
+      "previousNames": [
+        "OldSchema"
+      ]
+    }
   }
 }

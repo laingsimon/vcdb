@@ -1,14 +1,14 @@
 {
   "tables": {
-	"[dbo].[Person]": {
-		"columns": {
-            "Name": { 
-				"type": "varchar(255)",
-				"collation": "Latin1_General_CS_AI", 
-                "primaryKey": false
-			}
-		}
-	}
+    "[dbo].[Person]": {
+      "columns": {
+        "Name": {
+          "type": "varchar(255)",
+          "collation": "Latin1_General_CS_AI",
+          "primaryKey": false
+        }
+      }
+    }
   },
   "collation": "Latin1_General_CI_AI",
   "permissions": {

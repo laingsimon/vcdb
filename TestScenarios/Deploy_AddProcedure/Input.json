@@ -6,7 +6,7 @@
     },
     "[dbo].[EncryptedProcedure]": {
       "encrypted": true,
-      "definition": "CREATE PROCEDURE [dbo].[EncryptedProcedure]\r\n(\r\n    @id int\r\n)\r\nWITH ENCRYPTION\r\nAS\r\nBEGIN\r\n    SELECT @id * 3\r\nEND\r\n",
+      "definition": "CREATE PROCEDURE [dbo].[EncryptedProcedure]\r\n(\r\n    @id int\r\n)\r\nWITH ENCRYPTION\r\nAS\r\nBEGIN\r\n    SELECT @id * 3\r\nEND\r\n"
     }
   }
 }

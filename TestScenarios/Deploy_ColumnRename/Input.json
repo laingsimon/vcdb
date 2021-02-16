@@ -1,15 +1,20 @@
 {
   "tables": {
-	"dbo.Person": {
-		"columns": {
-			"Id": { "type": "int identity", "nullable": false },
-			"FullName": { 
-                "type": "nvarchar(255)", 
-                "nullable": false,
-                "previousNames": [ "Name" ]
-            },
-		},
-		"indexes": { }
-	}
+    "dbo.Person": {
+      "columns": {
+        "Id": {
+          "type": "int identity",
+          "nullable": false
+        },
+        "FullName": {
+          "type": "nvarchar(255)",
+          "nullable": false,
+          "previousNames": [
+            "Name"
+          ]
+        }
+      },
+      "indexes": {}
+    }
   }
 }

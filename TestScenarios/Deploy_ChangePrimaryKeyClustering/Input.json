@@ -1,13 +1,20 @@
 {
   "tables": {
-	"dbo.Person": {
-		"columns": {
-			"Id": { "type": "int identity", "nullable": false, "primaryKey": true },
-			"Name": { "type": "nvarchar(255)", "nullable": false }
-		},
-        "primaryKey": {
-            "clustered": false
+    "dbo.Person": {
+      "columns": {
+        "Id": {
+          "type": "int identity",
+          "nullable": false,
+          "primaryKey": true
+        },
+        "Name": {
+          "type": "nvarchar(255)",
+          "nullable": false
         }
-	}
+      },
+      "primaryKey": {
+        "clustered": false
+      }
+    }
   }
 }

@@ -1,26 +1,43 @@
 {
   "tables": {
-	"dbo.Person": {
-		"columns": {
-			"Id": { "type": "int identity", "nullable": false },
-			"Name": { "type": "nvarchar(255)", "nullable": false },
-            "FavouriteCar": { "type": "int", "nullable": true }
-		},
-        "foreignKeys": {
-            "FK_Person_TheFavouriteCar": {
-                "referencedTable": "dbo.Car",
-                "columns": {
-                    "FavouriteCar": "Id"
-                },
-                "previousNames": [ "FK_Person_FavouriteCar" ]
-            }
+    "dbo.Person": {
+      "columns": {
+        "Id": {
+          "type": "int identity",
+          "nullable": false
+        },
+        "Name": {
+          "type": "nvarchar(255)",
+          "nullable": false
+        },
+        "FavouriteCar": {
+          "type": "int",
+          "nullable": true
         }
-	},
+      },
+      "foreignKeys": {
+        "FK_Person_TheFavouriteCar": {
+          "referencedTable": "dbo.Car",
+          "columns": {
+            "FavouriteCar": "Id"
+          },
+          "previousNames": [
+            "FK_Person_FavouriteCar"
+          ]
+        }
+      }
+    },
     "dbo.Car": {
-        "columns": {
-            "Id": { "type": "int identity", "nullable": false, "primaryKey": true },
-            "Name": { "type": "nvarchar(255)" }
+      "columns": {
+        "Id": {
+          "type": "int identity",
+          "nullable": false,
+          "primaryKey": true
+        },
+        "Name": {
+          "type": "nvarchar(255)"
         }
+      }
     }
   }
 }

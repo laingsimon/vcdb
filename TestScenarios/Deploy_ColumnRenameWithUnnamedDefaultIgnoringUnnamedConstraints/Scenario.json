@@ -1,7 +1,8 @@
 {
-	"commandLine": " --input Input.json --ignoreUnnamedConstraints",
-	"vcdbBuildConfiguration": "Debug",
-	"vcdbPath": null,
-	"mode": "Deploy",
-	"expectedExitCode": 0
+  "CommandLine": " --input Input.json --ignoreUnnamedConstraints",
+  "Mode": "Deploy",
+  "JsonComparison": null,
+  "ExpectedExitCode": 0,
+  "VcDbBuildConfiguraton": null,
+  "VcDbPath": null
 }

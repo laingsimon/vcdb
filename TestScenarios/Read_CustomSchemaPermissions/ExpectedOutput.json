@@ -1,20 +1,30 @@
 {
   "schemas": {
-	"MySchema": {
-        "permissions": {
-            "grant": { "CONTROL": { "MyUser_Grant": { "withGrant": true } } },
-            "deny": { "CONTROL": [ "MyUser_Deny" ] }
+    "MySchema": {
+      "permissions": {
+        "grant": {
+          "CONTROL": {
+            "MyUser_Grant": {
+              "withGrant": true
+            }
+          }
+        },
+        "deny": {
+          "CONTROL": [
+            "MyUser_Deny"
+          ]
         }
+      }
     }
   },
   "users": {
     "MyUser_Grant": {
-        "type": "DatabaseAuthority",
-        "loginName": "MyLogin_SchemaPermissions_Grant"
+      "type": "DatabaseAuthority",
+      "loginName": "MyLogin_SchemaPermissions_Grant"
     },
     "MyUser_Deny": {
-        "type": "DatabaseAuthority",
-        "loginName": "MyLogin_SchemaPermissions_Deny"
+      "type": "DatabaseAuthority",
+      "loginName": "MyLogin_SchemaPermissions_Deny"
     }
   },
   "permissions": {

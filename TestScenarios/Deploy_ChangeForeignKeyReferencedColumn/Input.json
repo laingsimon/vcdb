@@ -1,29 +1,47 @@
 {
   "tables": {
     "dbo.Car": {
-        "columns": {
-            "Id": { "type": "int identity", "nullable": false },
-            "PublicId": { "type": "int", "nullable": false, "primaryKey": true },
-            "Name": { "type": "nvarchar(255)" }
+      "columns": {
+        "Id": {
+          "type": "int identity",
+          "nullable": false
         },
-        "primaryKey": {
-            "name": "PK_Car"
+        "PublicId": {
+          "type": "int",
+          "nullable": false,
+          "primaryKey": true
+        },
+        "Name": {
+          "type": "nvarchar(255)"
         }
+      },
+      "primaryKey": {
+        "name": "PK_Car"
+      }
     },
-	"dbo.Person": {
-		"columns": {
-			"Id": { "type": "int identity", "nullable": false },
-			"Name": { "type": "nvarchar(255)", "nullable": false },
-            "FavouriteCar": { "type": "int", "nullable": true }
-		},
-        "foreignKeys": {
-            "FK_Person_TheFavouriteCar": {
-                "referencedTable": "dbo.Car",
-                "columns": {
-                    "FavouriteCar": "PublicId"
-                }
-            }
+    "dbo.Person": {
+      "columns": {
+        "Id": {
+          "type": "int identity",
+          "nullable": false
+        },
+        "Name": {
+          "type": "nvarchar(255)",
+          "nullable": false
+        },
+        "FavouriteCar": {
+          "type": "int",
+          "nullable": true
         }
-	}
+      },
+      "foreignKeys": {
+        "FK_Person_TheFavouriteCar": {
+          "referencedTable": "dbo.Car",
+          "columns": {
+            "FavouriteCar": "PublicId"
+          }
+        }
+      }
+    }
   }
 }

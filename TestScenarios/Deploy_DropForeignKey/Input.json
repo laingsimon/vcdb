@@ -1,17 +1,32 @@
 {
   "tables": {
-	"dbo.Person": {
-		"columns": {
-			"Id": { "type": "int identity", "nullable": false },
-			"Name": { "type": "nvarchar(255)", "nullable": false },
-            "FavouriteCar": { "type": "int", "nullable": true }
-		}
-	},
-    "dbo.Car": {
-        "columns": {
-            "Id": { "type": "int identity", "nullable": false, "primaryKey": true },
-            "Name": { "type": "nvarchar(255)" }
+    "dbo.Person": {
+      "columns": {
+        "Id": {
+          "type": "int identity",
+          "nullable": false
+        },
+        "Name": {
+          "type": "nvarchar(255)",
+          "nullable": false
+        },
+        "FavouriteCar": {
+          "type": "int",
+          "nullable": true
         }
+      }
+    },
+    "dbo.Car": {
+      "columns": {
+        "Id": {
+          "type": "int identity",
+          "nullable": false,
+          "primaryKey": true
+        },
+        "Name": {
+          "type": "nvarchar(255)"
+        }
+      }
     }
   }
 }

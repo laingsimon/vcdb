@@ -1,27 +1,27 @@
 {
   "tables": {
-	"[dbo].[Person]": {
-		"columns": {
-			"Id": { 
-				"description": "column description"
-			}
-		},
-		"indexes": { 
-			"IX_Person_Id": {
-				"description": "index description",
-			}
-		},
-		"description": "table description",
-        "primaryKey": {
-            "name": "PK_Person_Id",
-            "description": "primary key description"
+    "[dbo].[Person]": {
+      "columns": {
+        "Id": {
+          "description": "column description"
         }
-	}
+      },
+      "indexes": {
+        "IX_Person_Id": {
+          "description": "index description"
+        }
+      },
+      "description": "table description",
+      "primaryKey": {
+        "name": "PK_Person_Id",
+        "description": "primary key description"
+      }
+    }
   },
   "schemas": {
-	"MySchema": {
-		"description": "schema description"
-	}
+    "MySchema": {
+      "description": "schema description"
+    }
   },
   "description": "database description",
   "permissions": {

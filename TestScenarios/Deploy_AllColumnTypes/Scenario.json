@@ -1,7 +1,8 @@
 {
-	"commandLine": " --input Input.json",
-	"vcdbBuildConfiguration": "Debug",
-	"vcdbPath": null,
-	"mode": "Deploy",
-	"expectedExitCode": 0
+  "CommandLine": " --input Input.json",
+  "Mode": "Deploy",
+  "JsonComparison": null,
+  "ExpectedExitCode": 0,
+  "VcDbBuildConfiguraton": null,
+  "VcDbPath": null
 }

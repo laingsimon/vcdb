@@ -1,42 +1,56 @@
 {
   "tables": {
-	"[dbo].[Person]": {
-        "columns": {
-            "Id": {
-                "type": "int",
-                "primaryKey": false
-            },
-            "Name": {
-                "type": "varchar(255)",
-                "primaryKey": false,
-                "permissions": {
-                    "revoke": { "SELECT": [ "MyUser_Grant" ] }
-                }
-            }
+    "[dbo].[Person]": {
+      "columns": {
+        "Id": {
+          "type": "int",
+          "primaryKey": false
         },
-        "permissions": {
-            "grant": { "SELECT": { "MyUser_Grant": { "withGrant": false } } },
-            "deny": { "SELECT": [ "MyUser_Deny" ] }
+        "Name": {
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "permissions": {
+            "revoke": {
+              "SELECT": [
+                "MyUser_Grant"
+              ]
+            }
+          }
         }
+      },
+      "permissions": {
+        "grant": {
+          "SELECT": {
+            "MyUser_Grant": {
+              "withGrant": false
+            }
+          }
+        },
+        "deny": {
+          "SELECT": [
+            "MyUser_Deny"
+          ]
+        }
+      }
     }
   },
   "users": {
     "MyUser_Grant": {
-        "type": "DatabaseAuthority",
-        "loginName": "MyLogin_ChangeTablePermissions_Grant"
+      "type": "DatabaseAuthority",
+      "loginName": "MyLogin_ChangeTablePermissions_Grant"
     },
     "MyUser_Deny": {
-        "type": "DatabaseAuthority",
-        "loginName": "MyLogin_ChangeTablePermissions_Deny"
+      "type": "DatabaseAuthority",
+      "loginName": "MyLogin_ChangeTablePermissions_Deny"
     }
   },
   "permissions": {
-        "grant": {
-            "CONNECT": {
-                "dbo": {},
-                "MyUser_Deny": {},
-                "MyUser_Grant": {}
-            }
-        }
+    "grant": {
+      "CONNECT": {
+        "dbo": {},
+        "MyUser_Deny": {},
+        "MyUser_Grant": {}
+      }
+    }
   }
 }

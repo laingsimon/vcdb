@@ -1,17 +1,37 @@
 {
   "tables": {
-	"dbo.Person": {
-		"columns": {
-			"Id": { "type": "int identity", "nullable": false },
-			"Name": { "type": "nvarchar(255)", "nullable": false },
-			"Title": { "type": "varchar(10)" },
-			"Age": { "type": "int" },
-			"Price": { "type": "decimal(18, 2)" },
-			"DoB": { "type": "date" },
-			"Deleted": { "type": "bit", "nullable": false, "default": "0" },
-			"UniqueId": { "type": "uniqueidentifier" } 
-		},
-		"indexes": { }
-	}
+    "dbo.Person": {
+      "columns": {
+        "Id": {
+          "type": "int identity",
+          "nullable": false
+        },
+        "Name": {
+          "type": "nvarchar(255)",
+          "nullable": false
+        },
+        "Title": {
+          "type": "varchar(10)"
+        },
+        "Age": {
+          "type": "int"
+        },
+        "Price": {
+          "type": "decimal(18, 2)"
+        },
+        "DoB": {
+          "type": "date"
+        },
+        "Deleted": {
+          "type": "bit",
+          "nullable": false,
+          "default": "0"
+        },
+        "UniqueId": {
+          "type": "uniqueidentifier"
+        }
+      },
+      "indexes": {}
+    }
   }
 }

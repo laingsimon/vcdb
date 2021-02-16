@@ -1,8 +1,10 @@
 {
   "users": {
     "MyNewUser": {
-        "loginName": "MyLogin_Rename",
-        "previousNames": [ "MyUser" ]
+      "loginName": "MyLogin_Rename",
+      "previousNames": [
+        "MyUser"
+      ]
     }
   }
 }

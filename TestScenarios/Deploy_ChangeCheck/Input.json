@@ -1,18 +1,30 @@
 {
   "tables": {
-	"dbo.Person": {
-		"columns": {
-			"Id": { "type": "int identity", "nullable": false },
-			"Name": { "type": "nvarchar(255)", "nullable": false },
-            "Age": { "type": "int", "nullable": false }
-		},
-		"indexes": { },
-        "checks": [ {
-              "check": "[Age]>18"  
-            }, {
-              "name": "CK_Person_ValidName",
-              "check": "LEN([Name])>5"
-            } ]
-	}
+    "dbo.Person": {
+      "columns": {
+        "Id": {
+          "type": "int identity",
+          "nullable": false
+        },
+        "Name": {
+          "type": "nvarchar(255)",
+          "nullable": false
+        },
+        "Age": {
+          "type": "int",
+          "nullable": false
+        }
+      },
+      "indexes": {},
+      "checks": [
+        {
+          "check": "[Age]>18"
+        },
+        {
+          "name": "CK_Person_ValidName",
+          "check": "LEN([Name])>5"
+        }
+      ]
+    }
   }
 }

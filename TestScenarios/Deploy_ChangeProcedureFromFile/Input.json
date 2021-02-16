@@ -6,7 +6,7 @@
     },
     "[dbo].[EncryptedProcedure]": {
       "encrypted": true,
-      "fileDefinition": "dbo.EncryptedProcedure.sql",
+      "fileDefinition": "dbo.EncryptedProcedure.sql"
     }
   }
 }

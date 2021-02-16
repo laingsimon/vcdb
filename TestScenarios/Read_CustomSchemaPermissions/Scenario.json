@@ -1,11 +1,13 @@
 {
-	"commandLine": "--defaultValueHandling Include",
-	"vcdbBuildConfiguration": "Debug",
-	"vcdbPath": null,
-	"mode": "Read",
-	"jsonComparison": {
-		"propertyNameComparer": "OrdinalIgnoreCase",
-		"explicit": true
-	},
-	"expectedExitCode": 0
+  "CommandLine": "--defaultValueHandling Include",
+  "Mode": "Read",
+  "JsonComparison": {
+    "Explicit": true,
+    "TreatJsonStringsAsObjects": false,
+    "InlineOptionsPropertyName": "$ComparisonOptions",
+    "PropertyNameComparer": "OrdinalIgnoreCase"
+  },
+  "ExpectedExitCode": 0,
+  "VcDbBuildConfiguraton": null,
+  "VcDbPath": null
 }

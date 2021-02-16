@@ -4,15 +4,15 @@
   },
   "users": {
     "MyUser": {
-        "loginName": "MyOtherLogin_Change",
-        "defaultSchema": "MySchema"
+      "loginName": "MyOtherLogin_Change",
+      "defaultSchema": "MySchema"
     },
     "MyEnabledUser": {
-        "loginName": "MyEnabledLogin",
-        "enabled": false
+      "loginName": "MyEnabledLogin",
+      "enabled": false
     },
     "MyDisabledUser": {
-        "loginName": "MyDisabledLogin"
+      "loginName": "MyDisabledLogin"
     }
   }
 }

@@ -1,25 +1,28 @@
 {
   "tables": {
-	"[dbo].[Person]": {
-        "columns": {
-            "Id": {
-                "type": "int identity",
-                "nullable": false, 
-                "primaryKey": false
-            },
-            "Name": {
-                "type": "nvarchar(255)",
-                "nullable": false, 
-                "primaryKey": false
-            }
+    "[dbo].[Person]": {
+      "columns": {
+        "Id": {
+          "type": "int identity",
+          "nullable": false,
+          "primaryKey": false
         },
-        "checks": [ {
-              "check": "[Id]>(1)"
-            }, {
-              "name": "CK_Name_LongerThan3",
-              "check": "len([Name])>(3)"
-            } ]
-	}
+        "Name": {
+          "type": "nvarchar(255)",
+          "nullable": false,
+          "primaryKey": false
+        }
+      },
+      "checks": [
+        {
+          "check": "[Id]>(1)"
+        },
+        {
+          "name": "CK_Name_LongerThan3",
+          "check": "len([Name])>(3)"
+        }
+      ]
+    }
   },
   "permissions": {
     "grant": {

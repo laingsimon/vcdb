@@ -1,12 +1,24 @@
 {
   "tables": {
-	"dbo.Person": {
-		"columns": {
-			"Id": { "type": "int identity", "nullable": false },
-			"Name": { "type": "nvarchar(255)", "nullable": false, "default": "Jane Doe", "defaultName": "DF_Person_DefaultName" },
-            "Age": { "type": "int", "nullable": false, "default": -1 }
-		},
-		"indexes": { }
-	}
+    "dbo.Person": {
+      "columns": {
+        "Id": {
+          "type": "int identity",
+          "nullable": false
+        },
+        "Name": {
+          "type": "nvarchar(255)",
+          "nullable": false,
+          "default": "Jane Doe",
+          "defaultName": "DF_Person_DefaultName"
+        },
+        "Age": {
+          "type": "int",
+          "nullable": false,
+          "default": -1
+        }
+      },
+      "indexes": {}
+    }
   }
 }

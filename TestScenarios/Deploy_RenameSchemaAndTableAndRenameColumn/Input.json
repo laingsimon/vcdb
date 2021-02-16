@@ -1,21 +1,30 @@
 {
   "tables": {
-	"NewSchema.People": {
-		"columns": {
-			"Id": { "type": "int identity", "nullable": false },
-			"FullName": { 
-				"type": "nvarchar(255)", 
-				"nullable": false,
-				"previousNames": [ "Name" ]
-			}
-		},
-        "previousNames": [ "OldSchema.Person" ],
-		"indexes": { }
-	}
+    "NewSchema.People": {
+      "columns": {
+        "Id": {
+          "type": "int identity",
+          "nullable": false
+        },
+        "FullName": {
+          "type": "nvarchar(255)",
+          "nullable": false,
+          "previousNames": [
+            "Name"
+          ]
+        }
+      },
+      "previousNames": [
+        "OldSchema.Person"
+      ],
+      "indexes": {}
+    }
   },
   "schemas": {
-	"NewSchema": {
-		"previousNames": [ "OldSchema" ]
-	}
+    "NewSchema": {
+      "previousNames": [
+        "OldSchema"
+      ]
+    }
   }
 }

@@ -11,9 +11,11 @@
       "description": "procedure description",
       "permissions": {
         "grant": {
-            "EXECUTE": {
-                "MyUser": { "WithGrant": false }
+          "EXECUTE": {
+            "MyUser": {
+              "WithGrant": false
             }
+          }
         }
       }
     },
@@ -28,6 +30,6 @@
           "WithGrant": false
         }
       }
-    }  
+    }
   }
 }

@@ -1,19 +1,29 @@
 {
   "tables": {
-	"NewSchema.Person": {
-		"columns": {
-			"Id": { "type": "int identity", "nullable": false },
-			"Name": { "type": "nvarchar(255)", "nullable": false }
-		},
-        "previousNames": [ "dbo.Person" ],
-		"indexes": { },
-        "checks": [ {
-            "name": "CK_Person_StillValidName",
-            "check": "len([Name])>(3)"
-        } ]
-	}
+    "NewSchema.Person": {
+      "columns": {
+        "Id": {
+          "type": "int identity",
+          "nullable": false
+        },
+        "Name": {
+          "type": "nvarchar(255)",
+          "nullable": false
+        }
+      },
+      "previousNames": [
+        "dbo.Person"
+      ],
+      "indexes": {},
+      "checks": [
+        {
+          "name": "CK_Person_StillValidName",
+          "check": "len([Name])>(3)"
+        }
+      ]
+    }
   },
   "schemas": {
-	"NewSchema": {}
+    "NewSchema": {}
   }
 }

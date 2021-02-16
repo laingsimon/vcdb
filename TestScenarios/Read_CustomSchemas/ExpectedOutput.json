@@ -1,6 +1,6 @@
 {
   "schemas": {
-	"MySchema": {}
+    "MySchema": {}
   },
   "permissions": {
     "grant": {

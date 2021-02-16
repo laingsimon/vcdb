@@ -4,23 +4,27 @@
       "definition": "CREATE OR ALTER PROCEDURE [dbo].[RegularProcedure]\r\n(\r\n    @id int\r\n)\r\nAS\r\nBEGIN\r\n    SELECT @id * 3\r\nEND\r\n",
       "permissions": {
         "grant": {
-            "EXECUTE": {
-                "MyUser_Grant": { "withGrant": false }
+          "EXECUTE": {
+            "MyUser_Grant": {
+              "withGrant": false
             }
+          }
         },
         "deny": {
-            "EXECUTE":  [ "MyUser_Deny" ]
+          "EXECUTE": [
+            "MyUser_Deny"
+          ]
         }
       }
     }
   },
   "users": {
     "MyUser_Grant": {
-        "loginName": "MyLogin_ChangeProcedurePermissions_Grant"
+      "loginName": "MyLogin_ChangeProcedurePermissions_Grant"
     },
     "MyUser_Deny": {
-        "loginName": "MyLogin_ChangeProcedurePermissions_Deny",
-        "enabled": true
+      "loginName": "MyLogin_ChangeProcedurePermissions_Deny",
+      "enabled": true
     }
   }
 }

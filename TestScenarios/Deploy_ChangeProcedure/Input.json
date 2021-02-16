@@ -6,7 +6,7 @@
     },
     "[dbo].[EncryptedProcedure]": {
       "encrypted": true,
-      "definition": "CREATE OR ALTER PROCEDURE [dbo].[EncryptedProcedure]\r\n(\r\n    @name varchar(255)\r\n)\r\nWITH ENCRYPTION\r\nAS\r\nBEGIN\r\n    SELECT @name\r\nEND\r\n",
+      "definition": "CREATE OR ALTER PROCEDURE [dbo].[EncryptedProcedure]\r\n(\r\n    @name varchar(255)\r\n)\r\nWITH ENCRYPTION\r\nAS\r\nBEGIN\r\n    SELECT @name\r\nEND\r\n"
     }
   }
 }

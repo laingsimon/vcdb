@@ -2,12 +2,16 @@
   "procedures": {
     "[dbo].[NewRegularProcedure]": {
       "definition": "CREATE PROCEDURE [dbo].[NewRegularProcedure]\r\n(\r\n    @name varchar(255)\r\n)\r\nAS\r\nBEGIN\r\n    SELECT @name\r\nEND\r\n",
-      "previousNames": [ "[dbo].[RegularProcedure]" ]
+      "previousNames": [
+        "[dbo].[RegularProcedure]"
+      ]
     },
     "[dbo].[NewEncryptedProcedure]": {
       "encrypted": true,
       "definition": "CREATE PROCEDURE [dbo].[NewEncryptedProcedure]\r\n(\r\n    @name varchar(255)\r\n)\r\nWITH ENCRYPTION\r\nAS\r\nBEGIN\r\n    SELECT @name\r\nEND\r\n",
-      "previousNames": [ "[dbo].[EncryptedProcedure]" ]
+      "previousNames": [
+        "[dbo].[EncryptedProcedure]"
+      ]
     }
   }
 }
