@@ -46,6 +46,11 @@ CREATE DATABASE {EscapeIdentifier(name)}";
             while ((line = await statement.ReadLineAsync()) != null)
             {
                 var batches = line.Trim().Split(new[] { ';' }, StringSplitOptions.RemoveEmptyEntries);
+                if (batches.Length == 0)
+                {
+                    continue;
+                }
+
                 if (batches.Length == 1)
                 {
                     sqlBatch.AppendLine(line);

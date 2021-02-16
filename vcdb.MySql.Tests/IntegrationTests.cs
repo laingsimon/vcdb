@@ -6,7 +6,5 @@ namespace vcdb.MySql.Tests
     [TestFixture]
     public class IntegrationTests : IntegrationTestBase
     {
-        public IntegrationTests()
-        { }
     }
 }
