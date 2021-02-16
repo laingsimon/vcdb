@@ -8,6 +8,5 @@
     "PropertyNameComparer": "OrdinalIgnoreCase"
   },
   "ExpectedExitCode": 0,
-  "VcDbBuildConfiguraton": null,
   "VcDbPath": null
 }

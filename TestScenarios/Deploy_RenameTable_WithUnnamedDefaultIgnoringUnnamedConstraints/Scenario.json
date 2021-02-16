@@ -3,6 +3,5 @@
   "Mode": "Deploy",
   "JsonComparison": null,
   "ExpectedExitCode": 0,
-  "VcDbBuildConfiguraton": null,
   "VcDbPath": null
 }

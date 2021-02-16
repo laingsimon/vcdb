@@ -9,7 +9,6 @@ namespace vcdb.IntegrationTests.Content
         public string Mode { get; set; }
         public ComparisonOptions JsonComparison { get; set; }
         public int? ExpectedExitCode { get; set; }
-        public string VcDbBuildConfiguraton { get; set; }
         public string VcDbPath { get; set; }
 
         public static readonly ScenarioSettings Default = new ScenarioSettings
