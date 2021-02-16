@@ -18,7 +18,7 @@ namespace vcdb.IntegrationTests.Execution
 
         public IntegrationTestStatus ScenarioComplete(DirectoryInfo scenario, IntegrationTestStatus result, IEnumerable<string> differences)
         {
-            var output = $"{scenario.Name}: {allOutput.GetStringBuilder()}";
+            var output = $"{scenario.Name}: {allOutput.GetStringBuilder()}{string.Join("\r\n", differences)}";
 
             Assert.That(result, Is.EqualTo(IntegrationTestStatus.Pass), output);
             Assert.That(differences, Is.Empty, output);
