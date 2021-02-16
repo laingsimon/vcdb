@@ -17,10 +17,12 @@ namespace vcdb.IntegrationTests.Execution
     internal class Vcdb
     {
         private readonly IJson json;
+        private readonly IDatabaseProduct databaseProduct;
 
-        public Vcdb(IJson json)
+        public Vcdb(IJson json, IDatabaseProduct databaseProduct)
         {
             this.json = json;
+            this.databaseProduct = databaseProduct;
         }
 
         public async Task<VcdbExecutionResult> Execute(ScenarioSettings settings, DirectoryInfo scenario, string connectionString)
@@ -72,7 +74,7 @@ namespace vcdb.IntegrationTests.Execution
             services.AddSingleton<ScriptExecutionPlanManager>();
         }
 
-        private static CommandLine.Options GetOptions(DirectoryInfo scenario, ScenarioSettings settings, string connectionString)
+        private CommandLine.Options GetOptions(DirectoryInfo scenario, ScenarioSettings settings, string connectionString)
         {
             var commandLine = new[]
             {
@@ -81,7 +83,9 @@ namespace vcdb.IntegrationTests.Execution
                 "--connectionString",
                 connectionString,
                 "--database",
-                scenario.Name
+                scenario.Name,
+                "--type",
+                databaseProduct.Name
             }.Concat(StringExtensions.SplitCommandLine(settings.CommandLine));
 
             var options = new CommandLine.Options

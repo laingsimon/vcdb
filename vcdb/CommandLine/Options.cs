@@ -19,7 +19,7 @@ namespace vcdb.CommandLine
         public string InputFile { get; set; }
 
         [Option('t', "type", Required = false, HelpText = "The type of database server to connect to", Default = DatabaseVersion.Default)]
-        internal string DatabaseType { get; set; }
+        public string DatabaseType { get; set; }
 
         [Option("ignoreUnnamedConstraints", Default = false, HelpText = "Don't create rename scripts for unnamed default/check constraints when its table or column changes name")]
         public bool IgnoreUnnamedConstraints { get; set; }
