@@ -1,7 +1,7 @@
 ﻿using JsonEqualityComparer;
 using Newtonsoft.Json;
 using System;
-using System.Data.SqlClient;
+using System.Data.Common;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -128,7 +128,7 @@ namespace vcdb.IntegrationTests.Execution
 
                 return executionContext.ScenarioComplete(scenario, IntegrationTestStatus.Pass, new string[0] { });
             }
-            catch (SqlException exc)
+            catch (DbException exc)
             {
                 PrintReproductionStatement(scenario, result);
                 return executionContext.ScenarioComplete(scenario, IntegrationTestStatus.InvalidSql, new[] { exc.Message });
