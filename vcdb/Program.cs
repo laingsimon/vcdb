@@ -79,7 +79,19 @@ namespace vcdb
 
                 using (var serviceProvider = serviceCollection.BuildServiceProvider())
                 {
-                    var executor = serviceProvider.GetRequiredService<IExecutor>();
+                    IExecutor executor = null;
+                    try
+                    {
+                        executor = serviceProvider.GetRequiredService<IExecutor>();
+                    }
+                    catch (Exception exc)
+                    {
+                        errorOutput.WriteLine($"Could not initialise an {nameof(IExecutor)}, maybe one of its dependencies hasn't been registered?");
+                        errorOutput.WriteLine($"Make sure all required dependencies are registered in a {nameof(IServicesInstaller)} in the vcdb.{options.GetDatabaseVersion().ProductName}.dll");
+                        errorOutput.WriteLine(exc.Message);
+                        setExitCode(-3);
+                        return;
+                    }
 
                     try
                     {
