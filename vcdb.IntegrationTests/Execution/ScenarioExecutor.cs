@@ -72,7 +72,7 @@ namespace vcdb.IntegrationTests.Execution
             else if (result.ExitCode != 0)
             {
                 PrintReproductionStatement(scenario, result);
-                return executionContext.ScenarioComplete(scenario, IntegrationTestStatus.UnexpectedExitCode, new[] { $"vcdb process exited with non-success exit code: {result.ExitCode}", result.ErrorOutput });
+                return executionContext.ScenarioComplete(scenario, (IntegrationTestStatus)result.ExitCode, new[] { $"vcdb process exited with non-success exit code: {result.ExitCode}", result.ErrorOutput });
             }
 
             if (settings.Mode == null || settings.Mode == CommandLine.ExecutionMode.Read)

@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
+using NUnit.Framework;
 using System;
 using System.IO;
 using System.Linq;
@@ -90,11 +91,14 @@ namespace vcdb.IntegrationTests.Execution
                 var logMessage = $" - {scenario.Name}...";
 
                 options.StandardOutput.WriteLine(logMessage);
-                var executionResult = (IntegrationTestStatus)0;
 
                 try
                 {
-                    executionResult = await scenarioExecutor.Execute(scenario, connectionString);
+                    await scenarioExecutor.Execute(scenario, connectionString);
+                }
+                catch (AssertionException)
+                {
+                    throw;
                 }
                 catch (Exception exc)
                 {

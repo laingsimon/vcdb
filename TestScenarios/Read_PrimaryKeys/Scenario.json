@@ -7,6 +7,6 @@
     "InlineOptionsPropertyName": "$ComparisonOptions",
     "PropertyNameComparer": "OrdinalIgnoreCase"
   },
-  "ExpectedExitCode": 0,
+  "ExpectedExitCode": null,
   "VcDbPath": null
 }

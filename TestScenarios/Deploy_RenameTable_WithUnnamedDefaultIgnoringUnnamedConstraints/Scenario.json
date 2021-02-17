@@ -2,6 +2,6 @@
   "CommandLine": "--input Input.json --ignoreUnnamedConstraints",
   "Mode": "Deploy",
   "JsonComparison": null,
-  "ExpectedExitCode": 0,
+  "ExpectedExitCode": null,
   "VcDbPath": null
 }
