@@ -8,6 +8,7 @@ namespace vcdb.MySql
     {
         public void RegisterServices(IServiceCollection services, DatabaseVersion databaseVersion)
         {
+            services.AddSingleton<IConnectionFactory, ConnectionFactory>();
             //services.InNamespace<MySqlCheckConstraintRepository>().AddAsSingleton();
             //services.InNamespace<MySqlCheckConstraintScriptBuilder>().AddAsSingleton();
 
