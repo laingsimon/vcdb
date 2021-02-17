@@ -75,7 +75,7 @@ namespace vcdb.IntegrationTests.Execution
                 return executionContext.ScenarioComplete(scenario, IntegrationTestStatus.UnexpectedExitCode, new[] { $"vcdb process exited with non-success exit code: {result.ExitCode}", result.ErrorOutput });
             }
 
-            if (settings.Mode == null || settings.Mode.Equals("Read", StringComparison.OrdinalIgnoreCase))
+            if (settings.Mode == null || settings.Mode == CommandLine.ExecutionMode.Read)
             {
                 return await CompareJsonResult(settings, result, scenario);
             }
@@ -207,7 +207,8 @@ namespace vcdb.IntegrationTests.Execution
 
         private ScenarioSettings ReadScenarioSettings(DirectoryInfo scenario)
         {
-            var scenarioSettingsFile = scenario.GetFiles("Scenario.json").SingleOrDefault();
+            var scenarioSettingsFile = scenario.GetFiles($"Scenario.{databaseProduct.Name}.json").SingleOrDefault()
+                ?? scenario.GetFiles($"Scenario.json").SingleOrDefault();
             if (scenarioSettingsFile == null)
                 return null;
 

@@ -1,5 +1,5 @@
 {
-  "CommandLine": " --input Input.json --ignoreUnnamedConstraints",
+  "CommandLine": " --ignoreUnnamedConstraints",
   "Mode": "Deploy",
   "JsonComparison": null,
   "ExpectedExitCode": 0,

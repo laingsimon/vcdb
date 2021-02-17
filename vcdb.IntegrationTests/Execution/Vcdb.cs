@@ -6,6 +6,7 @@ using System;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using vcdb.CommandLine;
 using vcdb.IntegrationTests.Content;
 using vcdb.IntegrationTests.Output;
 using vcdb.Output;
@@ -72,14 +73,14 @@ namespace vcdb.IntegrationTests.Execution
 
             ReplaceSingleton<IScriptExecutionPlanManager, InterceptingScriptExecutionPlanManager>(services);
             services.AddSingleton<ScriptExecutionPlanManager>();
+
+            services.AddSingleton(databaseProduct);
         }
 
-        private CommandLine.Options GetOptions(DirectoryInfo scenario, ScenarioSettings settings, string connectionString)
+        private Options GetOptions(DirectoryInfo scenario, ScenarioSettings settings, string connectionString)
         {
             var commandLine = new[]
             {
-                "--mode",
-                settings.Mode,
                 "--connectionString",
                 connectionString,
                 "--database",
@@ -87,11 +88,21 @@ namespace vcdb.IntegrationTests.Execution
                 "--type",
                 databaseProduct.Name
             }.Concat(StringExtensions.SplitCommandLine(settings.CommandLine));
+            if (settings.Mode != null)
+            {
+                commandLine = commandLine.Concat(new[] {
+                    "--mode",
+                    settings.Mode.ToString()
+                }).ToArray();
+            }
 
-            var options = new CommandLine.Options
+            var options = new Options
             {
                 WorkingDirectory = scenario.FullName,
-                AssemblySearchPaths = new[] { Path.GetFullPath(Path.Combine(typeof(Vcdb).Assembly.Location, $@"..\..\..\..\..\vcdb\bin\{BuildConfiguration.Current}\netcoreapp3.1")) }
+                AssemblySearchPaths = new[] { Path.GetFullPath(Path.Combine(typeof(Vcdb).Assembly.Location, $@"..\..\..\..\..\vcdb\bin\{BuildConfiguration.Current}\netcoreapp3.1")) },
+                InputFile = settings.Mode == ExecutionMode.Deploy
+                    ? GetInputFileName(scenario)
+                    : null
             };
 
             var result = new Parser(settings =>
@@ -104,6 +115,15 @@ namespace vcdb.IntegrationTests.Execution
                 return options;
 
             throw new InvalidOperationException("Unable to parse commandline");
+        }
+
+        private string GetInputFileName(DirectoryInfo scenario)
+        {
+            var databaseSpecificInput = Path.Combine(scenario.FullName, $"Input.{databaseProduct.Name}.json");
+
+            return File.Exists(databaseSpecificInput)
+                ? Path.GetFileName(databaseSpecificInput)
+                : "Input.json";
         }
 
         private static IServiceCollection ReplaceSingleton<TInterface, TInstance>(IServiceCollection services)

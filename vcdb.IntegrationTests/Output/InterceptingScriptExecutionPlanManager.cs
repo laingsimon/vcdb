@@ -14,11 +14,13 @@ namespace vcdb.IntegrationTests.Output
     {
         private readonly ScriptExecutionPlanManager actualManager;
         private readonly DirectoryInfo scenario;
+        private readonly IDatabaseProduct databaseProduct;
 
-        public InterceptingScriptExecutionPlanManager(ScriptExecutionPlanManager actualManager, DirectoryInfo scenario)
+        public InterceptingScriptExecutionPlanManager(ScriptExecutionPlanManager actualManager, DirectoryInfo scenario, IDatabaseProduct databaseProduct)
         {
             this.actualManager = actualManager;
             this.scenario = scenario;
+            this.databaseProduct = databaseProduct;
         }
 
         public ScriptExecutionPlan CreateExecutionPlan(IEnumerable<IScriptTask> tasks)
@@ -33,7 +35,7 @@ namespace vcdb.IntegrationTests.Output
 
         private void WritePlanToDisk(PlanDetails planDetails)
         {
-            var outputFilePath = Path.Combine(scenario.FullName, "ExecutionPlan.json");
+            var outputFilePath = Path.Combine(scenario.FullName, $"ExecutionPlan.{databaseProduct.Name}.json");
             File.WriteAllText(
                 outputFilePath,
                 JsonConvert.SerializeObject(

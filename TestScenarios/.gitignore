@@ -1,4 +1,6 @@
-ActualOutput.json
-ActualOutput.sql
+ActualOutput.*.json
+ActualOutput.*.sql
+Differences.*.json
+ExecutionPlan.*.json
 Differences.json
 ExecutionPlan.json
