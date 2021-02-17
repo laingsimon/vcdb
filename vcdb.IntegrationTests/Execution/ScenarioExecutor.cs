@@ -142,7 +142,7 @@ namespace vcdb.IntegrationTests.Execution
 
         private async Task<IntegrationTestStatus> CompareSqlScriptResult(VcdbExecutionResult result, Scenario scenario)
         {
-            using (var expectedReader = new StreamReader(scenario.File($"ExpectedOutput.{databaseProduct.Name}.sql")))
+            using (var expectedReader = scenario.Read($"ExpectedOutput.{databaseProduct.Name}.sql"))
             {
                 var differences = differ.CompareScripts(await expectedReader.ReadToEndAsync(), result.Output);
                 var filteredDifferences = differenceFilter.FilterDifferences(differences).ToArray();
@@ -172,7 +172,7 @@ namespace vcdb.IntegrationTests.Execution
                 }
 
                 var actual = json.ReadJsonContent(result.Output);
-                var expected = json.ReadJsonFromFile("ExpectedOutput.json");
+                var expected = json.ReadJsonFromFile(scenario.FindFile($"ExpectedOutput.{databaseProduct.Name}.json", "ExpectedOutput.json"));
                 var context = new ComparisonContext
                 {
                     DefaultComparisonOptions = settings.JsonComparison ?? new ComparisonOptions { PropertyNameComparer = StringComparison.OrdinalIgnoreCase }
@@ -207,7 +207,7 @@ namespace vcdb.IntegrationTests.Execution
 
         private ScenarioSettings ReadScenarioSettings(Scenario scenario)
         {
-            var scenarioSettingsFile = scenario.FirstFile($"Scenario.{databaseProduct.Name}.json", "Scenario.json");
+            var scenarioSettingsFile = scenario.FindFile($"Scenario.{databaseProduct.Name}.json", "Scenario.json");
             if (scenarioSettingsFile == null)
                 return null;
 
@@ -218,7 +218,7 @@ namespace vcdb.IntegrationTests.Execution
         {
             await Retry(async () => await sql.ExecuteBatchedSql(new StringReader(databaseProduct.InitialiseDatabase(scenario.Name))));
 
-            var databaseInitialisationFile = scenario.OpenText($"Database.{databaseProduct.Name}.sql");
+            var databaseInitialisationFile = scenario.Read($"Database.{databaseProduct.Name}.sql");
             if (databaseInitialisationFile != null)
             {
                 await sql.ExecuteBatchedSql(databaseInitialisationFile, scenario.Name);

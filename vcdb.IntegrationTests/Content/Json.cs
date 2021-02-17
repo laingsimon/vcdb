@@ -17,7 +17,7 @@ namespace vcdb.IntegrationTests.Content
 
         public JToken ReadJsonFromFile(string scenarioRelativePath)
         {
-            using (var reader = new StreamReader(scenario.File(scenarioRelativePath)))
+            using (var reader = scenario.Read(scenarioRelativePath))
             using (var jsonReader = new JsonTextReader(reader))
             {
                 return (JToken)jsonSerializer.Deserialize<object>(jsonReader);
@@ -26,7 +26,7 @@ namespace vcdb.IntegrationTests.Content
 
         public T ReadJsonFromFile<T>(string scenarioRelativePath)
         {
-            using (var reader = new StreamReader(scenario.File(scenarioRelativePath)))
+            using (var reader = scenario.Read(scenarioRelativePath))
             using (var jsonReader = new JsonTextReader(reader))
             {
                 return jsonSerializer.Deserialize<T>(jsonReader);
@@ -44,7 +44,7 @@ namespace vcdb.IntegrationTests.Content
 
         public void WriteJsonContent<T>(T actual, string scenarioRelativePath, Formatting formatting)
         {
-            using (var writer = new StreamWriter(scenario.File(scenarioRelativePath)))
+            using (var writer = scenario.Write(scenarioRelativePath))
             using (var jsonWriter = new JsonTextWriter(writer)
             {
                 Formatting = formatting

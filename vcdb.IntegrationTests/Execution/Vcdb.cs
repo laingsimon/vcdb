@@ -119,7 +119,7 @@ namespace vcdb.IntegrationTests.Execution
 
         private string GetInputFileName(Scenario scenario)
         {
-            return scenario.FirstFile($"Input.{databaseProduct.Name}.json", "Input.json");
+            return scenario.FindFile($"Input.{databaseProduct.Name}.json", "Input.json");
         }
 
         private static IServiceCollection ReplaceSingleton<TInterface, TInstance>(IServiceCollection services)
