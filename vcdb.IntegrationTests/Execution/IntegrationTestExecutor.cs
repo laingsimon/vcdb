@@ -13,13 +13,6 @@ namespace vcdb.IntegrationTests.Execution
 {
     internal class IntegrationTestExecutor
     {
-        private readonly bool reformatJson;
-
-        public IntegrationTestExecutor(bool reformatJson)
-        {
-            this.reformatJson = reformatJson;
-        }
-
         public async Task ExecuteScenario(IntegrationTestOptions options)
         {
             var allOutput = new StringWriter();
@@ -80,15 +73,7 @@ namespace vcdb.IntegrationTests.Execution
 
             services.AddScoped<ScenarioExecutor>();
             services.AddScoped<Vcdb>();
-            if (reformatJson)
-            {
-                services.AddScoped<Json>();
-                services.AddScoped<IJson, ReformattingJson>();
-            }
-            else
-            {
-                services.AddScoped<IJson, Json>();
-            }
+            services.AddScoped<IJson, ReformattingJson>();
             services.AddScoped<ScenarioScope>();
             services.AddScoped(scope => scope.GetRequiredService<ScenarioScope>().Scenario);
         }

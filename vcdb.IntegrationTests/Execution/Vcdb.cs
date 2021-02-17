@@ -19,11 +19,13 @@ namespace vcdb.IntegrationTests.Execution
     {
         private readonly IJson json;
         private readonly IDatabaseProduct databaseProduct;
+        private readonly IntegrationTestOptions options;
 
-        public Vcdb(IJson json, IDatabaseProduct databaseProduct)
+        public Vcdb(IJson json, IDatabaseProduct databaseProduct, IntegrationTestOptions options)
         {
             this.json = json;
             this.databaseProduct = databaseProduct;
+            this.options = options;
         }
 
         public async Task<VcdbExecutionResult> Execute(ScenarioSettings settings, Scenario scenario, string connectionString)
@@ -96,9 +98,10 @@ namespace vcdb.IntegrationTests.Execution
                 }).ToArray();
             }
 
+            var workingDirectory = Path.Combine(this.options.ScenariosPath, scenario.Name);
             var options = new Options
             {
-                WorkingDirectory = scenario.FullName,
+                WorkingDirectory = workingDirectory,
                 AssemblySearchPaths = new[] { Path.GetFullPath(Path.Combine(typeof(Vcdb).Assembly.Location, $@"..\..\..\..\..\vcdb\bin\{BuildConfiguration.Current}\netcoreapp3.1")) },
                 InputFile = settings.Mode == ExecutionMode.Deploy
                     ? GetInputFileName(scenario)

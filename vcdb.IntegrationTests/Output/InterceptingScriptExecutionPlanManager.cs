@@ -35,21 +35,23 @@ namespace vcdb.IntegrationTests.Output
 
         private void WritePlanToDisk(PlanDetails planDetails)
         {
-            var outputFilePath = Path.Combine(scenario.FullName, $"ExecutionPlan.{databaseProduct.Name}.json");
-            File.WriteAllText(
-                outputFilePath,
-                JsonConvert.SerializeObject(
-                    planDetails,
-                    new JsonSerializerSettings
-                    {
-                        Formatting = Formatting.Indented,
-                        Converters =
+            using (var outputFile = scenario.Write($"ExecutionPlan.{databaseProduct.Name}.json"))
+            {
+                var serialised = JsonConvert.SerializeObject(
+                        planDetails,
+                        new JsonSerializerSettings
                         {
+                            Formatting = Formatting.Indented,
+                            Converters =
+                            {
                             new StringEnumConverter(),
                             new TableComponentNameConverter()
-                        },
-                        NullValueHandling = NullValueHandling.Ignore
-                    }));
+                            },
+                            NullValueHandling = NullValueHandling.Ignore
+                        });
+
+                outputFile.WriteLine(serialised);
+            }
         }
 
         private PlanDetails GetPlanDetails(IReadOnlyCollection<IScriptTask> tasksArray, ScriptExecutionPlan plan)

@@ -12,15 +12,10 @@ namespace vcdb.IntegrationTests
         private readonly IntegrationTestExecutor processExecutor;
         private readonly IDatabaseProduct databaseProduct;
 
-        protected IntegrationTestBase(IDatabaseProduct databaseProduct = null, bool? reformatJson = null)
+        protected IntegrationTestBase(IDatabaseProduct databaseProduct = null)
         {
             this.databaseProduct = databaseProduct ?? GetDatabaseProduct();
-            processExecutor = new IntegrationTestExecutor(reformatJson ?? GetReformatJsonOption());
-        }
-
-        private bool GetReformatJsonOption()
-        {
-            return EnvironmentVariable.Get<bool?>("Vcdb_ReformatJsonOnRead") ?? true;
+            processExecutor = new IntegrationTestExecutor();
         }
 
         private static IDatabaseProduct GetDatabaseProduct()

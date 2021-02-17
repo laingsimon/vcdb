@@ -24,19 +24,21 @@ namespace vcdb.IntegrationTests.Output
         {
             var difference = databaseComparer.GetDatabaseDifferences(context, currentDatabase, requiredDatabase);
 
-            var outputFilePath = Path.Combine(scenario.FullName, $"Differences.{databaseProduct.Name}.json");
-            File.WriteAllText(
-                outputFilePath,
-                JsonConvert.SerializeObject(
-                    difference,
-                    new JsonSerializerSettings
-                    {
-                        Formatting = Formatting.Indented,
-                        Converters =
+            using (var outputFile = scenario.Write($"Differences.{databaseProduct.Name}.json"))
+            {
+                var serialised = JsonConvert.SerializeObject(
+                        difference,
+                        new JsonSerializerSettings
                         {
+                            Formatting = Formatting.Indented,
+                            Converters =
+                            {
                             new StringEnumConverter()
-                        }
-                    }));
+                            }
+                        });
+
+                outputFile.WriteLine(serialised);
+            }
 
             return difference;
         }

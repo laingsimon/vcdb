@@ -82,14 +82,14 @@ namespace vcdb.IntegrationTests.Execution
             else
             {
                 var executionResult = await CompareSqlScriptResult(result, scenario);
-                var actualOutputFilePath = Path.Combine(scenario.FullName, $"ActualOutput.{databaseProduct.Name}.sql");
+                var actualOutputFileName = $"ActualOutput.{databaseProduct.Name}.sql";
 
                 if (executionResult == IntegrationTestStatus.Pass)
                 {
                     var scriptExecutionResult = await TestSqlScriptResult(result, scenario);
                     if (scriptExecutionResult == IntegrationTestStatus.Pass)
                     {
-                        File.Delete(actualOutputFilePath);
+                        scenario.Delete(actualOutputFileName);
                         try
                         {
                             await DropDatabase(scenario);
@@ -102,12 +102,18 @@ namespace vcdb.IntegrationTests.Execution
                         return IntegrationTestStatus.Pass;
                     }
 
-                    File.WriteAllText(actualOutputFilePath, result.Output);
+                    using (var actualOutputFile = scenario.Write(actualOutputFileName))
+                    {
+                        actualOutputFile.WriteLine(result.Output);
+                    }
                     return scriptExecutionResult;
                 }
                 else
                 {
-                    File.WriteAllText(actualOutputFilePath, result.Output);
+                    using (var actualOutputFile = scenario.Write(actualOutputFileName))
+                    {
+                        actualOutputFile.WriteLine(result.Output);
+                    }
                     PrintReproductionStatement(scenario, result);
                     return executionResult;
                 }
@@ -116,7 +122,8 @@ namespace vcdb.IntegrationTests.Execution
 
         private void PrintReproductionStatement(Scenario scenario, VcdbExecutionResult result)
         {
-            options.StandardOutput.WriteLine($"Execute vcdb with the following commandline to debug this scenario:\r\n{scenario.FullName}\r\n$ {result.CommandLine}");
+            var fullPath = Path.Combine(options.ScenariosPath, scenario.Name);
+            options.StandardOutput.WriteLine($"Execute vcdb with the following commandline to debug this scenario:\r\n{fullPath}\r\n$ {result.CommandLine}");
         }
 
         private async Task<IntegrationTestStatus> TestSqlScriptResult(VcdbExecutionResult result, Scenario scenario)
@@ -172,7 +179,7 @@ namespace vcdb.IntegrationTests.Execution
                 }
 
                 var actual = json.ReadJsonContent(result.Output);
-                var expected = json.ReadJsonFromFile(scenario.FindFile($"ExpectedOutput.{databaseProduct.Name}.json", "ExpectedOutput.json"));
+                var expected = json.ReadJsonFromFile($"ExpectedOutput.{databaseProduct.Name}.json", "ExpectedOutput.json");
                 var context = new ComparisonContext
                 {
                     DefaultComparisonOptions = settings.JsonComparison ?? new ComparisonOptions { PropertyNameComparer = StringComparison.OrdinalIgnoreCase }
@@ -195,8 +202,7 @@ namespace vcdb.IntegrationTests.Execution
                 }
                 else
                 {
-                    var actualOutputFileName = Path.Combine(scenario.FullName, actualOutputRelativeFileName);
-                    File.Delete(actualOutputFileName);
+                    scenario.Delete(actualOutputRelativeFileName);
                 }
 
                 return context.Differences.Any()
@@ -207,26 +213,13 @@ namespace vcdb.IntegrationTests.Execution
 
         private ScenarioSettings ReadScenarioSettings(Scenario scenario)
         {
-            var scenarioSettingsFile = scenario.FindFile($"Scenario.{databaseProduct.Name}.json", "Scenario.json");
-            if (scenarioSettingsFile == null)
-                return null;
-
-            return json.ReadJsonFromFile<ScenarioSettings>(scenarioSettingsFile);
+            return json.ReadJsonFromFile<ScenarioSettings>($"Scenario.{databaseProduct.Name}.json", "Scenario.json");
         }
 
         private async Task InitialiseDatabase(Scenario scenario)
         {
             await Retry(async () => await sql.ExecuteBatchedSql(new StringReader(databaseProduct.InitialiseDatabase(scenario.Name))));
-
-            var databaseInitialisationFile = scenario.Read($"Database.{databaseProduct.Name}.sql");
-            if (databaseInitialisationFile != null)
-            {
-                await sql.ExecuteBatchedSql(databaseInitialisationFile, scenario.Name);
-            }
-            else
-            {
-                options.StandardOutput.WriteLine($"{scenario.Name}: Database.{databaseProduct.Name}.sql was not found in the database directory, the database will be empty when the scenario executes");
-            }
+            await sql.ExecuteBatchedSql(scenario.Read($"Database.{databaseProduct.Name}.sql"), scenario.Name);
         }
 
         private async Task DropDatabase(Scenario scenario)
