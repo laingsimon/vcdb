@@ -82,8 +82,8 @@ namespace vcdb.IntegrationTests.Execution
             using (taskGate.StartTask())
             using (var scope = serviceProvider.CreateScope())
             {
-                var scenarioDirectoryFactory = scope.ServiceProvider.GetRequiredService<ScenarioFactory>();
-                scenarioDirectoryFactory.Scenario = scenario;
+                var scenarioScope = scope.ServiceProvider.GetRequiredService<ScenarioScope>();
+                scenarioScope.Scenario = scenario;
 
                 var scenarioExecutor = scope.ServiceProvider.GetRequiredService<ScenarioExecutor>();
 

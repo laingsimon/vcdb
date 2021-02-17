@@ -1,6 +1,6 @@
 ﻿namespace vcdb.IntegrationTests.Execution
 {
-    internal class ScenarioFactory
+    internal class ScenarioScope
     {
         public Scenario Scenario { get; set; }
     }
