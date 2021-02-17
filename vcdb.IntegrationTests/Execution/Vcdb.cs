@@ -26,7 +26,7 @@ namespace vcdb.IntegrationTests.Execution
             this.databaseProduct = databaseProduct;
         }
 
-        public async Task<VcdbExecutionResult> Execute(ScenarioSettings settings, DirectoryInfo scenario, string connectionString)
+        public async Task<VcdbExecutionResult> Execute(ScenarioSettings settings, Scenario scenario, string connectionString)
         {
             var standardOutput = new StringWriter();
             var errorOutput = new StringWriter();
@@ -65,7 +65,7 @@ namespace vcdb.IntegrationTests.Execution
             json.WriteJsonContent(jsonContent, inputFile, Formatting.Indented);
         }
 
-        private void ModifyServices(IServiceCollection services, DirectoryInfo scenario)
+        private void ModifyServices(IServiceCollection services, Scenario scenario)
         {
             services.AddSingleton(scenario);
             ReplaceSingleton<IDatabaseComparer, EmittingDatabaseComparer>(services);
@@ -77,7 +77,7 @@ namespace vcdb.IntegrationTests.Execution
             services.AddSingleton(databaseProduct);
         }
 
-        private Options GetOptions(DirectoryInfo scenario, ScenarioSettings settings, string connectionString)
+        private Options GetOptions(Scenario scenario, ScenarioSettings settings, string connectionString)
         {
             var commandLine = new[]
             {
@@ -117,13 +117,9 @@ namespace vcdb.IntegrationTests.Execution
             throw new InvalidOperationException("Unable to parse commandline");
         }
 
-        private string GetInputFileName(DirectoryInfo scenario)
+        private string GetInputFileName(Scenario scenario)
         {
-            var databaseSpecificInput = Path.Combine(scenario.FullName, $"Input.{databaseProduct.Name}.json");
-
-            return File.Exists(databaseSpecificInput)
-                ? Path.GetFileName(databaseSpecificInput)
-                : "Input.json";
+            return scenario.FirstFile($"Input.{databaseProduct.Name}.json", "Input.json");
         }
 
         private static IServiceCollection ReplaceSingleton<TInterface, TInstance>(IServiceCollection services)

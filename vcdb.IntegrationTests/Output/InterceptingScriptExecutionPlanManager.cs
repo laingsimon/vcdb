@@ -13,10 +13,10 @@ namespace vcdb.IntegrationTests.Output
     internal class InterceptingScriptExecutionPlanManager : IScriptExecutionPlanManager
     {
         private readonly ScriptExecutionPlanManager actualManager;
-        private readonly DirectoryInfo scenario;
+        private readonly Scenario scenario;
         private readonly IDatabaseProduct databaseProduct;
 
-        public InterceptingScriptExecutionPlanManager(ScriptExecutionPlanManager actualManager, DirectoryInfo scenario, IDatabaseProduct databaseProduct)
+        public InterceptingScriptExecutionPlanManager(ScriptExecutionPlanManager actualManager, Scenario scenario, IDatabaseProduct databaseProduct)
         {
             this.actualManager = actualManager;
             this.scenario = scenario;

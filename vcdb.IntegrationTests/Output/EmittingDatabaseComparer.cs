@@ -10,10 +10,10 @@ namespace vcdb.IntegrationTests.Output
     internal class EmittingDatabaseComparer : IDatabaseComparer
     {
         private readonly IDatabaseComparer databaseComparer;
-        private readonly DirectoryInfo scenario;
+        private readonly Scenario scenario;
         private readonly IDatabaseProduct databaseProduct;
 
-        public EmittingDatabaseComparer(DatabaseComparer databaseComparer, DirectoryInfo scenario, IDatabaseProduct databaseProduct)
+        public EmittingDatabaseComparer(DatabaseComparer databaseComparer, Scenario scenario, IDatabaseProduct databaseProduct)
         {
             this.databaseComparer = databaseComparer;
             this.scenario = scenario;

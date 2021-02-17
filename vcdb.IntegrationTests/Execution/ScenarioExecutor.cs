@@ -46,7 +46,7 @@ namespace vcdb.IntegrationTests.Execution
             this.databaseProduct = databaseProduct;
         }
 
-        public async Task<IntegrationTestStatus> Execute(DirectoryInfo scenario, string connectionString)
+        public async Task<IntegrationTestStatus> Execute(Scenario scenario, string connectionString)
         {
             try
             {
@@ -86,7 +86,7 @@ namespace vcdb.IntegrationTests.Execution
 
                 if (executionResult == IntegrationTestStatus.Pass)
                 {
-                    var scriptExecutionResult = await TestSqlScriptResult(settings, result, scenario);
+                    var scriptExecutionResult = await TestSqlScriptResult(result, scenario);
                     if (scriptExecutionResult == IntegrationTestStatus.Pass)
                     {
                         File.Delete(actualOutputFilePath);
@@ -114,12 +114,12 @@ namespace vcdb.IntegrationTests.Execution
             }
         }
 
-        private void PrintReproductionStatement(DirectoryInfo scenario, VcdbExecutionResult result)
+        private void PrintReproductionStatement(Scenario scenario, VcdbExecutionResult result)
         {
             options.StandardOutput.WriteLine($"Execute vcdb with the following commandline to debug this scenario:\r\n{scenario.FullName}\r\n$ {result.CommandLine}");
         }
 
-        private async Task<IntegrationTestStatus> TestSqlScriptResult(ScenarioSettings settings, VcdbExecutionResult result, DirectoryInfo scenario)
+        private async Task<IntegrationTestStatus> TestSqlScriptResult(VcdbExecutionResult result, Scenario scenario)
         {
             try
             {
@@ -140,9 +140,9 @@ namespace vcdb.IntegrationTests.Execution
             }
         }
 
-        private async Task<IntegrationTestStatus> CompareSqlScriptResult(VcdbExecutionResult result, DirectoryInfo scenario)
+        private async Task<IntegrationTestStatus> CompareSqlScriptResult(VcdbExecutionResult result, Scenario scenario)
         {
-            using (var expectedReader = new StreamReader(Path.Combine(scenario.FullName, $"ExpectedOutput.{databaseProduct.Name}.sql")))
+            using (var expectedReader = new StreamReader(scenario.File($"ExpectedOutput.{databaseProduct.Name}.sql")))
             {
                 var differences = differ.CompareScripts(await expectedReader.ReadToEndAsync(), result.Output);
                 var filteredDifferences = differenceFilter.FilterDifferences(differences).ToArray();
@@ -162,7 +162,7 @@ namespace vcdb.IntegrationTests.Execution
             }
         }
 
-        private Task<IntegrationTestStatus> CompareJsonResult(ScenarioSettings settings, VcdbExecutionResult result, DirectoryInfo scenario)
+        private Task<IntegrationTestStatus> CompareJsonResult(ScenarioSettings settings, VcdbExecutionResult result, Scenario scenario)
         {
             return Task.Run(() =>
             {
@@ -205,24 +205,23 @@ namespace vcdb.IntegrationTests.Execution
             });
         }
 
-        private ScenarioSettings ReadScenarioSettings(DirectoryInfo scenario)
+        private ScenarioSettings ReadScenarioSettings(Scenario scenario)
         {
-            var scenarioSettingsFile = scenario.GetFiles($"Scenario.{databaseProduct.Name}.json").SingleOrDefault()
-                ?? scenario.GetFiles($"Scenario.json").SingleOrDefault();
+            var scenarioSettingsFile = scenario.FirstFile($"Scenario.{databaseProduct.Name}.json", "Scenario.json");
             if (scenarioSettingsFile == null)
                 return null;
 
-            return json.ReadJsonFromFile<ScenarioSettings>(scenarioSettingsFile.Name);
+            return json.ReadJsonFromFile<ScenarioSettings>(scenarioSettingsFile);
         }
 
-        private async Task InitialiseDatabase(DirectoryInfo scenario)
+        private async Task InitialiseDatabase(Scenario scenario)
         {
             await Retry(async () => await sql.ExecuteBatchedSql(new StringReader(databaseProduct.InitialiseDatabase(scenario.Name))));
 
-            var databaseInitialisationFile = scenario.GetFiles($"Database.{databaseProduct.Name}.sql").SingleOrDefault();
+            var databaseInitialisationFile = scenario.OpenText($"Database.{databaseProduct.Name}.sql");
             if (databaseInitialisationFile != null)
             {
-                await sql.ExecuteBatchedSql(databaseInitialisationFile.OpenText(), scenario.Name);
+                await sql.ExecuteBatchedSql(databaseInitialisationFile, scenario.Name);
             }
             else
             {
@@ -230,7 +229,7 @@ namespace vcdb.IntegrationTests.Execution
             }
         }
 
-        private async Task DropDatabase(DirectoryInfo scenario)
+        private async Task DropDatabase(Scenario scenario)
         {
             if (options.KeepDatabases)
                 return;

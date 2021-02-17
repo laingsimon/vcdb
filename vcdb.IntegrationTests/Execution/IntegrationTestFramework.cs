@@ -70,35 +70,35 @@ namespace vcdb.IntegrationTests.Execution
 
             options.StandardOutput.WriteLine($"Executing {scenarios.Length} scenario/s...");
 
-            var tasks = scenarios.Select(scenarioDirectory => ExecuteScenario(scenarioDirectory, connectionString)).ToArray();
+            var tasks = scenarios.Select(scenarioDirectory => ExecuteScenario(new Scenario(scenarioDirectory), connectionString)).ToArray();
             await Task.WhenAll(tasks);
 
             executionContext.Finished();
             return scenarios.Length;
         }
 
-        private async Task ExecuteScenario(DirectoryInfo scenarioDirectory, string connectionString)
+        private async Task ExecuteScenario(Scenario scenario, string connectionString)
         {
             using (taskGate.StartTask())
             using (var scope = serviceProvider.CreateScope())
             {
-                var scenarioDirectoryFactory = scope.ServiceProvider.GetRequiredService<ScenarioDirectoryFactory>();
-                scenarioDirectoryFactory.ScenarioDirectory = scenarioDirectory;
+                var scenarioDirectoryFactory = scope.ServiceProvider.GetRequiredService<ScenarioFactory>();
+                scenarioDirectoryFactory.Scenario = scenario;
 
                 var scenarioExecutor = scope.ServiceProvider.GetRequiredService<ScenarioExecutor>();
 
-                var logMessage = $" - {scenarioDirectory.Name}...";
+                var logMessage = $" - {scenario.Name}...";
 
                 options.StandardOutput.WriteLine(logMessage);
                 var executionResult = (IntegrationTestStatus)0;
 
                 try
                 {
-                    executionResult = await scenarioExecutor.Execute(scenarioDirectory, connectionString);
+                    executionResult = await scenarioExecutor.Execute(scenario, connectionString);
                 }
                 catch (Exception exc)
                 {
-                    executionContext.ScenarioComplete(scenarioDirectory, IntegrationTestStatus.Exception, new[] { exc.Message });
+                    executionContext.ScenarioComplete(scenario, IntegrationTestStatus.Exception, new[] { exc.Message });
                 }
             }
         }

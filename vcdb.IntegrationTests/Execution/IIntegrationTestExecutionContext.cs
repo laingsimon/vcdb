@@ -6,6 +6,6 @@ namespace vcdb.IntegrationTests.Execution
     internal interface IIntegrationTestExecutionContext
     {
         void Finished();
-        IntegrationTestStatus ScenarioComplete(DirectoryInfo scenario, IntegrationTestStatus result, IEnumerable<string> differences);
+        IntegrationTestStatus ScenarioComplete(Scenario scenario, IntegrationTestStatus result, IEnumerable<string> differences);
     }
 }

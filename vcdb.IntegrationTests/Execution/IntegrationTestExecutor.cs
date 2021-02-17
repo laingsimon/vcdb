@@ -89,8 +89,8 @@ namespace vcdb.IntegrationTests.Execution
             {
                 services.AddScoped<IJson, Json>();
             }
-            services.AddScoped<ScenarioDirectoryFactory>();
-            services.AddScoped(factory => factory.GetRequiredService<ScenarioDirectoryFactory>().ScenarioDirectory);
+            services.AddScoped<ScenarioFactory>();
+            services.AddScoped(factory => factory.GetRequiredService<ScenarioFactory>().Scenario);
         }
     }
 }

@@ -22,7 +22,7 @@ namespace vcdb.IntegrationTests.Execution
             : 0;
         public int Fail => results.Where(pair => pair.Key != IntegrationTestStatus.Pass).Sum(pair => pair.Value);
 
-        public IntegrationTestStatus ScenarioComplete(DirectoryInfo scenario, IntegrationTestStatus result, IEnumerable<string> differences)
+        public IntegrationTestStatus ScenarioComplete(Scenario scenario, IntegrationTestStatus result, IEnumerable<string> differences)
         {
             if (!results.ContainsKey(result))
             {
