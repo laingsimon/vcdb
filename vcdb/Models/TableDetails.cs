@@ -7,12 +7,12 @@ namespace vcdb.Models
         /// <summary>
         /// The columns in the table
         /// </summary>
-        public IDictionary<string, ColumnDetails> Columns { get; set; }
+        public Dictionary<string, ColumnDetails> Columns { get; set; }
 
         /// <summary>
         /// The indexes bound to the table
         /// </summary>
-        public IDictionary<string, IndexDetails> Indexes { get; set; }
+        public Dictionary<string, IndexDetails> Indexes { get; set; }
 
         /// <summary>
         /// Any check constraints bound to columns on this table

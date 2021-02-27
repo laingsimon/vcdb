@@ -28,7 +28,7 @@ namespace vcdb
         /// <returns></returns>
         public string ConvertToString(params string[] names)
         {
-            return string.Join(delimiter, names.Select(name => $"{startName}{name}{endName}"));
+            return string.Join(delimiter, names.Where(n => !string.IsNullOrEmpty(n)).Select(name => $"{startName}{name}{endName}"));
         }
 
         /// <summary>

@@ -1,7 +1,6 @@
 ﻿using Dapper;
 using System.Collections.Generic;
 using System.Data.Common;
-using System.Linq;
 using System.Threading.Tasks;
 using vcdb.Models;
 using vcdb.SchemaBuilding;
@@ -56,7 +55,7 @@ where TABLE_TYPE = 'BASE TABLE'");
                         Columns = await columnsRepository.GetColumns(connection, tableName, tablePermissions),
                         Indexes = await indexesRepository.GetIndexes(connection, tableName),
                         Description = await descriptionRepository.GetTableDescription(connection, tableName),
-                        Checks = await checkConstraintRepository.GetCheckConstraints(connection, tableName),
+                        Checks = await checkConstraintRepository.GetCheckConstraints(connection, tableName).ToArrayAsync(),
                         PrimaryKey = await primaryKeyRepository.GetPrimaryKeyDetails(connection, tableName),
                         Permissions = tablePermissions,
                         ForeignKeys = await foreignKeyRepository.GetForeignKeys(connection, tableName)

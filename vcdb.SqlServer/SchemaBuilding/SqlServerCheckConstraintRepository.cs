@@ -1,4 +1,5 @@
 ﻿using Dapper;
+using System.Collections.Generic;
 using System.Data.Common;
 using System.Linq;
 using System.Text.RegularExpressions;
@@ -11,7 +12,7 @@ namespace vcdb.SqlServer.SchemaBuilding
 {
     public class SqlServerCheckConstraintRepository : ICheckConstraintRepository
     {
-        public async Task<CheckConstraintDetails[]> GetCheckConstraints(DbConnection connection, ObjectName tableName)
+        public async Task<IEnumerable<CheckConstraintDetails>> GetCheckConstraints(DbConnection connection, ObjectName tableName)
         {
             var checkConstraints = await connection.QueryAsync<CheckConstraint>(@"
 select chk.name, column_usage.COLUMN_NAME, chk.object_id, chk.definition, chk.is_system_named

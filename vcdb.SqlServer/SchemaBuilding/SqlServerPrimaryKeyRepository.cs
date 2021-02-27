@@ -18,7 +18,7 @@ namespace vcdb.SqlServer.SchemaBuilding
             this.descriptionRepository = descriptionRepository;
         }
 
-        public async Task<HashSet<string>> GetColumnsInPrimaryKey(DbConnection connection, ObjectName tableName)
+        public async Task<IEnumerable<string>> GetColumnsInPrimaryKey(DbConnection connection, ObjectName tableName)
         {
             var columns = await connection.QueryAsync<SqlIndexDetails>(@"select ind.name as index_name, ind.type_desc, ind.is_unique, ic.is_descending_key, ic.is_included_column, col.name as column_name
 from sys.key_constraints k

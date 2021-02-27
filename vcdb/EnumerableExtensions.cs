@@ -70,5 +70,11 @@ namespace vcdb
         {
             return items.Select(selector).ToHashSet();
         }
+
+        public static async Task<TValue[]> ToArrayAsync<TValue>(
+            this Task<IEnumerable<TValue>> input)
+        {
+            return (await input).ToArray();
+        }
     }
 }

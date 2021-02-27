@@ -7,7 +7,7 @@ using System.Globalization;
 namespace vcdb
 {
     [TypeConverter(typeof(TypeConverter))]
-    [DebuggerDisplay("{DebugString()}")]
+    [DebuggerDisplay("{DebugString(),nq}")]
     public class ObjectName : IEquatable<ObjectName>
     {
         /// <summary>
@@ -38,7 +38,7 @@ namespace vcdb
 
         public override int GetHashCode()
         {
-            return Name.GetHashCode() ^ Schema.GetHashCode();
+            return Name.GetHashCode() ^ (Schema?.GetHashCode() ?? 0);
         }
 
         public override bool Equals(object obj)

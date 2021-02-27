@@ -20,7 +20,7 @@ namespace vcdb.SqlServer.SchemaBuilding
             ISchemaRepository schemaRepository,
             IDescriptionRepository descriptionRepository,
             ICollationRepository collationRepository,
-            IUserRepository loginRepository,
+            IUserRepository userRepository,
             IPermissionRepository permissionRepository,
             IProcedureRepository procedureRepository)
         {
@@ -28,7 +28,7 @@ namespace vcdb.SqlServer.SchemaBuilding
             this.schemaRepository = schemaRepository;
             this.descriptionRepository = descriptionRepository;
             this.collationRepository = collationRepository;
-            this.userRepository = loginRepository;
+            this.userRepository = userRepository;
             this.permissionRepository = permissionRepository;
             this.procedureRepository = procedureRepository;
         }

@@ -1,7 +1,6 @@
 ﻿using Dapper;
 using System.Collections.Generic;
 using System.Data.Common;
-using System.Linq;
 using System.Threading.Tasks;
 using vcdb.SchemaBuilding;
 using vcdb.SqlServer.SchemaBuilding.Models;
@@ -22,7 +21,7 @@ where name =  DB_NAME()");
             return await connection.QuerySingleAsync<string>(@"select convert(varchar(256), SERVERPROPERTY('collation'))");
         }
 
-        public async Task<IDictionary<string, string>> GetColumnCollations(DbConnection connection, ObjectName tableName)
+        public async Task<Dictionary<string, string>> GetColumnCollations(DbConnection connection, ObjectName tableName)
         {
             return await connection.QueryAsync<ColumnCollation>(@"select col.name as ColumnName, col.collation_name
 from sys.columns col

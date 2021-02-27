@@ -11,7 +11,7 @@ namespace vcdb.SchemaBuilding
             DbConnection connection,
             ObjectName tableName);
 
-        Task<HashSet<string>> GetColumnsInPrimaryKey(
+        Task<IEnumerable<string>> GetColumnsInPrimaryKey(
             DbConnection connection,
             ObjectName tableName);
     }

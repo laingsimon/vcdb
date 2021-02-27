@@ -29,21 +29,14 @@ from fn_listextendedproperty(default, 'SCHEMA', '{tableName.Schema}', 'TABLE', '
 where name = 'MS_Description'");
         }
 
-        public async Task<IDictionary<string, string>> GetColumnDescriptions(DbConnection connection, ObjectName tableName)
+        public async Task<Dictionary<string, string>> GetColumnDescriptions(DbConnection connection, ObjectName tableName)
         {
             return await GetMultipleDescription(connection, tableName, "COLUMN");
         }
 
-        public async Task<IDictionary<string, string>> GetIndexDescriptions(DbConnection connection, ObjectName tableName)
+        public async Task<Dictionary<string, string>> GetIndexDescriptions(DbConnection connection, ObjectName tableName)
         {
             return await GetMultipleDescription(connection, tableName, "INDEX");
-        }
-
-        private async Task<IDictionary<string, string>> GetMultipleDescription(DbConnection connection, ObjectName tableName, string level2Type)
-        {
-            return await connection.QueryAsync<DescriptionMap>($@"select objname as [ObjectName], value as Description
-from fn_listextendedproperty(default, 'SCHEMA', '{tableName.Schema}', 'TABLE', '{tableName.Name}', '{level2Type}', null)
-where name = 'MS_Description'").ToDictionaryAsync(map => map.ObjectName, map => map.Description);
         }
 
         public async Task<string> GetPrimaryKeyDescription(DbConnection connection, ObjectName tableName, string primaryKeyName)
@@ -60,9 +53,16 @@ from fn_listextendedproperty(default, 'SCHEMA', '{procedureName.Schema}', 'PROCE
 where name = 'MS_Description'");
         }
 
-        public async Task<IDictionary<string, string>> GetForeignKeyDescription(DbConnection connection, ObjectName tableName)
+        public async Task<Dictionary<string, string>> GetForeignKeyDescription(DbConnection connection, ObjectName tableName)
         {
             return await GetMultipleDescription(connection, tableName, "CONSTRAINT");
+        }
+
+        private async Task<Dictionary<string, string>> GetMultipleDescription(DbConnection connection, ObjectName tableName, string level2Type)
+        {
+            return await connection.QueryAsync<DescriptionMap>($@"select objname as [ObjectName], value as Description
+from fn_listextendedproperty(default, 'SCHEMA', '{tableName.Schema}', 'TABLE', '{tableName.Name}', '{level2Type}', null)
+where name = 'MS_Description'").ToDictionaryAsync(map => map.ObjectName, map => map.Description);
         }
 
         private class DescriptionMap
