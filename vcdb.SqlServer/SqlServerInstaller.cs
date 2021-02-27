@@ -10,10 +10,9 @@ namespace vcdb.SqlServer
     {
         public void RegisterServices(IServiceCollection services, DatabaseVersion databaseVersion)
         {
-            services.AddSingleton<IConnectionFactory, ConnectionFactory>();
-            services.InNamespace<SqlObjectNameHelper>().AddAsSingleton();
-            services.InNamespace<SqlServerCheckConstraintRepository>().AddAsSingleton();
-            services.InNamespace<SqlServerCheckConstraintScriptBuilder>().AddAsSingleton();
+            services.InNamespace<SqlServerDatabaseDetailsProvider>().AddAsSingleton();
+            services.InNamespace<SqlServerDatabaseRepository>().AddAsSingleton();
+            services.InNamespace<SqlServerDatabaseScriptBuilder>().AddAsSingleton();
 
             ObjectName.Converter = new ObjectNameConverter(
                 delimiter: ".",

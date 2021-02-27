@@ -28,7 +28,7 @@ namespace vcdb.MySql
             if (!string.IsNullOrEmpty(options.Database))
             {
                 logger.LogDebug($"Switching to database {options.Database}...");
-                await connection.ExecuteAsync($"use [{options.Database}]");
+                await connection.ExecuteAsync($"use `{options.Database}`");
             }
 
             return connection;
