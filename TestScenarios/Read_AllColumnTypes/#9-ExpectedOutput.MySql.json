@@ -1,0 +1,45 @@
+{
+  "tables": {
+    "`Person`": {
+      "columns": {
+        "Id": {
+          "type": "int",
+          "nullable": false,
+          "primaryKey": true
+        },
+        "Name": {
+          "type": "nvarchar(255)",
+          "nullable": false,
+          "primaryKey": false
+        },
+        "Title": {
+          "type": "varchar(10)",
+          "primaryKey": false
+        },
+        "Age": {
+          "type": "int",
+          "primaryKey": false
+        },
+        "Price": {
+          "type": "decimal(18,2)",
+          "primaryKey": false
+        },
+        "DoB": {
+          "type": "date",
+          "primaryKey": false
+        },
+        "Deleted": {
+          "type": "bit",
+          "nullable": false,
+          "default": 0,
+          "primaryKey": false
+        },
+        "PriceIncVat": {
+          "expression": "`Price` * 1.2",
+          "primaryKey": false,
+          "type": "decimal(18,2)"
+        }
+      }
+    }
+  }
+}

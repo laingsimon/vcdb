@@ -13,9 +13,4 @@
     <ProjectReference Include="..\vcdb\vcdb.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="SchemaBuilding\" />
-    <Folder Include="Scripting\" />
-  </ItemGroup>
-
 </Project>

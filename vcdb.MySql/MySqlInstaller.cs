@@ -1,6 +1,8 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using vcdb.CommandLine;
 using vcdb.DependencyInjection;
+using vcdb.MySql.SchemaBuilding;
+using vcdb.MySql.Scripting;
 
 namespace vcdb.MySql
 {
@@ -8,9 +10,9 @@ namespace vcdb.MySql
     {
         public void RegisterServices(IServiceCollection services, DatabaseVersion databaseVersion)
         {
-            services.AddSingleton<IConnectionFactory, ConnectionFactory>();
-            //services.InNamespace<MySqlCheckConstraintRepository>().AddAsSingleton();
-            //services.InNamespace<MySqlCheckConstraintScriptBuilder>().AddAsSingleton();
+            services.InNamespace<ConnectionFactory>().AddAsSingleton();
+            services.InNamespace<MySqlDatabaseRepository>().AddAsSingleton();
+            services.InNamespace<MySqlDatabaseScriptBuilder>().AddAsSingleton();
 
             ObjectName.Converter = new ObjectNameConverter(
                 delimiter: ".",

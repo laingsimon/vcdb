@@ -1,0 +1,26 @@
+{
+  "tables": {
+    "`Person`": {
+      "columns": {
+        "Id": {
+          "type": "int",
+          "primaryKey": false
+        },
+        "Name": {
+          "type": "nvarchar(255)",
+          "nullable": false,
+          "primaryKey": false
+        }
+      },
+      "checks": [
+        {
+          "name": "CK_Name_LongerThan3",
+          "check": "char_length(`Name`) > 3"
+        },
+        {
+          "check": "`Id` > 1"
+        }
+      ]
+    }
+  }
+}
