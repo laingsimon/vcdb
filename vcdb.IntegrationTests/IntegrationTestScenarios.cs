@@ -3,15 +3,23 @@ using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text.RegularExpressions;
 using vcdb.IntegrationTests.Execution;
 
 namespace vcdb.IntegrationTests
 {
-    public class IntegrationTestScenarios : IEnumerable<string>
+    public abstract class IntegrationTestScenarios : IEnumerable<IntegrationTestScenario>
     {
+        private readonly string mode;
+
         public IDatabaseProduct DatabaseProduct { get; } = GetDatabaseProduct();
 
-        private IEnumerable<string> GetScenarioNames()
+        protected IntegrationTestScenarios(string mode)
+        {
+            this.mode = mode;
+        }
+
+        private IEnumerable<IntegrationTestScenario> GetScenarioNames()
         {
             var testScenarios = Path.GetFullPath("..\\..\\..\\..\\TestScenarios");
             var filter = new ScenarioFilter(DatabaseProduct);
@@ -20,14 +28,21 @@ namespace vcdb.IntegrationTests
             {
                 if (filter.IsValidScenario(directory))
                 {
-                    yield return Path.GetFileName(directory);
+                    var name = Path.GetFileName(directory);
+                    var modeMatch = Regex.Match(name, @"(?<mode>.+?)_");
+
+                    yield return new IntegrationTestScenario
+                    {
+                        Name = name,
+                        Mode = modeMatch.Groups["mode"].Value
+                    };
                 }
             }
         }
 
-        public IEnumerator<string> GetEnumerator()
+        public IEnumerator<IntegrationTestScenario> GetEnumerator()
         {
-            return GetScenarioNames().GetEnumerator();
+            return GetScenarioNames().Where(s => s.Mode == mode || mode == null).GetEnumerator();
         }
 
         IEnumerator IEnumerable.GetEnumerator()
@@ -35,7 +50,7 @@ namespace vcdb.IntegrationTests
             return GetEnumerator();
         }
 
-        private static IDatabaseProduct GetDatabaseProduct()
+        internal static IDatabaseProduct GetDatabaseProduct()
         {
             var databaseProductInterface = typeof(IDatabaseProduct);
             var assemblies = AppDomain.CurrentDomain.GetAssemblies();
@@ -68,6 +83,20 @@ Scanned assemblies:
         private static IDatabaseProduct CreateDatabaseProduct(Type type)
         {
             return (IDatabaseProduct)Activator.CreateInstance(type);
+        }
+
+        public class Deploy : IntegrationTestScenarios
+        {
+            public Deploy()
+                :base("Deploy")
+            { }
+        }
+
+        public class Read : IntegrationTestScenarios
+        {
+            public Read()
+                : base("Read")
+            { }
         }
     }
 }

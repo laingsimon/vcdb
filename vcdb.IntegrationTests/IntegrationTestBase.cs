@@ -20,16 +20,25 @@ namespace vcdb.IntegrationTests
 
         private static IDatabaseProduct GetDatabaseProduct()
         {
-            var testScenarios = new IntegrationTestScenarios();
-            return testScenarios.DatabaseProduct;
+            return IntegrationTestScenarios.GetDatabaseProduct();
         }
 
 #if DEBUG
-        [TestCaseSource(typeof(IntegrationTestScenarios)), Explicit]
+        [TestCaseSource(typeof(IntegrationTestScenarios.Read)), Explicit]
 #endif
-        public async Task ExecuteScenario(string scenario)
+        public async Task ExecuteRead(IntegrationTestScenario scenario)
         {
-            var options = GetOptions(scenario);
+            var options = GetOptions(scenario.Name);
+
+            await processExecutor.ExecuteScenario(options);
+        }
+
+#if DEBUG
+        [TestCaseSource(typeof(IntegrationTestScenarios.Deploy)), Explicit]
+#endif
+        public async Task ExecuteDeploy(IntegrationTestScenario scenario)
+        {
+            var options = GetOptions(scenario.Name);
 
             await processExecutor.ExecuteScenario(options);
         }
