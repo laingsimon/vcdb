@@ -16,6 +16,8 @@ namespace vcdb.SqlServer.SchemaBuilding
         internal const string Grant = "GRANT";
         internal const string Deny = "DENY";
         internal const string Revoke = "REVOKE";
+        private static readonly PermissionName Connect = new PermissionName("CONNECT");
+        private static readonly UserPrincipal dbo = new UserPrincipal("dbo");
 
         public async Task<Permissions> GetDatabasePermissions(DbConnection connection)
         {
@@ -33,10 +35,15 @@ from sys.database_permissions
 where class_desc = 'DATABASE'
 and permission_name not in ('VIEW ANY COLUMN MASTER KEY DEFINITION', 'VIEW ANY COLUMN ENCRYPTION KEY DEFINITION')");
 
+            var tablePermissions = await GetTablePermissions(connection);
+            var schemaPermissions = await GetSchemaPermissions(connection);
+            var excludeDboConnectPermission = !tablePermissions.Any() && !schemaPermissions.Any();
+
             return new Permissions
             {
                 Grant = permissionRecords
                     .Where(permission => permission.IsGrant())
+                    .Where(permission => !(excludeDboConnectPermission && permission.GranteePrincipal.Equals(dbo) && permission.PermissionName.Equals(Connect)))
                     .ToPermissionNameThenGranteeMapping(record => new PermissionDetails { WithGrant = record.state_desc == GrantWithGrantOption }),
                 Deny = permissionRecords
                     .Where(permission => permission.IsDeny())

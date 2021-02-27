@@ -22,14 +22,5 @@
     "[dbo].[EncryptedProcedure]": {
       "encrypted": true
     }
-  },
-  "permissions": {
-    "grant": {
-      "CONNECT": {
-        "dbo": {
-          "WithGrant": false
-        }
-      }
-    }
   }
 }

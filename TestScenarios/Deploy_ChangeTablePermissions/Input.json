@@ -47,7 +47,6 @@
   "permissions": {
     "grant": {
       "CONNECT": {
-        "dbo": {},
         "MyUser_Deny": {},
         "MyUser_Grant": {}
       }

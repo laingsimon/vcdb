@@ -10,14 +10,5 @@
       }
     }
   },
-  "collation": "Latin1_General_CI_AI",
-  "permissions": {
-    "grant": {
-      "CONNECT": {
-        "dbo": {
-          "WithGrant": false
-        }
-      }
-    }
-  }
+  "collation": "Latin1_General_CI_AI"
 }

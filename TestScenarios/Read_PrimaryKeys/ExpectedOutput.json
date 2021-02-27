@@ -34,14 +34,5 @@
         "description": "primary key description"
       }
     }
-  },
-  "permissions": {
-    "grant": {
-      "CONNECT": {
-        "dbo": {
-          "WithGrant": false
-        }
-      }
-    }
   }
 }

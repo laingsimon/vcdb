@@ -14,12 +14,9 @@
       "DefaultSchema": "MySchema"
     }
   },
-  "permissions": {
-    "grant": {
+  "Permissions": {
+    "Grant": {
       "CONNECT": {
-        "dbo": {
-          "WithGrant": false
-        },
         "MyUser": {
           "WithGrant": false
         },

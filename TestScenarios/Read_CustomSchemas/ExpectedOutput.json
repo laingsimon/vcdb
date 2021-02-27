@@ -1,14 +1,5 @@
 {
   "schemas": {
     "MySchema": {}
-  },
-  "permissions": {
-    "grant": {
-      "CONNECT": {
-        "dbo": {
-          "WithGrant": false
-        }
-      }
-    }
   }
 }

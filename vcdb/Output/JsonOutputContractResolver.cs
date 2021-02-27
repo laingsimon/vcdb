@@ -1,6 +1,8 @@
 ﻿using Newtonsoft.Json.Serialization;
 using System;
 using System.Collections;
+using System.Linq;
+using vcdb.Models;
 
 namespace vcdb.Output
 {
@@ -9,6 +11,11 @@ namespace vcdb.Output
         public Func<object, bool> GetShouldSerialise(JsonProperty property)
         {
             if (typeof(IEnumerable).IsAssignableFrom(property.PropertyType) && !typeof(string).IsAssignableFrom(property.PropertyType))
+            {
+                return ShouldSerialiseProperty;
+            }
+
+            if (typeof(Permissions).IsAssignableFrom(property.PropertyType))
             {
                 return ShouldSerialiseProperty;
             }
@@ -26,6 +33,14 @@ namespace vcdb.Output
                 var countProperty = value.GetType().GetProperty(nameof(ICollection.Count));
                 var count = (int?)countProperty?.GetValue(value);
                 return count == null || count > 0;
+            }
+
+            if (value is Permissions permissions)
+            {
+                return permissions.Deny?.Any() == true
+                    || permissions.Grant?.Any() == true
+                    || permissions.Revoke?.Any() == true
+                    || permissions.SubEntityPermissions != null;
             }
 
             return true;

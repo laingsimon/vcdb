@@ -23,14 +23,5 @@
       "description": "schema description"
     }
   },
-  "description": "database description",
-  "permissions": {
-    "grant": {
-      "CONNECT": {
-        "dbo": {
-          "WithGrant": false
-        }
-      }
-    }
-  }
+  "description": "database description"
 }

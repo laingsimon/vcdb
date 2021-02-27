@@ -55,14 +55,5 @@
       },
       "primaryKey": {}
     }
-  },
-  "permissions": {
-    "grant": {
-      "CONNECT": {
-        "dbo": {
-          "WithGrant": false
-        }
-      }
-    }
   }
 }
