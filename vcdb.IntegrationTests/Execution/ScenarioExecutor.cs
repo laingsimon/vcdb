@@ -187,13 +187,6 @@ namespace vcdb.IntegrationTests.Execution
 
                 jsonEqualityComparer.Compare(actual, expected, context);
 
-                executionContext.ScenarioComplete(
-                    scenario,
-                    context.Differences.Any()
-                        ? IntegrationTestStatus.Different
-                        : IntegrationTestStatus.Pass,
-                    context.Differences.Select(difference => $"- Found a difference: {difference}"));
-
                 var actualOutputRelativeFileName = $"ActualOutput.{databaseProduct.Name}.json";
                 if (context.Differences.Any())
                 {
@@ -204,6 +197,13 @@ namespace vcdb.IntegrationTests.Execution
                 {
                     scenario.Delete(actualOutputRelativeFileName);
                 }
+
+                executionContext.ScenarioComplete(
+                    scenario,
+                    context.Differences.Any()
+                        ? IntegrationTestStatus.Different
+                        : IntegrationTestStatus.Pass,
+                    context.Differences.Select(difference => $"- Found a difference: {difference}"));
 
                 return context.Differences.Any()
                     ? IntegrationTestStatus.Different
