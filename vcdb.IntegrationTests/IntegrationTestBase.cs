@@ -68,7 +68,7 @@ namespace vcdb.IntegrationTests
                 ConnectionString = EnvironmentVariable.Get<string>($"Vcdb_{databaseProduct.Name}_ConnectionString") ?? databaseProduct.FallbackConnectionString,
                 ScenarioName = scenarioName,
                 MaxConcurrency = 10,
-                ScenariosPath = Path.GetFullPath("..\\..\\..\\..\\TestScenarios"),
+                ScenariosPath = Path.Combine("..", "..", "..", "..", "TestScenarios"),
                 MinLogLevel = LogLevel.Information,
                 UseLocalDatabase = EnvironmentVariable.Get<bool?>($"Vcdb_{databaseProduct.Name}_UseLocalDatabase") ?? EnvironmentVariable.Get<bool?>($"Vcdb_UseLocalDatabase") ?? false,
                 DatabaseProduct = databaseProduct

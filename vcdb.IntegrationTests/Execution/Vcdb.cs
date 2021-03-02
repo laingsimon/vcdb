@@ -102,7 +102,7 @@ namespace vcdb.IntegrationTests.Execution
             var options = new Options
             {
                 WorkingDirectory = workingDirectory,
-                AssemblySearchPaths = new[] { Path.GetFullPath(Path.Combine(typeof(Vcdb).Assembly.Location, $@"..\..\..\..\..\vcdb\bin\{BuildConfiguration.Current}\netcoreapp3.1")) },
+                AssemblySearchPaths = new[] { Path.GetFullPath(Path.Combine(typeof(Vcdb).Assembly.Location, "..", "..", "..", "..", "..", "vcdb", "bin", BuildConfiguration.Current, "netcoreapp3.1")) },
                 InputFile = settings.Mode == ExecutionMode.Deploy
                     ? GetInputFileName(scenario)
                     : null

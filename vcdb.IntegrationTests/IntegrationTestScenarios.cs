@@ -21,7 +21,7 @@ namespace vcdb.IntegrationTests
 
         private IEnumerable<IntegrationTestScenario> GetScenarioNames()
         {
-            var testScenarios = Path.GetFullPath("..\\..\\..\\..\\TestScenarios");
+            var testScenarios = Path.GetFullPath(Path.Combine("..", "..", "..", "..", "TestScenarios"));
             var filter = new ScenarioFilter(DatabaseProduct);
 
             foreach (var directory in Directory.GetDirectories(testScenarios))
