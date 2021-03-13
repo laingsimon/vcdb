@@ -15,18 +15,18 @@
       },
       "checks": [
         {
-          "check": "[Id]>(1)"
+          "check": "[Id]>1"
         },
         {
           "name": "CK_Name_LongerThan3",
-          "check": "len([Name])>(3)"
+          "check": "len([Name])>3"
         },
         {
-          "check": "len([Name])<(100)",
+          "check": "len([Name])<100",
           "name": "CK_Name_ShorterThan100"
         },
         {
-          "check": "len([Name])<(100) AND [Id]<(10)",
+          "check": "len([Name])<100 AND [Id]<10",
           "name": "CK_ComplicatedCheck"
         }
       ]

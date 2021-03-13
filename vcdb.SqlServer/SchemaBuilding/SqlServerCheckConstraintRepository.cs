@@ -53,15 +53,26 @@ new
                 .ToArray();
         }
 
-        private string UnwrapCheckConstraint(string definition)
+        private static string UnwrapCheckConstraint(string definition)
         {
             if (string.IsNullOrEmpty(definition))
                 return definition;
 
             var match = Regex.Match(definition, @"^\({0,1}(?<definition>.+?)\){0,1}$");
             return match.Success
-                ? match.Groups["definition"].Value
+                ? UnwrapConstants(match.Groups["definition"].Value)
                 : definition;
+        }
+
+        private static string UnwrapConstants(string definition)
+        {
+            return Regex.Replace(
+                definition,
+                @"(\(\d+(?:\.\d+)?\))|(\(\'.+?\'\))",
+                match =>
+                {
+                    return match.Value.UnwrapDefinition();
+                });
         }
     }
 }

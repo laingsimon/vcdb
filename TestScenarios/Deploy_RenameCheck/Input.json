@@ -14,7 +14,7 @@
       "indexes": {},
       "checks": [
         {
-          "check": "len([Name])>(3)",
+          "check": "len([Name])>3",
           "name": "CK_Person_StillValid",
           "previousNames": [
             "CK_Person_ValidName"

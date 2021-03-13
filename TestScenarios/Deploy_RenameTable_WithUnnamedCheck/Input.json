@@ -17,7 +17,7 @@
       "indexes": {},
       "checks": [
         {
-          "check": "len([Name])>(3)"
+          "check": "len([Name])>3"
         }
       ]
     }

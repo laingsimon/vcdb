@@ -18,7 +18,7 @@
       "checks": [
         {
           "name": "CK_Person_StillValidName",
-          "check": "len([Name])>(3)"
+          "check": "len([Name])>3"
         }
       ]
     }

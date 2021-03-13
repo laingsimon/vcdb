@@ -15,11 +15,11 @@
       },
       "checks": [
         {
-          "check": "[Id]>(1)"
+          "check": "[Id]>1"
         },
         {
           "name": "CK_Name_LongerThan3",
-          "check": "len([Name])>(3)"
+          "check": "len([Name])>3"
         }
       ]
     }
