@@ -14,6 +14,7 @@ namespace vcdb.IntegrationTests
         public string Name => "SqlServer";
         public string FallbackConnectionString => "server=localhost;user id=sa;password=vcdb_2020";
         public string TestConnectionStatement => "select count(*) from sys.databases";
+        public string DatabaseVersion { get; set; }
 
         public DbConnection CreateConnection(string connectionString)
         {
