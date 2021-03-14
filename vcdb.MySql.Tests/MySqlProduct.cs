@@ -12,9 +12,20 @@ namespace vcdb.IntegrationTests
 {
     public class MySqlProduct : IDatabaseProduct
     {
-        public string Name => "MySql";
+        public string Name { get; }
         public string FallbackConnectionString => "server=localhost;uid=root;pwd=vcdb_2020";
         public string TestConnectionStatement => "select count(*) from information_schema.tables";
+
+        public MySqlProduct()
+            :this(null)
+        { }
+
+        public MySqlProduct(string version)
+        {
+            Name = string.IsNullOrEmpty(version)
+                ? "MySql"
+                : $"MySql^{version}";
+        }
 
         public DbConnection CreateConnection(string connectionString)
         {

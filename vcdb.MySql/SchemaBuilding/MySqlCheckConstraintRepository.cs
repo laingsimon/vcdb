@@ -5,6 +5,7 @@ using System.Data.Common;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using vcdb.CommandLine;
 using vcdb.Models;
 using vcdb.MySql.SchemaBuilding.Models;
 using vcdb.SchemaBuilding;
@@ -13,8 +14,25 @@ namespace vcdb.MySql.SchemaBuilding
 {
     public class MySqlCheckConstraintRepository : ICheckConstraintRepository
     {
+        internal static readonly Version MinimumSupportedVersion = new Version(8, 0);
+
+        private readonly Version minimumCompatibilityVersion;
+
+        public MySqlCheckConstraintRepository(DatabaseVersion databaseVersion)
+        {
+            this.minimumCompatibilityVersion = databaseVersion.MinimumCompatibilityVersion == null
+                ? new Version(0, 0)
+                : new Version(databaseVersion.MinimumCompatibilityVersion);
+        }
+
         public async Task<IEnumerable<CheckConstraintDetails>> GetCheckConstraints(DbConnection connection, ObjectName tableName)
         {
+            if (this.minimumCompatibilityVersion < MinimumSupportedVersion)
+            {
+                //the information_schema.check_constraints table only exists from versiob 8 of mysql
+                return new CheckConstraintDetails[0];
+            }
+
             var checks = await connection.QueryAsync<CheckConstraint>(
                 @"select tc.constraint_name, tc.constraint_type, tc.enforced, cc.check_clause
 from information_schema.table_constraints tc
