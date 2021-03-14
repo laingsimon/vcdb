@@ -3,6 +3,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Newtonsoft.Json;
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -79,17 +80,23 @@ namespace vcdb.IntegrationTests.Execution
             services.AddSingleton(databaseProduct);
         }
 
+        private static IEnumerable<string> GetCommandLineArguments(Scenario scenario, string connectionString)
+        {
+            yield return "--connectionString";
+            yield return connectionString;
+            yield return "--database";
+            yield return scenario.DatabaseName;
+            if (scenario.DatabaseVersion != null)
+            {
+                yield return "--type";
+                yield return scenario.DatabaseVersion.ToString();
+            }
+        }
+
         private Options GetOptions(Scenario scenario, ScenarioSettings settings, string connectionString)
         {
-            var commandLine = new[]
-            {
-                "--connectionString",
-                connectionString,
-                "--database",
-                scenario.Name,
-                "--type",
-                databaseProduct.Name
-            }.Concat(StringExtensions.SplitCommandLine(settings.CommandLine));
+            var commandLine = GetCommandLineArguments(scenario, connectionString)
+                .Concat(StringExtensions.SplitCommandLine(settings.CommandLine));
             if (settings.Mode != null)
             {
                 commandLine = commandLine.Concat(new[] {
@@ -98,10 +105,9 @@ namespace vcdb.IntegrationTests.Execution
                 }).ToArray();
             }
 
-            var workingDirectory = Path.Combine(this.options.ScenariosPath, scenario.Name);
             var options = new Options
             {
-                WorkingDirectory = workingDirectory,
+                WorkingDirectory = this.options.FileGroup.DirectoryPath.FullName,
                 AssemblySearchPaths = new[] { Path.GetFullPath(Path.Combine(typeof(Vcdb).Assembly.Location, "..", "..", "..", "..", "..", "vcdb", "bin", BuildConfiguration.Current, "netcoreapp3.1")) },
                 InputFile = settings.Mode == ExecutionMode.Deploy
                     ? GetInputFileName(scenario)
@@ -122,7 +128,7 @@ namespace vcdb.IntegrationTests.Execution
 
         private string GetInputFileName(Scenario scenario)
         {
-            return scenario.FindFile($"Input.{databaseProduct.Name}.json", "Input.json");
+            return scenario.FindFile($"Input.json");
         }
 
         private static IServiceCollection ReplaceSingleton<TInterface, TInstance>(IServiceCollection services)

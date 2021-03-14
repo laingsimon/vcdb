@@ -178,9 +178,7 @@ namespace vcdb.IntegrationTests.Database
 
         private string GetDockerComposeDirectoryPath()
         {
-            var scenariosDirectory = string.IsNullOrEmpty(options.ScenariosPath)
-                ? new DirectoryInfo(Directory.GetCurrentDirectory())
-                : new DirectoryInfo(options.ScenariosPath);
+            var scenariosDirectory = new DirectoryInfo(Path.GetFullPath(Path.Combine(Directory.GetCurrentDirectory(), "..", "..", "..", "..", "vcdb.IntegrationTests")));
 
             return Path.Combine(scenariosDirectory.FullName, @$"..\{DockerComposeFolderName}");
         }

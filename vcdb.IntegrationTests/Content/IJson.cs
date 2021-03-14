@@ -6,8 +6,8 @@ namespace vcdb.IntegrationTests.Content
     internal interface IJson
     {
         JToken ReadJsonContent(string json);
-        JToken ReadJsonFromFile(params string[] relativePaths);
-        T ReadJsonFromFile<T>(params string[] relativePaths);
+        JToken ReadJsonFromFile(string relativePath);
+        T ReadJsonFromFile<T>(string relativePath);
         void WriteJsonContent<T>(T actual, string relativePath, Formatting formatting);
     }
 }

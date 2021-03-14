@@ -20,6 +20,8 @@ environment:
   Vcdb_SqlServer_UseLocalDatabase: true
   Vcdb_MySql_ConnectionString: server=localhost;uid=root;pwd=Password12!
   Vcdb_MySql_UseLocalDatabase: true
+  Vcdb_MySql_Version: "5.7.33"
+  Vcdb_SqlServer_Version: "2017"
 services: 
 - mssql2017
 - mysql

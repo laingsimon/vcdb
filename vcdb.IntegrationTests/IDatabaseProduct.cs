@@ -32,6 +32,21 @@ namespace vcdb.IntegrationTests
         DbConnection CreateConnection(string connectionString);
 
         /// <summary>
+        /// Retrieve the version of the database server that is installed and able to be connected with the given connection string
+        /// </summary>
+        /// <param name="connectionString"></param>
+        /// <returns></returns>
+        string GetInstalledServerVersion(string connectionString);
+
+        /// <summary>
+        /// Resolve the version numbers and indicate whether the scenario can be executed, based on a comparison of versions
+        /// </summary>
+        /// <param name="serverVersion">The version of the accessible database server</param>
+        /// <param name="scenarioMinimumVersion">The minimum server version required to execute the scenario</param>
+        /// <returns></returns>
+        bool IsScenarioVersionCompatibleWithDatabaseVersion(string serverVersion, string scenarioMinimumVersion);
+
+        /// <summary>
         /// Drop the given database, perform any actions that are required before or afterwards.
         /// For example in SQL server the connection must move to using a different database before the database can be dropped
         /// </summary>

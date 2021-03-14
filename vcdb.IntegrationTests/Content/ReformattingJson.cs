@@ -18,9 +18,9 @@ namespace vcdb.IntegrationTests.Content
             return underlying.ReadJsonContent(json);
         }
 
-        public JToken ReadJsonFromFile(params string[] relativePaths)
+        public JToken ReadJsonFromFile(string relativePath)
         {
-            var result = underlying.ReadJsonFromFile(relativePaths);
+            var result = underlying.ReadJsonFromFile(relativePath);
             if (!string.IsNullOrEmpty(result.Path))
             {
                 WriteJsonContent(result.Content, Path.GetFileName(result.Path), Formatting.Indented);
@@ -28,9 +28,9 @@ namespace vcdb.IntegrationTests.Content
             return result.Content;
         }
 
-        public T ReadJsonFromFile<T>(params string[] relativePaths)
+        public T ReadJsonFromFile<T>(string relativePath)
         {
-            var result = underlying.ReadJsonFromFile<T>(relativePaths);
+            var result = underlying.ReadJsonFromFile<T>(relativePath);
             if (!string.IsNullOrEmpty(result.Path))
             {
                 WriteJsonContent(result.Content, Path.GetFileName(result.Path), Formatting.Indented);
@@ -54,9 +54,9 @@ namespace vcdb.IntegrationTests.Content
                 this.jsonSerializer = jsonSerializer;
             }
 
-            public FileContent<JToken> ReadJsonFromFile(params string[] relativePaths)
+            public FileContent<JToken> ReadJsonFromFile(string relativePath)
             {
-                using (var reader = scenario.Read(relativePaths))
+                using (var reader = scenario.Read(relativePath))
                 using (var jsonReader = new JsonTextReader(reader))
                 {
                     return new FileContent<JToken>(
@@ -65,9 +65,9 @@ namespace vcdb.IntegrationTests.Content
                 }
             }
 
-            public FileContent<T> ReadJsonFromFile<T>(params string[] relativePaths)
+            public FileContent<T> ReadJsonFromFile<T>(string relativePath)
             {
-                using (var reader = scenario.Read(relativePaths))
+                using (var reader = scenario.Read(relativePath))
                 using (var jsonReader = new JsonTextReader(reader))
                 {
                     return new FileContent<T>(

@@ -3,51 +3,23 @@ using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text.RegularExpressions;
-using vcdb.IntegrationTests.Execution;
+using vcdb.CommandLine;
 
 namespace vcdb.IntegrationTests
 {
     public abstract class IntegrationTestScenarios : IEnumerable<IntegrationTestScenario>
     {
-        private readonly string mode;
+        public static IDatabaseProduct DatabaseProduct { get; set; }
 
-        public IDatabaseProduct DatabaseProduct { get; } = GetDatabaseProduct();
+        private readonly ExecutionMode mode;
+        private readonly IDatabaseProduct databaseProduct;
 
-        protected IntegrationTestScenarios(string mode)
+        protected IntegrationTestScenarios(ExecutionMode mode, IDatabaseProduct databaseProduct = null)
         {
+            databaseProduct ??= GetDatabaseProduct();
+
             this.mode = mode;
-        }
-
-        private IEnumerable<IntegrationTestScenario> GetScenarioNames()
-        {
-            var testScenarios = Path.GetFullPath(Path.Combine("..", "..", "..", "..", "TestScenarios"));
-            var filter = new ScenarioFilter(DatabaseProduct);
-
-            foreach (var directory in Directory.GetDirectories(testScenarios))
-            {
-                if (filter.IsValidScenario(directory))
-                {
-                    var name = Path.GetFileName(directory);
-                    var modeMatch = Regex.Match(name, @"(?<mode>.+?)_");
-
-                    yield return new IntegrationTestScenario
-                    {
-                        Name = name,
-                        Mode = modeMatch.Groups["mode"].Value
-                    };
-                }
-            }
-        }
-
-        public IEnumerator<IntegrationTestScenario> GetEnumerator()
-        {
-            return GetScenarioNames().Where(s => s.Mode == mode || mode == null).GetEnumerator();
-        }
-
-        IEnumerator IEnumerable.GetEnumerator()
-        {
-            return GetEnumerator();
+            this.databaseProduct = databaseProduct;
         }
 
         internal static IDatabaseProduct GetDatabaseProduct()
@@ -85,17 +57,55 @@ Scanned assemblies:
             return (IDatabaseProduct)Activator.CreateInstance(type);
         }
 
+        private IEnumerable<IntegrationTestScenario> GetScenarioNames()
+        {
+            var testScenarios = Path.GetFullPath(Path.Combine("..", "..", "..", "..", "TestScenarios"));
+            var repository = new IntegrationTestDirectoryRepository(new DirectoryInfo(testScenarios));
+            var fileGroups = repository.GetDirectories()
+                .Where(d => d.Mode == mode)
+                .SelectMany(d => d.GetFileGroups())
+                .Where(fg => fg.DatabaseVersion.ProductName == databaseProduct.Name);
+
+            foreach (var fileGroup in fileGroups)
+            {
+                if (!IsPermitted(fileGroup.DatabaseVersion))
+                {
+                    continue;
+                }
+
+                yield return new IntegrationTestScenario(databaseProduct, fileGroup);
+            }
+        }
+
+        private bool IsPermitted(DatabaseVersion databaseVersion)
+        {
+            var blacklistedDatabaseVersions = Environment.GetEnvironmentVariable("Vcdb_Blacklisted_DatabaseVersions") ?? "";
+            var items = blacklistedDatabaseVersions.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
+            var blacklisted = items.Any(item => item == databaseVersion.ProductName || item == databaseVersion.ToString());
+            return !blacklisted;
+        }
+
+        public IEnumerator<IntegrationTestScenario> GetEnumerator()
+        {
+            return GetScenarioNames().Where(s => s.FileGroup.Mode == mode).GetEnumerator();
+        }
+
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            return GetEnumerator();
+        }
+
         public class Deploy : IntegrationTestScenarios
         {
             public Deploy()
-                :base("Deploy")
+                :base(ExecutionMode.Deploy)
             { }
         }
 
         public class Read : IntegrationTestScenarios
         {
             public Read()
-                : base("Read")
+                : base(ExecutionMode.Read)
             { }
         }
     }

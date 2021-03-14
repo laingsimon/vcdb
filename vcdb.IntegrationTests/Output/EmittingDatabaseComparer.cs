@@ -24,7 +24,7 @@ namespace vcdb.IntegrationTests.Output
         {
             var difference = databaseComparer.GetDatabaseDifferences(context, currentDatabase, requiredDatabase);
 
-            using (var outputFile = scenario.Write($"Differences.{databaseProduct.Name}.json"))
+            using (var outputFile = scenario.Write($"Differences.json"))
             {
                 var serialised = JsonConvert.SerializeObject(
                         difference,

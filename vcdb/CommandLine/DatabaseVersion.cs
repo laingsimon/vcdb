@@ -43,5 +43,12 @@ namespace vcdb.CommandLine
                 MinimumCompatibilityVersion = version
             };
         }
+
+        public override string ToString()
+        {
+            return string.IsNullOrEmpty(MinimumCompatibilityVersion)
+                ? ProductName
+                : $"{ProductName}^{MinimumCompatibilityVersion}";
+        }
     }
 }

@@ -15,8 +15,7 @@ namespace vcdb.IntegrationTests
         public string Name => "MySql";
         public string FallbackConnectionString => "server=localhost;uid=root;pwd=vcdb_2020";
         public string TestConnectionStatement => "select count(*) from information_schema.tables";
-        public string DatabaseVersion { get; set; }
-
+        
         public DbConnection CreateConnection(string connectionString)
         {
             return new MySqlConnection(connectionString);
@@ -33,11 +32,29 @@ DROP DATABASE IF EXISTS {EscapeIdentifier(name)}"), "information_schema");
             return $"`{name}`";
         }
 
+        public string GetInstalledServerVersion(string connectionString)
+        {
+            using (var connection = new MySqlConnection(connectionString))
+            {
+                connection.Open();
+
+                var command = connection.CreateCommand();
+                command.CommandText = "select @@version";
+                return (string)command.ExecuteScalar();
+            }
+        }
+
         public string InitialiseDatabase(string name)
         {
             return $@"
 DROP DATABASE IF EXISTS {EscapeIdentifier(name)};
 CREATE DATABASE {EscapeIdentifier(name)}";
+        }
+
+        public bool IsScenarioVersionCompatibleWithDatabaseVersion(string serverVersion, string scenarioMinimumVersion)
+        {
+            var result = StringComparer.OrdinalIgnoreCase.Compare(serverVersion, scenarioMinimumVersion);
+            return result >= 0;
         }
 
         public async IAsyncEnumerable<string> SplitStatementIntoBatches(TextReader statement)

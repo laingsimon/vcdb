@@ -35,7 +35,7 @@ namespace vcdb.IntegrationTests.Output
 
         private void WritePlanToDisk(PlanDetails planDetails)
         {
-            using (var outputFile = scenario.Write($"ExecutionPlan.{databaseProduct.Name}.json"))
+            using (var outputFile = scenario.Write($"ExecutionPlan.json"))
             {
                 var serialised = JsonConvert.SerializeObject(
                         planDetails,

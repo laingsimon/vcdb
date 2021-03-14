@@ -16,49 +16,34 @@ namespace vcdb.IntegrationTests.Execution
         public async Task ExecuteScenario(IntegrationTestOptions options)
         {
             var allOutput = new StringWriter();
-            var executionContext = new SingleIntegrationTestExecutionContext(allOutput);
             options.StandardOutput = allOutput;
             options.ErrorOutput = allOutput;
 
-            await Execute(options, executionContext);
-        }
-
-        public async Task<MultipleIntegrationTestExecutionContext> ExecuteScenarios(IntegrationTestOptions options)
-        {
-            var executionContext = new MultipleIntegrationTestExecutionContext(options.StandardOutput, options.ErrorOutput);
-            await Execute(options, executionContext);
-            return executionContext;
-        }
-
-        private async Task Execute(IntegrationTestOptions options, IIntegrationTestExecutionContext executionContext)
-        {
             var serviceCollection = new ServiceCollection();
-            serviceCollection.AddSingleton(options);
-            ConfigureServices(serviceCollection, options, executionContext);
+            ConfigureServices(serviceCollection, options);
 
             using (var serviceProvider = serviceCollection.BuildServiceProvider())
             {
                 var executor = serviceProvider.GetRequiredService<IntegrationTestFramework>();
 
-                var scenarios = await executor.Execute(options.ConnectionString);
+                await executor.Execute(options);
             }
         }
 
-        private void ConfigureServices(ServiceCollection services, IntegrationTestOptions options, IIntegrationTestExecutionContext executionContext)
+        private void ConfigureServices(ServiceCollection services, IntegrationTestOptions options)
         {
+            services.AddSingleton(options);
+            services.AddSingleton(new Scenario(options));
             services.AddSingleton(options.DatabaseProduct);
             services.AddSingleton<IntegrationTestFramework>();
             services.AddSingleton<ISql, Sql>();
-            services.AddSingleton(executionContext);
             services.AddSingleton<IJsonEqualityComparer, Comparer>();
             services.AddSingleton<IInlineDiffBuilder>(InlineDiffBuilder.Instance);
-            services.AddSingleton<ScenarioFilter>();
             services.AddSingleton(
                 typeof(IDocker),
                 options.UseLocalDatabase
                     ? typeof(NullDocker)
                     : typeof(Docker));
-            services.AddSingleton<TaskGate>();
             services.AddSingleton<IScriptDiffer, HeaderCommentIgnoringScriptDiffer>();
             services.AddSingleton<ScriptDiffer>();
             services.AddSingleton<IDifferenceFilter, RegexDifferenceFilter>();
@@ -71,11 +56,9 @@ namespace vcdb.IntegrationTests.Execution
                 }
             });
 
-            services.AddScoped<ScenarioExecutor>();
-            services.AddScoped<Vcdb>();
-            services.AddScoped<IJson, ReformattingJson>();
-            services.AddScoped<ScenarioScope>();
-            services.AddScoped(scope => scope.GetRequiredService<ScenarioScope>().Scenario);
+            services.AddSingleton<ScenarioExecutor>();
+            services.AddSingleton<Vcdb>();
+            services.AddSingleton<IJson, ReformattingJson>();
         }
     }
 }

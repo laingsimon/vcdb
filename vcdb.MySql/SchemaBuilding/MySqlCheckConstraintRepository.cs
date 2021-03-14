@@ -22,7 +22,9 @@ namespace vcdb.MySql.SchemaBuilding
         {
             this.minimumCompatibilityVersion = databaseVersion.MinimumCompatibilityVersion == null
                 ? new Version(0, 0)
-                : new Version(databaseVersion.MinimumCompatibilityVersion);
+                : new Version(databaseVersion.MinimumCompatibilityVersion.Contains(".") 
+                    ? databaseVersion.MinimumCompatibilityVersion
+                    : databaseVersion.MinimumCompatibilityVersion + ".0");
         }
 
         public async Task<IEnumerable<CheckConstraintDetails>> GetCheckConstraints(DbConnection connection, ObjectName tableName)

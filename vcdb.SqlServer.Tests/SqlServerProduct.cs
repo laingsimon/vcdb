@@ -14,8 +14,7 @@ namespace vcdb.IntegrationTests
         public string Name => "SqlServer";
         public string FallbackConnectionString => "server=localhost;user id=sa;password=vcdb_2020";
         public string TestConnectionStatement => "select count(*) from sys.databases";
-        public string DatabaseVersion { get; set; }
-
+        
         public DbConnection CreateConnection(string connectionString)
         {
             return new SqlConnection(connectionString);
@@ -32,6 +31,18 @@ DROP DATABASE IF EXISTS {EscapeIdentifier(name)}"), "master");
             return $"[{name}]";
         }
 
+        public string GetInstalledServerVersion(string connectionString)
+        {
+            using (var connection = new SqlConnection(connectionString))
+            {
+                connection.Open();
+
+                var command = connection.CreateCommand();
+                command.CommandText = "select @@version";
+                return (string)command.ExecuteScalar();
+            }
+        }
+
         public string InitialiseDatabase(string name)
         {
             return $@"
@@ -39,6 +50,12 @@ DROP DATABASE IF EXISTS {EscapeIdentifier(name)}
 GO
 
 CREATE DATABASE {EscapeIdentifier(name)}";
+        }
+
+        public bool IsScenarioVersionCompatibleWithDatabaseVersion(string serverVersion, string scenarioMinimumVersion)
+        {
+            var result = StringComparer.OrdinalIgnoreCase.Compare(serverVersion, scenarioMinimumVersion);
+            return result >= 0;
         }
 
         public async IAsyncEnumerable<string> SplitStatementIntoBatches(TextReader statement)
