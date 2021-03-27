@@ -1,4 +1,5 @@
 ﻿using NUnit.Framework;
+using System;
 using System.Threading.Tasks;
 using vcdb.IntegrationTests.Execution;
 using vcdb.IntegrationTests.Output;
@@ -35,7 +36,7 @@ namespace vcdb.IntegrationTests
         {
             var databaseProduct = scenario.DatabaseProduct;
             var connectionString = EnvironmentVariable.Get<string>($"Vcdb_{databaseProduct.Name}_ConnectionString") ?? databaseProduct.FallbackConnectionString;
-            var serverVersion = EnvironmentVariable.Get<string>($"Vcdb_{databaseProduct.Name}_Version") ?? databaseProduct.GetInstalledServerVersion(connectionString);
+            var serverVersion = EnvironmentVariable.Get<string>($"Vcdb_{databaseProduct.Name}_Version") ?? TryGetInstalledServerVersion(databaseProduct, connectionString);
             var scenarioMinimumVersion = scenario.FileGroup.DatabaseVersion.MinimumCompatibilityVersion;
 
             if (!string.IsNullOrEmpty(serverVersion) && !string.IsNullOrEmpty(scenarioMinimumVersion))
@@ -55,6 +56,18 @@ namespace vcdb.IntegrationTests
                 UseLocalDatabase = EnvironmentVariable.Get<bool?>($"Vcdb_{databaseProduct.Name}_UseLocalDatabase") ?? EnvironmentVariable.Get<bool?>($"Vcdb_UseLocalDatabase") ?? false,
                 DatabaseProduct = databaseProduct
             };
+        }
+
+        private string TryGetInstalledServerVersion(IDatabaseProduct databaseProduct, string connectionString)
+        {
+            try
+            {
+                return databaseProduct.GetInstalledServerVersion(connectionString);
+            }
+            catch (Exception)
+            {
+                return null;
+            }
         }
     }
 }
