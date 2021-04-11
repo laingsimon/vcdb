@@ -1,0 +1,63 @@
+{
+  "tables": {
+    "`Person`": {
+      "columns": {
+        "Id": {
+          "type": "int",
+          "nullable": false,
+          "primaryKey": true
+        },
+        "Name": {
+          "type": "nvarchar(255)",
+          "nullable": false,
+          "primaryKey": false
+        },
+        "Age": {
+          "type": "int",
+          "primaryKey": false
+        }
+      },
+      "indexes": {
+        "IX_Person_Id": {
+          "columns": {
+            "id": {
+              "descending": false
+            }
+          },
+          "clustered": false,
+          "unique": true
+        },
+        "IX_Person_Name": {
+          "columns": {
+            "name": {
+              "descending": false
+            }
+          },
+          "clustered": false,
+          "unique": true
+        },
+        "IX_Person_Name_Age": {
+          "columns": {
+            "Name": {
+              "descending": false
+            },
+            "Age": {
+              "descending": false
+            }
+          },
+          "clustered": false,
+          "unique": false
+        },
+        "IX_Person_Name_IncAge": {
+          "columns": {
+            "Name": {
+              "descending": false
+            }
+          },
+          "clustered": false,
+          "unique": false
+        }
+      }
+    }
+  }
+}
