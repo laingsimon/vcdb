@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Data.Common;
 using System.Linq;
 using System.Threading.Tasks;
+using vcdb.CommandLine;
 using vcdb.MySql.SchemaBuilding.Models;
 using vcdb.SchemaBuilding;
 
@@ -10,6 +11,13 @@ namespace vcdb.MySql.SchemaBuilding
 {
     public class MySqlCollationRepository : ICollationRepository
     {
+        private readonly Options options;
+
+        public MySqlCollationRepository(Options options)
+        {
+            this.options = options;
+        }
+
         public async Task<Dictionary<string, string>> GetColumnCollations(DbConnection connection, ObjectName tableName)
         {
             var columns = await connection.QueryAsync<TableCollation>(@"SELECT 
@@ -18,8 +26,8 @@ namespace vcdb.MySql.SchemaBuilding
    collation_name 
 FROM information_schema.columns 
 WHERE table_name = @table_name
-AND table_schema = DATABASE();",
-new { table_name = tableName.Name, schema = tableName.Schema });
+AND table_schema = @databaseName;",
+new { table_name = tableName.Name, databaseName = options.Database });
 
             return columns.ToDictionary(
                 column => column.column_name,

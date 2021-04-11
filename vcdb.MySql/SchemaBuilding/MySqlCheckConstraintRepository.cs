@@ -17,14 +17,18 @@ namespace vcdb.MySql.SchemaBuilding
         internal static readonly Version MinimumSupportedVersion = new Version(8, 0);
 
         private readonly Version minimumCompatibilityVersion;
+        private readonly Options options;
 
-        public MySqlCheckConstraintRepository(DatabaseVersion databaseVersion)
+        public MySqlCheckConstraintRepository(
+            DatabaseVersion databaseVersion,
+            Options options)
         {
             this.minimumCompatibilityVersion = databaseVersion.MinimumCompatibilityVersion == null
                 ? new Version(0, 0)
                 : new Version(databaseVersion.MinimumCompatibilityVersion.Contains(".") 
                     ? databaseVersion.MinimumCompatibilityVersion
                     : databaseVersion.MinimumCompatibilityVersion + ".0");
+            this.options = options;
         }
 
         public async Task<IEnumerable<CheckConstraintDetails>> GetCheckConstraints(DbConnection connection, ObjectName tableName)
@@ -42,10 +46,10 @@ left join information_schema.check_constraints cc
 on cc.constraint_schema = tc.table_schema
 and cc.constraint_name = tc.constraint_name
 and cc.constraint_catalog = tc.constraint_catalog
-where tc.table_schema = DATABASE()
+where tc.table_schema = @databaseName
 and tc.table_name = @table_name
 and tc.constraint_type = 'CHECK';", 
-                new { table_name = tableName.Name });
+                new { table_name = tableName.Name, databaseName = options.Database });
 
             return checks
                 .Select(chk => new CheckConstraintDetails 
