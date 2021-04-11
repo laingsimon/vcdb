@@ -186,7 +186,7 @@ namespace vcdb.IntegrationTests.Execution
 
                 if (context.Differences.Any())
                 {
-                    Assert.Fail($"Found a difference: {string.Join("\r\n", context.Differences.Select(difference => $"- Found a difference: {difference}"))}");
+                    Assert.Fail($"Found a difference: {string.Join("\r\n", context.Differences.Select(difference => $"- {difference}"))}");
                 }
             });
         }
