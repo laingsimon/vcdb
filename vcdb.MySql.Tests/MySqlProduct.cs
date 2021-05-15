@@ -72,6 +72,13 @@ CREATE DATABASE {EscapeIdentifier(name)}";
                 if (batches.Length == 1)
                 {
                     sqlBatch.AppendLine(line);
+
+                    if (line.EndsWith(";"))
+                    {
+                        yield return sqlBatch.ToString();
+                        sqlBatch.Clear();
+                    }
+
                     continue;
                 }
 

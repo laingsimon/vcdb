@@ -1,0 +1,22 @@
+{
+  "tables": {
+    "`Person`": {
+      "columns": {
+        "Id": {
+          "description": "column description"
+        }
+      },
+      "indexes": {
+        "IX_Person_Id": {
+          "description": "index description"
+        }
+      },
+      "description": "table description"
+    }
+  },
+  "procedures": {
+    "`MyProcedure`": {
+      "description": "procedure description"
+    }
+  }
+}
