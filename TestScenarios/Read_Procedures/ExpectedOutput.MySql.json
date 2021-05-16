@@ -1,0 +1,8 @@
+{
+  "procedures": {
+    "`RegularProcedure`": {
+      "definition": "CREATE PROCEDURE `RegularProcedure`\r\n(id int)\r\nCOMMENT 'procedure description'\r\nSELECT id * 3",
+      "description": "procedure description"
+    }
+  }
+}

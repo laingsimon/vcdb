@@ -35,9 +35,16 @@ namespace vcdb.IntegrationTests.Database
 
         public async Task ExecuteSql(string sql, DbConnection connection)
         {
-            var command = connection.CreateCommand();
-            command.CommandText = sql;
-            await command.ExecuteNonQueryAsync();
+            try
+            {
+                var command = connection.CreateCommand();
+                command.CommandText = sql;
+                await command.ExecuteNonQueryAsync();
+            }
+            catch (Exception exc)
+            {
+                throw new Exception($"Error executing sql: {exc.Message}\r\n```sql\r\n{sql}\r\n```\r\n");
+            }
         }
 
         public async Task ExecuteSql(string sql, string database = null)
