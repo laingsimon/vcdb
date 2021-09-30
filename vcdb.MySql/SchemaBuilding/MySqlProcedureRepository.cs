@@ -60,8 +60,7 @@ and SPECIFIC_SCHEMA = @databaseName", new { databaseName = options.Database }))
                 ? $"({string.Join(", ", parameters.Select(BuildParameterStatement))})\r\n"
                 : "";
 
-            return @$"CREATE PROCEDURE `{routine.ROUTINE_NAME}`
-{parametersClause}{BuildCommentClause(comment)}{routine.ROUTINE_DEFINITION}";
+            return $"CREATE PROCEDURE `{routine.ROUTINE_NAME}`\r\n{parametersClause}{BuildCommentClause(comment)}{routine.ROUTINE_DEFINITION}";
         }
 
         private static string BuildCommentClause(string comment)
