@@ -24,11 +24,11 @@ namespace vcdb.IntegrationTests.Content
 
         public ScenarioSettings ResolveComparisonOptions()
         {
-            var stringComparer = JsonComparison.IgnoreCase 
+            var stringComparer = JsonComparison?.IgnoreCase == true
                 ? (IEqualityComparer<string>)StringComparer.OrdinalIgnoreCase
                 : null;
 
-            var comparer = JsonComparison.IgnoreLineEndings
+            var comparer = JsonComparison?.IgnoreLineEndings == true
                 ? new IgnoreLineEndingsComparer(stringComparer)
                 : stringComparer;
 
