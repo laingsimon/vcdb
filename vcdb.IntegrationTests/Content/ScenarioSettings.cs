@@ -1,5 +1,6 @@
 ﻿using JsonEqualityComparer;
 using System;
+using System.Collections.Generic;
 using vcdb.CommandLine;
 
 namespace vcdb.IntegrationTests.Content
@@ -8,16 +9,34 @@ namespace vcdb.IntegrationTests.Content
     {
         public string CommandLine { get; set; }
         public ExecutionMode? Mode { get; set; }
-        public ComparisonOptions JsonComparison { get; set; }
+        public SerialisableComparisonOptions JsonComparison { get; set; }
         public int? ExpectedExitCode { get; set; }
         public string VcDbPath { get; set; }
 
-        public static readonly ScenarioSettings Default = new ScenarioSettings
+        public static ScenarioSettings Default = new ScenarioSettings
         {
-            JsonComparison = new ComparisonOptions
+            JsonComparison = new SerialisableComparisonOptions
             {
-                PropertyNameComparer = StringComparison.OrdinalIgnoreCase
+                PropertyNameComparer = StringComparison.OrdinalIgnoreCase,
+                IgnoreLineEndings = true,
             }
-        };
+        }.ResolveComparisonOptions();
+
+        public ScenarioSettings ResolveComparisonOptions()
+        {
+            var stringComparer = JsonComparison.IgnoreCase 
+                ? (IEqualityComparer<string>)StringComparer.OrdinalIgnoreCase
+                : null;
+
+            var comparer = JsonComparison.IgnoreLineEndings
+                ? new IgnoreLineEndingsComparer(stringComparer)
+                : stringComparer;
+
+            if (comparer != null)
+            {
+                JsonComparison.StringValueComparer = comparer;
+            }
+            return this;
+        }
     }
 }

@@ -168,7 +168,7 @@ namespace vcdb.IntegrationTests.Execution
                 var expected = json.ReadJsonFromFile($"ExpectedOutput.json");
                 var context = new ComparisonContext
                 {
-                    DefaultComparisonOptions = settings.JsonComparison ?? new ComparisonOptions { PropertyNameComparer = StringComparison.OrdinalIgnoreCase }
+                    DefaultComparisonOptions = settings.JsonComparison ?? ScenarioSettings.Default.JsonComparison,
                 };
 
                 jsonEqualityComparer.Compare(actual, expected, context);
@@ -193,7 +193,8 @@ namespace vcdb.IntegrationTests.Execution
 
         private ScenarioSettings ReadScenarioSettings(Scenario scenario)
         {
-            return json.ReadJsonFromFile<ScenarioSettings>($"Scenario.json");
+            var settings = json.ReadJsonFromFile<ScenarioSettings>($"Scenario.json");
+            return settings.ResolveComparisonOptions();
         }
 
         private async Task InitialiseDatabase(Scenario scenario)
