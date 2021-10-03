@@ -1,4 +1,5 @@
-﻿using System;
+﻿using NUnit.Framework;
+using System;
 using System.Threading.Tasks;
 using vcdb.IntegrationTests.Database;
 
@@ -27,11 +28,21 @@ namespace vcdb.IntegrationTests.Execution
                 throw new InvalidOperationException("Docker is not installed");
             }
 
-            if (!await docker.IsDockerHostRunning())
+            var startResult = await docker.IsDockerHostRunning();
+            switch (startResult)
             {
-                await docker.StartDockerHost();
+                case StartResult.NotStarted:
+                    if (!await docker.StartDockerHost())
+                    {
+                        Assert.Fail("Unable to start docker host");
+                    }
+                    break;
+                case StartResult.Unstartable:
+                    Assert.Fail("Unable to start docker host");
+                    return;
             }
 
+            if (!await docker.IsContainerRunning())
             if (!await docker.IsContainerRunning())
             {
                 await docker.StartDockerCompose();

@@ -28,7 +28,7 @@ namespace vcdb.IntegrationTests.Database
             return File.Exists(options.DockerDesktopPath ?? DockerDesktopPath);
         }
 
-        public async Task<bool> IsDockerHostRunning()
+        public async Task<StartResult> IsDockerHostRunning()
         {
             var process = new Process
             {
@@ -50,12 +50,18 @@ namespace vcdb.IntegrationTests.Database
 
             if (process.ExitCode != 0)
             {
-                Debug.WriteLine(process.StandardError.ReadToEnd());
-                return false;
+                var errorMessages = process.StandardError.ReadToEnd();
+                if (string.IsNullOrEmpty(errorMessages))
+                {
+                    return StartResult.NotStarted;
+                }
+
+                Console.Error.WriteLine(errorMessages);
+                return StartResult.Unstartable;
             }
 
             Debug.WriteLine(process.StandardOutput.ReadToEnd());
-            return true;
+            return StartResult.Started;
         }
 
         public async Task<bool> IsContainerRunning()
@@ -109,9 +115,15 @@ namespace vcdb.IntegrationTests.Database
 
             while (!cancellationToken.IsCancellationRequested)
             {
-                if (await IsDockerHostRunning())
+                var result = await IsDockerHostRunning();
+                if (result == StartResult.Started)
                 {
                     return true;
+                }
+
+                if (result == StartResult.Unstartable)
+                {
+                    return false;
                 }
 
                 await Task.Delay(TimeSpan.FromSeconds(0.25));

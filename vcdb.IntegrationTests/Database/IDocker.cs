@@ -7,7 +7,7 @@ namespace vcdb.IntegrationTests.Database
     {
         Task<bool> IsContainerRunning();
         bool IsInstalled();
-        Task<bool> IsDockerHostRunning();
+        Task<StartResult> IsDockerHostRunning();
         Task<bool> StartDockerHost(CancellationToken cancellationToken = default);
         Task<bool> StartDockerCompose(CancellationToken cancellationToken = default);
     }

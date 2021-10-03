@@ -10,9 +10,9 @@ namespace vcdb.IntegrationTests.Database
             return Task.FromResult(true);
         }
 
-        public Task<bool> IsDockerHostRunning()
+        public Task<StartResult> IsDockerHostRunning()
         {
-            return Task.FromResult(true);
+            return Task.FromResult(StartResult.Started);
         }
 
         public bool IsInstalled()
