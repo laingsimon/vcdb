@@ -2,10 +2,13 @@
   "CommandLine": "--defaultValueHandling Include",
   "Mode": "Read",
   "JsonComparison": {
+    "IgnoreLineEndings": false,
+    "IgnoreCase": false,
     "Explicit": false,
     "TreatJsonStringsAsObjects": false,
     "InlineOptionsPropertyName": "$ComparisonOptions",
-    "PropertyNameComparer": "OrdinalIgnoreCase"
+    "PropertyNameComparer": "OrdinalIgnoreCase",
+    "StringValueComparer": {}
   },
   "ExpectedExitCode": null,
   "VcDbPath": null
