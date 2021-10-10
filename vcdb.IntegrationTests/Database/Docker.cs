@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
@@ -13,6 +14,7 @@ namespace vcdb.IntegrationTests.Database
     {
         public const string DockerComposeFolderName = "vcdb.IntegrationTests";
 
+        private static readonly TimeSpan dockerComposeTimeout = TimeSpan.FromMinutes(5);
         private static readonly string DockerDesktopPath = EnvironmentVariable.Get<string>("DockerDesktopPath") ??  "C:\\Program Files\\Docker\\Docker\\Docker Desktop.exe";
         private readonly IntegrationTestOptions options;
         private readonly IDatabaseProduct databaseProduct;
@@ -37,7 +39,8 @@ namespace vcdb.IntegrationTests.Database
                     FileName = Environment.GetEnvironmentVariable("comspec"),
                     Arguments = "/c \"docker container ls\"",
                     RedirectStandardError = true,
-                    RedirectStandardOutput = true
+                    RedirectStandardOutput = true,
+                    Verb = "runas",
                 }
             };
 
@@ -73,7 +76,8 @@ namespace vcdb.IntegrationTests.Database
                     FileName = Environment.GetEnvironmentVariable("comspec"),
                     Arguments = "/c \"docker container ls\"",
                     RedirectStandardError = true,
-                    RedirectStandardOutput = true
+                    RedirectStandardOutput = true,
+                    Verb = "runas",
                 }
             };
 
@@ -148,13 +152,27 @@ namespace vcdb.IntegrationTests.Database
 
             options.StandardOutput.WriteLine($"Starting docker-compose in {process.StartInfo.WorkingDirectory}");
 
+            var dockerContainerStarted = new ManualResetEvent(false);
+            var dockerComposeError = new ManualResetEvent(false);
+
             var errorData = new StringBuilder();
             process.ErrorDataReceived += (sender, args) =>
             {
+                if (string.IsNullOrEmpty(args.Data))
+                {
+                    return;
+                }
+
                 options.ErrorOutput.WriteLine(args.Data);
+                Debug.WriteLine(args.Data);
+
+                var lines = args.Data.Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries);
+                if (lines.Any(IsDockerComposeError))
+                {
+                    dockerComposeError.Set();
+                }
             };
 
-            var dockerContainerStarted = new ManualResetEvent(false);
             process.OutputDataReceived += (sender, args) =>
             {
                 if (string.IsNullOrEmpty(args.Data))
@@ -181,11 +199,28 @@ namespace vcdb.IntegrationTests.Database
             var dockerContainerWasStarted = await Task.Run(() =>
             {
                 var cancellationWaitHandle = cancellationToken.WaitHandle;
-                var handleThatWasSet = WaitHandle.WaitAny(new[] { cancellationWaitHandle, dockerContainerStarted });
-                return handleThatWasSet == 1; //the second wait handle
+                var handleThatWasSet = WaitHandle.WaitAny(new[] { cancellationWaitHandle, dockerContainerStarted, dockerComposeError }, dockerComposeTimeout);
+                
+                switch (handleThatWasSet)
+                {
+                    case 0: //index of <cancellationWaitHandle>
+                        return false;
+                    case 1: // index of <dockerContainerStarted>
+                        return true;
+                    case 2: // index of <dockerComposeError>
+                        throw new InvalidOperationException("Error encountered when executing docker-compose:\r\n" + options.ErrorOutput.ToString());
+                    default:
+                        throw new InvalidOperationException("Invalid index to wait handle identified");
+                }
             });
 
             return dockerContainerWasStarted;
+        }
+
+        private static bool IsDockerComposeError(string line)
+        {
+            return Regex.IsMatch(line, @"^(.+?)\s+Error$")
+                || Regex.IsMatch(line, @"^Error\s+");
         }
 
         private string GetDockerComposeDirectoryPath()
