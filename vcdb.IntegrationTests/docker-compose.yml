@@ -1,6 +1,6 @@
 services:
   sqlserver:
-    image: microsoft/mssql-server-linux:2017-latest
+    image: mcr.microsoft.com/mssql/server:2017-latest
     environment:
       ACCEPT_EULA: Y
       SA_PASSWORD: vcdb_2020
