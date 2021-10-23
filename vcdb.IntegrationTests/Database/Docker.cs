@@ -95,8 +95,13 @@ namespace vcdb.IntegrationTests.Database
             }
 
             var stdOut = process.StandardOutput.ReadToEnd();
-            var containerName = GetContainerName();
-            return stdOut.Contains(containerName);
+            var containerNames = new[]
+            {
+                GetContainerName("_"),
+                GetContainerName("-"),
+            };
+            
+            return containerNames.Any(containerName => stdOut.Contains(containerName));
         }
 
         public async Task<bool> StartDockerHost(CancellationToken cancellationToken = default)
@@ -181,7 +186,8 @@ namespace vcdb.IntegrationTests.Database
                 var lines = args.Data.Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries);
                 foreach (var line in lines)
                 {
-                    if (Regex.IsMatch(line, @"^Attaching to") && Regex.IsMatch(line, GetContainerName()))
+                    if ((Regex.IsMatch(line, @"^Attaching to") || Regex.IsMatch(line, @"^Container .+ Running$")) 
+                        && (Regex.IsMatch(line, GetContainerName("_")) || Regex.IsMatch(line, GetContainerName("-"))))
                     {
                         dockerContainerStarted.Set();
                     }
@@ -230,14 +236,11 @@ namespace vcdb.IntegrationTests.Database
             return Path.Combine(scenariosDirectory.FullName, @$"..\{DockerComposeFolderName}");
         }
 
-        private string GetContainerName(string suffix = "_1")
+        private string GetContainerName(string separator)
         {
-            var dockerComposeDirectoryName = Path.GetFileName(GetDockerComposeDirectoryPath());
-
-            var normalisedDirectoryName = dockerComposeDirectoryName.Replace(".", "").ToLower();
             var normalisedProductName = databaseProduct.Name.ToLower();
 
-            return $"{normalisedDirectoryName}_{normalisedProductName}{suffix}";
+            return $"vcdb{separator}{normalisedProductName}{separator}1";
         }
     }
 }
