@@ -59,5 +59,10 @@
         }
       }
     }
+  },
+  "users": {
+    "$ComparisonOptions": {
+      "explicit": false
+    }
   }
 }

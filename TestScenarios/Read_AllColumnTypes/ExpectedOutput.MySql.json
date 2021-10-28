@@ -36,5 +36,10 @@
         }
       }
     }
+  },
+  "users": {
+    "$ComparisonOptions": {
+      "explicit": false
+    }
   }
 }
