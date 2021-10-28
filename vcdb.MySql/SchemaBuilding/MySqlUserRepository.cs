@@ -13,6 +13,14 @@ namespace vcdb.MySql.SchemaBuilding
 {
     public class MySqlUserRepository : IUserRepository
     {
+        private static readonly string[] ExcludedMySqlUserNames = new[]
+        {
+            "root@localhost",
+            "mysql.session@localhost",
+            "mysql.sys@localhost",
+            "root@%",
+        };
+
         private readonly Options options;
 
         public MySqlUserRepository(Options options)
@@ -26,9 +34,15 @@ namespace vcdb.MySql.SchemaBuilding
                 $@"select * from mysql.user",
                 new { databaseName = options.Database });
 
-            return users.ToDictionary(
-                GetUserName,
-                CreateUserDetails);
+            return users
+                .Where(UserNotExcluded)
+                .ToDictionary(GetUserName, CreateUserDetails);
+        }
+
+        private static bool UserNotExcluded(MySqlUserDetails user)
+        {
+            var currentUserName = GetUserName(user);
+            return !ExcludedMySqlUserNames.Contains(currentUserName);
         }
 
         private static string GetUserName(MySqlUserDetails user)
