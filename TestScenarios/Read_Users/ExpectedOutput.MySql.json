@@ -1,0 +1,11 @@
+{
+  "users": {
+    "MyUser@localhost": {
+      "Type": "DatabaseAuthority"
+    },
+    "MyDisabledUser@localhost": {
+      "Type": "DatabaseAuthority",
+      "Enabled": false
+    }
+  }
+}
