@@ -39,7 +39,7 @@
   },
   "users": {
     "$ComparisonOptions": {
-      "explicit": false
+      "ignore": true
     }
   }
 }
