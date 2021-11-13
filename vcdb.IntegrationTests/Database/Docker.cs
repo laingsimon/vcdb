@@ -67,46 +67,14 @@ namespace vcdb.IntegrationTests.Database
             return StartResult.Started;
         }
 
-        public async Task<bool> IsContainerRunning(IntegrationTestOptions options)
+        public Task<bool> IsContainerRunning(IntegrationTestOptions options)
         {
             if (options is null)
             {
                 throw new ArgumentNullException(nameof(options));
             }
 
-            var process = new Process
-            {
-                StartInfo =
-                {
-                    FileName = Environment.GetEnvironmentVariable("comspec"),
-                    Arguments = "/c \"docker container ls\"",
-                    RedirectStandardError = true,
-                    RedirectStandardOutput = true,
-                    Verb = "runas",
-                }
-            };
-
-            if (!process.Start())
-            {
-                throw new InvalidOperationException("Could not start process");
-            }
-
-            await process.WaitForExitAsync();
-
-            if (process.ExitCode != 0)
-            {
-                options.ErrorOutput.WriteLine(process.StandardError.ReadToEnd());
-                return false;
-            }
-
-            var stdOut = process.StandardOutput.ReadToEnd();
-            var containerNames = new[]
-            {
-                GetContainerName("_"),
-                GetContainerName("-"),
-            };
-            
-            return containerNames.Any(containerName => stdOut.Contains(containerName));
+            return Task.FromResult(databaseProduct.CanConnect(options.ConnectionString));
         }
 
         public async Task<bool> StartDockerHost(CancellationToken cancellationToken = default)
@@ -196,18 +164,6 @@ namespace vcdb.IntegrationTests.Database
                         dockerContainerStarted.Set();
                         break;
                     }
-
-                    if (Debugger.IsAttached)
-                    {
-                        Debug.WriteLine(line);
-                    }
-
-                    if ((Regex.IsMatch(line, @"^Attaching to") || Regex.IsMatch(line, @"^Container .+ Running$")) 
-                        && (Regex.IsMatch(line, GetContainerName("_")) || Regex.IsMatch(line, GetContainerName("-"))))
-                    {
-                        dockerContainerStarted.Set();
-                        break;
-                    }
                 }
             };
 
@@ -251,13 +207,6 @@ namespace vcdb.IntegrationTests.Database
             var scenariosDirectory = new DirectoryInfo(Path.GetFullPath(Path.Combine(Directory.GetCurrentDirectory(), "..", "..", "..", "..", "vcdb.IntegrationTests")));
 
             return Path.Combine(scenariosDirectory.FullName, @$"..\{DockerComposeFolderName}");
-        }
-
-        private string GetContainerName(string separator)
-        {
-            var normalisedProductName = databaseProduct.Name.ToLower();
-
-            return $"vcdb{separator}{normalisedProductName}{separator}1";
         }
     }
 }
