@@ -79,5 +79,18 @@ CREATE DATABASE {EscapeIdentifier(name)}";
                 yield return sqlBatch.ToString();
             }
         }
+
+        public bool CanConnect(string connectionString)
+        {
+            try
+            {
+                GetInstalledServerVersion(connectionString);
+                return true;
+            }
+            catch (Exception)
+            {
+                return false;
+            }
+        }
     }
 }

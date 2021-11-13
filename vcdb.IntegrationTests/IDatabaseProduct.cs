@@ -77,5 +77,11 @@ namespace vcdb.IntegrationTests
         /// <param name="statement"></param>
         /// <returns></returns>
         IAsyncEnumerable<string> SplitStatementIntoBatches(TextReader statement);
+
+        /// <summary>
+        /// Test to see if the product can be connected to
+        /// </summary>
+        /// <returns></returns>
+        bool CanConnect(string connectionString);
     }
 }

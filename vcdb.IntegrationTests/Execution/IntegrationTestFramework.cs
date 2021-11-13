@@ -42,10 +42,9 @@ namespace vcdb.IntegrationTests.Execution
                     return;
             }
 
-            if (!await docker.IsContainerRunning())
-            if (!await docker.IsContainerRunning())
+            if (!await docker.IsContainerRunning(options))
             {
-                await docker.StartDockerCompose();
+                await docker.StartDockerCompose(options);
             }
 
             await sql.WaitForReady(attempts: 10);

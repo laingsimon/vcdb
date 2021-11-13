@@ -67,8 +67,13 @@ namespace vcdb.IntegrationTests.Database
             return StartResult.Started;
         }
 
-        public async Task<bool> IsContainerRunning()
+        public async Task<bool> IsContainerRunning(IntegrationTestOptions options)
         {
+            if (options is null)
+            {
+                throw new ArgumentNullException(nameof(options));
+            }
+
             var process = new Process
             {
                 StartInfo =
@@ -141,7 +146,7 @@ namespace vcdb.IntegrationTests.Database
             return false;
         }
 
-        public async Task<bool> StartDockerCompose(CancellationToken cancellationToken = default)
+        public async Task<bool> StartDockerCompose(IntegrationTestOptions options, CancellationToken cancellationToken = default)
         {
             var process = new Process
             {
@@ -186,10 +191,22 @@ namespace vcdb.IntegrationTests.Database
                 var lines = args.Data.Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries);
                 foreach (var line in lines)
                 {
+                    if (databaseProduct.CanConnect(options.ConnectionString))
+                    {
+                        dockerContainerStarted.Set();
+                        break;
+                    }
+
+                    if (Debugger.IsAttached)
+                    {
+                        Debug.WriteLine(line);
+                    }
+
                     if ((Regex.IsMatch(line, @"^Attaching to") || Regex.IsMatch(line, @"^Container .+ Running$")) 
                         && (Regex.IsMatch(line, GetContainerName("_")) || Regex.IsMatch(line, GetContainerName("-"))))
                     {
                         dockerContainerStarted.Set();
+                        break;
                     }
                 }
             };
