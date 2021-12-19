@@ -78,6 +78,7 @@ namespace vcdb.IntegrationTests.Database
                 StartInfo =
                 {
                     FileName = options.DockerDesktopPath ?? DockerDesktopPath,
+                    Arguments = "-AutoStart", // run docker desktop without showing the window in the foreground
                     UseShellExecute = true,
                 }
             };
