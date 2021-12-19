@@ -4,6 +4,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 using System.IO;
+using System.Threading;
 using System.Threading.Tasks;
 using vcdb.IntegrationTests.Comparison;
 using vcdb.IntegrationTests.Content;
@@ -13,7 +14,7 @@ namespace vcdb.IntegrationTests.Execution
 {
     internal class IntegrationTestExecutor
     {
-        public async Task ExecuteScenario(IntegrationTestOptions options)
+        public async Task ExecuteScenario(IntegrationTestOptions options, CancellationToken cancellationToken = default)
         {
             var allOutput = new StringWriter();
             options.StandardOutput = allOutput;
@@ -26,7 +27,7 @@ namespace vcdb.IntegrationTests.Execution
             {
                 var executor = serviceProvider.GetRequiredService<IntegrationTestFramework>();
 
-                await executor.Execute(options);
+                await executor.Execute(options, cancellationToken);
             }
         }
 

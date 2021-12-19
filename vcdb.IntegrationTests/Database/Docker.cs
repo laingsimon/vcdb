@@ -29,7 +29,7 @@ namespace vcdb.IntegrationTests.Database
             return File.Exists(options.DockerDesktopPath ?? DockerDesktopPath);
         }
 
-        public async Task<StartResult> IsDockerHostRunning()
+        public async Task<StartResult> IsDockerHostRunning(CancellationToken cancellationToken = default)
         {
             var process = new Process
             {
@@ -48,7 +48,7 @@ namespace vcdb.IntegrationTests.Database
                 throw new InvalidOperationException("Could not start process");
             }
 
-            await process.WaitForExitAsync();
+            await process.WaitForExitAsync(cancellationToken);
 
             if (process.ExitCode != 0)
             {
@@ -66,13 +66,8 @@ namespace vcdb.IntegrationTests.Database
             return StartResult.Started;
         }
 
-        public Task<bool> IsContainerRunning(IntegrationTestOptions options)
+        public Task<bool> IsContainerRunning(CancellationToken cancellationToken = default)
         {
-            if (options == null)
-            {
-                throw new ArgumentNullException(nameof(options));
-            }
-
             return Task.FromResult(databaseProduct.CanConnect(options.ConnectionString));
         }
 
@@ -95,7 +90,7 @@ namespace vcdb.IntegrationTests.Database
 
             while (!cancellationToken.IsCancellationRequested)
             {
-                var result = await IsDockerHostRunning();
+                var result = await IsDockerHostRunning(cancellationToken);
                 
                 switch (result)
                 {
@@ -114,7 +109,7 @@ namespace vcdb.IntegrationTests.Database
             return false;
         }
 
-        public async Task<bool> StartDockerCompose(IntegrationTestOptions options, CancellationToken cancellationToken = default)
+        public async Task<bool> StartDockerCompose(CancellationToken cancellationToken = default)
         {
             var process = new Process
             {

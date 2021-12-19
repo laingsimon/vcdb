@@ -1,5 +1,6 @@
 ﻿using NUnit.Framework;
 using System;
+using System.Threading;
 using System.Threading.Tasks;
 using vcdb.IntegrationTests.Database;
 
@@ -21,18 +22,18 @@ namespace vcdb.IntegrationTests.Execution
             this.scenarioExecutor = scenarioExecutor;
         }
 
-        public async Task Execute(IntegrationTestOptions options)
+        public async Task Execute(IntegrationTestOptions options, CancellationToken cancellationToken = default)
         {
             if (!docker.IsInstalled())
             {
                 throw new InvalidOperationException("Docker is not installed");
             }
 
-            var startResult = await docker.IsDockerHostRunning();
+            var startResult = await docker.IsDockerHostRunning(cancellationToken);
             switch (startResult)
             {
                 case StartResult.NotStarted:
-                    if (!await docker.StartDockerHost())
+                    if (!await docker.StartDockerHost(cancellationToken))
                     {
                         Assert.Fail("Unable to start docker host");
                     }
@@ -42,9 +43,9 @@ namespace vcdb.IntegrationTests.Execution
                     return;
             }
 
-            if (!await docker.IsContainerRunning(options))
+            if (!await docker.IsContainerRunning(cancellationToken))
             {
-                await docker.StartDockerCompose(options);
+                await docker.StartDockerCompose(cancellationToken);
             }
 
             await sql.WaitForReady(attempts: 10);

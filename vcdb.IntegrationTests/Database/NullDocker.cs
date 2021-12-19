@@ -6,12 +6,12 @@ namespace vcdb.IntegrationTests.Database
 {
     internal class NullDocker : IDocker
     {
-        public Task<bool> IsContainerRunning(IntegrationTestOptions options)
+        public Task<bool> IsContainerRunning(CancellationToken cancellationToken = default)
         {
             return Task.FromResult(true);
         }
 
-        public Task<StartResult> IsDockerHostRunning()
+        public Task<StartResult> IsDockerHostRunning(CancellationToken cancellationToken = default)
         {
             return Task.FromResult(StartResult.Started);
         }
@@ -21,7 +21,7 @@ namespace vcdb.IntegrationTests.Database
             return true;
         }
 
-        public Task<bool> StartDockerCompose(IntegrationTestOptions options, CancellationToken cancellationToken = default)
+        public Task<bool> StartDockerCompose(CancellationToken cancellationToken = default)
         {
             return Task.FromResult(true);
         }

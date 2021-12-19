@@ -1,15 +1,14 @@
 ﻿using System.Threading;
 using System.Threading.Tasks;
-using vcdb.IntegrationTests.Execution;
 
 namespace vcdb.IntegrationTests.Database
 {
     internal interface IDocker
     {
-        Task<bool> IsContainerRunning(IntegrationTestOptions options);
+        Task<bool> IsContainerRunning(CancellationToken cancellationToken = default);
         bool IsInstalled();
-        Task<StartResult> IsDockerHostRunning();
+        Task<StartResult> IsDockerHostRunning(CancellationToken cancellationToken = default);
         Task<bool> StartDockerHost(CancellationToken cancellationToken = default);
-        Task<bool> StartDockerCompose(IntegrationTestOptions options, CancellationToken cancellationToken = default);
+        Task<bool> StartDockerCompose(CancellationToken cancellationToken = default);
     }
 }

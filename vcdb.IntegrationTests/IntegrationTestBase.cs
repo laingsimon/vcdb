@@ -1,5 +1,6 @@
 ﻿using NUnit.Framework;
 using System;
+using System.Threading;
 using System.Threading.Tasks;
 using vcdb.IntegrationTests.Execution;
 using vcdb.IntegrationTests.Output;
@@ -21,7 +22,7 @@ namespace vcdb.IntegrationTests
         {
             var options = GetOptions(scenario);
 
-            await processExecutor.ExecuteScenario(options);
+            await processExecutor.ExecuteScenario(options, CancellationToken.None);
         }
 
         [TestCaseSource(typeof(IntegrationTestScenarios.Deploy))]
@@ -29,7 +30,7 @@ namespace vcdb.IntegrationTests
         {
             var options = GetOptions(scenario);
 
-            await processExecutor.ExecuteScenario(options);
+            await processExecutor.ExecuteScenario(options, CancellationToken.None);
         }
 
         private IntegrationTestOptions GetOptions(IntegrationTestScenario scenario)
