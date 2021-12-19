@@ -8,7 +8,8 @@
     "TreatJsonStringsAsObjects": false,
     "InlineOptionsPropertyName": "$ComparisonOptions",
     "PropertyNameComparer": "OrdinalIgnoreCase",
-    "StringValueComparer": {}
+    "StringValueComparer": {},
+    "Ignore": false
   },
   "ExpectedExitCode": null,
   "VcDbPath": null
