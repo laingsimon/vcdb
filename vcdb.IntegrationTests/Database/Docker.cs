@@ -2,7 +2,6 @@
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
@@ -12,10 +11,10 @@ namespace vcdb.IntegrationTests.Database
 {
     internal class Docker : IDocker
     {
-        public const string DockerComposeFolderName = "vcdb.IntegrationTests";
+        private const string DockerComposeFolderName = "vcdb.IntegrationTests";
+        private static readonly TimeSpan DockerComposeTimeout = TimeSpan.FromMinutes(5);
+        private static readonly string DockerDesktopPath = EnvironmentVariable.Get<string>("DockerDesktopPath") ??  Environment.GetEnvironmentVariable("ProgramW6432") + "\\Docker\\Docker\\Docker Desktop.exe";
 
-        private static readonly TimeSpan dockerComposeTimeout = TimeSpan.FromMinutes(5);
-        private static readonly string DockerDesktopPath = EnvironmentVariable.Get<string>("DockerDesktopPath") ??  "C:\\Program Files\\Docker\\Docker\\Docker Desktop.exe";
         private readonly IntegrationTestOptions options;
         private readonly IDatabaseProduct databaseProduct;
 
@@ -36,7 +35,7 @@ namespace vcdb.IntegrationTests.Database
             {
                 StartInfo =
                 {
-                    FileName = Environment.GetEnvironmentVariable("comspec"),
+                    FileName = Environment.GetEnvironmentVariable("comspec") ?? throw new InvalidOperationException("Unable to retrieve comspec environment variable"),
                     Arguments = "/c \"docker container ls\"",
                     RedirectStandardError = true,
                     RedirectStandardOutput = true,
@@ -53,23 +52,23 @@ namespace vcdb.IntegrationTests.Database
 
             if (process.ExitCode != 0)
             {
-                var errorMessages = process.StandardError.ReadToEnd();
+                var errorMessages = await process.StandardError.ReadToEndAsync();
                 if (string.IsNullOrEmpty(errorMessages))
                 {
                     return StartResult.NotStarted;
                 }
 
-                Console.Error.WriteLine(errorMessages);
-                return StartResult.Unstartable;
+                await Console.Error.WriteLineAsync(errorMessages);
+                return StartResult.NotStarted;
             }
 
-            Debug.WriteLine(process.StandardOutput.ReadToEnd());
+            Debug.WriteLine(await process.StandardOutput.ReadToEndAsync());
             return StartResult.Started;
         }
 
         public Task<bool> IsContainerRunning(IntegrationTestOptions options)
         {
-            if (options is null)
+            if (options == null)
             {
                 throw new ArgumentNullException(nameof(options));
             }
@@ -88,7 +87,7 @@ namespace vcdb.IntegrationTests.Database
                 }
             };
 
-            options.StandardOutput.WriteLine("Starting docker desktop...");
+            await options.StandardOutput.WriteLineAsync("Starting docker desktop...");
             if (!process.Start())
             {
                 throw new InvalidOperationException("Could not start docker desktop - unable to start process");
@@ -97,17 +96,19 @@ namespace vcdb.IntegrationTests.Database
             while (!cancellationToken.IsCancellationRequested)
             {
                 var result = await IsDockerHostRunning();
-                if (result == StartResult.Started)
+                
+                switch (result)
                 {
-                    return true;
+                    case StartResult.Started:
+                        return true;
+                    case StartResult.Unstartable:
+                        return false;
+                    case StartResult.NotStarted:
+                        await Task.Delay(TimeSpan.FromSeconds(0.25), cancellationToken);
+                        break;
+                    default:
+                        throw new NotSupportedException($"Response not understood: {result}");
                 }
-
-                if (result == StartResult.Unstartable)
-                {
-                    return false;
-                }
-
-                await Task.Delay(TimeSpan.FromSeconds(0.25));
             }
 
             return false;
@@ -119,7 +120,7 @@ namespace vcdb.IntegrationTests.Database
             {
                 StartInfo =
                 {
-                    FileName = Environment.GetEnvironmentVariable("comspec"),
+                    FileName = Environment.GetEnvironmentVariable("comspec") ?? throw new InvalidOperationException("Unable to retrieve comspec environment variable"),
                     Arguments = "/c \"docker-compose up\"",
                     WorkingDirectory = GetDockerComposeDirectoryPath(),
                     RedirectStandardError = true,
@@ -127,13 +128,12 @@ namespace vcdb.IntegrationTests.Database
                 }
             };
 
-            options.StandardOutput.WriteLine($"Starting docker-compose in {process.StartInfo.WorkingDirectory}");
+            await options.StandardOutput.WriteLineAsync($"Starting docker-compose in {process.StartInfo.WorkingDirectory}");
 
             var dockerContainerStarted = new ManualResetEvent(false);
             var dockerComposeError = new ManualResetEvent(false);
 
-            var errorData = new StringBuilder();
-            process.ErrorDataReceived += (sender, args) =>
+            process.ErrorDataReceived += (_, args) =>
             {
                 if (string.IsNullOrEmpty(args.Data))
                 {
@@ -150,19 +150,14 @@ namespace vcdb.IntegrationTests.Database
                 }
             };
 
-            process.OutputDataReceived += (sender, args) =>
+            process.OutputDataReceived += (_, args) =>
             {
                 if (string.IsNullOrEmpty(args.Data))
                     return;
 
-                var lines = args.Data.Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries);
-                foreach (var line in lines)
+                if (databaseProduct.CanConnect(options.ConnectionString))
                 {
-                    if (databaseProduct.CanConnect(options.ConnectionString))
-                    {
-                        dockerContainerStarted.Set();
-                        break;
-                    }
+                    dockerContainerStarted.Set();
                 }
             };
 
@@ -177,7 +172,7 @@ namespace vcdb.IntegrationTests.Database
             var dockerContainerWasStarted = await Task.Run(() =>
             {
                 var cancellationWaitHandle = cancellationToken.WaitHandle;
-                var handleThatWasSet = WaitHandle.WaitAny(new[] { cancellationWaitHandle, dockerContainerStarted, dockerComposeError }, dockerComposeTimeout);
+                var handleThatWasSet = WaitHandle.WaitAny(new[] { cancellationWaitHandle, dockerContainerStarted, dockerComposeError }, DockerComposeTimeout);
                 
                 switch (handleThatWasSet)
                 {
@@ -186,11 +181,11 @@ namespace vcdb.IntegrationTests.Database
                     case 1: // index of <dockerContainerStarted>
                         return true;
                     case 2: // index of <dockerComposeError>
-                        throw new InvalidOperationException("Error encountered when executing docker-compose:\r\n" + options.ErrorOutput.ToString());
+                        throw new InvalidOperationException("Error encountered when executing docker-compose:\r\n" + options.ErrorOutput);
                     default:
                         throw new InvalidOperationException("Invalid index to wait handle identified");
                 }
-            });
+            }, cancellationToken);
 
             return dockerContainerWasStarted;
         }
