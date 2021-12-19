@@ -94,8 +94,13 @@ namespace vcdb.IntegrationTests.Database
             }
             catch (Exception exc)
             {
+#pragma warning disable CA2200
                 if (reportError)
+                {
+                    // ReSharper disable once PossibleIntendedRethrow
                     throw exc;
+                }
+#pragma warning restore CA2200
 
                 return false;
             }

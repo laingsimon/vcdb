@@ -47,6 +47,7 @@ namespace vcdb.IntegrationTests.Output
             return underlyingWriter.FlushAsync();
         }
 
+        [Obsolete]
         public override object InitializeLifetimeService()
         {
             return underlyingWriter.InitializeLifetimeService();

@@ -85,7 +85,6 @@ namespace vcdb.IntegrationTests.Database
                 {
                     FileName = options.DockerDesktopPath ?? DockerDesktopPath,
                     UseShellExecute = true,
-                    LoadUserProfile = true
                 }
             };
 
