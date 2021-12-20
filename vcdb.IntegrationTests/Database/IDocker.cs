@@ -9,6 +9,6 @@ namespace vcdb.IntegrationTests.Database
         bool IsInstalled();
         Task<StartResult> IsDockerHostRunning(CancellationToken cancellationToken = default);
         Task<bool> StartDockerHost(CancellationToken cancellationToken = default);
-        Task<bool> StartDockerCompose(CancellationToken cancellationToken = default);
+        Task<DockerComposeProcess> StartDockerCompose(CancellationToken cancellationToken = default);
     }
 }

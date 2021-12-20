@@ -22,7 +22,7 @@ namespace vcdb.IntegrationTests.Execution
             this.scenarioExecutor = scenarioExecutor;
         }
 
-        public async Task Execute(IntegrationTestOptions options, CancellationToken cancellationToken = default)
+        public async Task<IDisposable> Execute(IntegrationTestOptions options, CancellationToken cancellationToken = default)
         {
             if (!docker.IsInstalled())
             {
@@ -40,17 +40,20 @@ namespace vcdb.IntegrationTests.Execution
                     break;
                 case StartResult.Unstartable:
                     Assert.Fail("Unable to start docker host");
-                    return;
+                    return null;
             }
 
+            DockerComposeProcess dockerComposeProcess = null;
             if (!await docker.IsContainerRunning(cancellationToken))
             {
-                await docker.StartDockerCompose(cancellationToken);
+                dockerComposeProcess = await docker.StartDockerCompose(cancellationToken);
             }
 
             await sql.WaitForReady(attempts: 10);
 
             await scenarioExecutor.Execute(options.ConnectionString);
+
+            return dockerComposeProcess;
         }
     }
 }

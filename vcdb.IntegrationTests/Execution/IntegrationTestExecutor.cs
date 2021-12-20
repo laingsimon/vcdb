@@ -1,4 +1,5 @@
-﻿using DiffPlex.DiffBuilder;
+﻿using System;
+using DiffPlex.DiffBuilder;
 using JsonEqualityComparer;
 using Microsoft.Extensions.DependencyInjection;
 using Newtonsoft.Json;
@@ -14,7 +15,7 @@ namespace vcdb.IntegrationTests.Execution
 {
     internal class IntegrationTestExecutor
     {
-        public async Task ExecuteScenario(IntegrationTestOptions options, CancellationToken cancellationToken = default)
+        public async Task<IDisposable> ExecuteScenario(IntegrationTestOptions options, CancellationToken cancellationToken = default)
         {
             var allOutput = new StringWriter();
             options.StandardOutput = allOutput;
@@ -27,7 +28,7 @@ namespace vcdb.IntegrationTests.Execution
             {
                 var executor = serviceProvider.GetRequiredService<IntegrationTestFramework>();
 
-                await executor.Execute(options, cancellationToken);
+                return await executor.Execute(options, cancellationToken);
             }
         }
 
@@ -48,6 +49,7 @@ namespace vcdb.IntegrationTests.Execution
             services.AddSingleton<IScriptDiffer, HeaderCommentIgnoringScriptDiffer>();
             services.AddSingleton<ScriptDiffer>();
             services.AddSingleton<IDifferenceFilter, RegexDifferenceFilter>();
+            services.AddSingleton<IProcessHelper, ProcessHelper>();
 
             services.AddSingleton(new JsonSerializer
             {

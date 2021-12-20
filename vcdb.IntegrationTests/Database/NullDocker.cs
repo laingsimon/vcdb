@@ -21,9 +21,9 @@ namespace vcdb.IntegrationTests.Database
             return true;
         }
 
-        public Task<bool> StartDockerCompose(CancellationToken cancellationToken = default)
+        public Task<DockerComposeProcess> StartDockerCompose(CancellationToken cancellationToken = default)
         {
-            return Task.FromResult(true);
+            return Task.FromResult(new DockerComposeProcess(null));
         }
 
         public Task<bool> StartDockerHost(CancellationToken cancellationToken = default)

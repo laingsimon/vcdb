@@ -1,5 +1,6 @@
 ﻿using NUnit.Framework;
 using System;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using vcdb.IntegrationTests.Execution;
@@ -11,18 +12,32 @@ namespace vcdb.IntegrationTests
     public abstract class IntegrationTestBase
     {
         private readonly IntegrationTestExecutor processExecutor;
+        private readonly List<IDisposable> disposables = new List<IDisposable>();
 
         protected IntegrationTestBase()
         {
             processExecutor = new IntegrationTestExecutor();
         }
 
+        [OneTimeTearDown]
+        public void TearDownOnce()
+        {
+            foreach (var disposable in disposables)
+            {
+                disposable.Dispose();
+            }
+        }
+        
         [TestCaseSource(typeof(IntegrationTestScenarios.Read))]
         public async Task ExecuteRead(IntegrationTestScenario scenario)
         {
             var options = GetOptions(scenario);
 
-            await processExecutor.ExecuteScenario(options, CancellationToken.None);
+            var disposable = await processExecutor.ExecuteScenario(options, CancellationToken.None);
+            if (disposable != null)
+            {
+                disposables.Add(disposable);
+            }
         }
 
         [TestCaseSource(typeof(IntegrationTestScenarios.Deploy))]
@@ -30,7 +45,11 @@ namespace vcdb.IntegrationTests
         {
             var options = GetOptions(scenario);
 
-            await processExecutor.ExecuteScenario(options, CancellationToken.None);
+            var disposable = await processExecutor.ExecuteScenario(options, CancellationToken.None);
+            if (disposable != null)
+            {
+                disposables.Add(disposable);
+            }
         }
 
         private IntegrationTestOptions GetOptions(IntegrationTestScenario scenario)
