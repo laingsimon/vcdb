@@ -11,6 +11,8 @@ namespace vcdb.IntegrationTests
     [TestFixture]
     public abstract class IntegrationTestBase
     {
+        private static readonly Dictionary<IDatabaseProduct, Dictionary<string, string>> ProductVersionCache = new Dictionary<IDatabaseProduct, Dictionary<string, string>>();
+
         private readonly IntegrationTestExecutor processExecutor;
         private readonly List<IDisposable> disposables = new List<IDisposable>();
 
@@ -27,7 +29,7 @@ namespace vcdb.IntegrationTests
                 disposable.Dispose();
             }
         }
-        
+
         [TestCaseSource(typeof(IntegrationTestScenarios.Read))]
         public async Task ExecuteRead(IntegrationTestScenario scenario)
         {
@@ -78,14 +80,28 @@ namespace vcdb.IntegrationTests
             };
         }
 
-        private string TryGetInstalledServerVersion(IDatabaseProduct databaseProduct, string connectionString)
+        private static string TryGetInstalledServerVersion(IDatabaseProduct databaseProduct, string connectionString)
         {
+            if (!ProductVersionCache.TryGetValue(databaseProduct, out var versionCache))
+            {
+                versionCache = new Dictionary<string, string>();
+                ProductVersionCache.Add(databaseProduct, versionCache);
+            }
+
+            if (versionCache.TryGetValue(connectionString, out var version))
+            {
+                return version;
+            }
+
             try
             {
-                return databaseProduct.GetInstalledServerVersion(connectionString);
+                var installedVersion = databaseProduct.GetInstalledServerVersion(connectionString);
+                versionCache.TryAdd(connectionString, installedVersion);
+                return installedVersion;
             }
             catch (Exception)
             {
+                versionCache.TryAdd(connectionString, null);
                 return null;
             }
         }
