@@ -11,12 +11,16 @@ namespace vcdb.MySql.SchemaBuilding
 {
     public class MySqlPrimaryKeyRepository : IPrimaryKeyRepository
     {
+        private const string PrimaryKeyTypeName = "PRI";
+
         public async Task<IEnumerable<string>> GetColumnsInPrimaryKey(DbConnection connection, ObjectName tableName)
         {
-            var columns = await connection.QueryAsync<DescribeOutput>($@"
-describe {tableName.Name}");
+            var columns = await connection.QueryAsync<DescribeOutput>($@"describe {tableName.Name}");
 
-            return columns.Where(col => col.Key == "PRI").Select(col => col.Field).ToArray();
+            return columns
+                .Where(col => col.Key == PrimaryKeyTypeName)
+                .Select(col => col.Field)
+                .ToArray();
         }
 
         public Task<PrimaryKeyDetails> GetPrimaryKeyDetails(DbConnection connection, ObjectName tableName)

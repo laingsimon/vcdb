@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace vcdb.MySql.SchemaBuilding.Models
+﻿namespace vcdb.MySql.SchemaBuilding.Models
 {
     public class SqlRoutine
     {

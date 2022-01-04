@@ -43,30 +43,29 @@ namespace vcdb.MySql.SchemaBuilding
             var columnsInPrimaryKey = await primaryKeyRepository.GetColumnsInPrimaryKey(connection, tableName);
             var computedColumns = await generatedColumnRepository.GetComputedColumns(connection, tableName);
 
-            return await connection.QueryAsync<DescribeOutput>($@"
-describe {tableName.Name}").ToDictionaryAsync(
-                        column => column.Field,
-                        column =>
-                        {
-                            return new ColumnDetails
-                            {
-                                Type = NormaliseDataType(column, columnCollations),
-                                Nullable = OptOut.From(column.Null == "YES"),
-                                Default = valueParser.ParseDefault(column.Default),
-                                /*DefaultName = columnDefault == null || columnDefault.IsSystemNamed
-                                    ? null
-                                    : columnDefault.Name,
-                                SqlDefaultName = columnDefault?.Name,
-                                DefaultObjectId = columnDefault?.ObjectId,*/
-                                Description = columnDescriptions.ItemOrDefault(column.Field),
-                                Collation = columnCollations.ItemOrDefault(column.Field) == databaseCollation || IsNationalCharacterColumn(column, columnCollations)
-                                    ? null
-                                    : columnCollations.ItemOrDefault(column.Field),
-                                PrimaryKey = columnsInPrimaryKey.Contains(column.Field),
-                                Permissions = tablePermissions?.SubEntityPermissions?.ItemOrDefault(column.Field),
-                                Expression = computedColumns.ItemOrDefault(column.Field)
-                            };
-                        });
+            return await connection
+                .QueryAsync<DescribeOutput>($@"
+describe {tableName.Name}")
+                .ToDictionaryAsync(
+                    column => column.Field,
+                    column => new ColumnDetails
+                    {
+                        Type = NormaliseDataType(column, columnCollations),
+                        Nullable = OptOut.From(column.Null == "YES"),
+                        Default = valueParser.ParseDefault(column.Default),
+                        /*DefaultName = columnDefault == null || columnDefault.IsSystemNamed
+                                ? null
+                                : columnDefault.Name,
+                            SqlDefaultName = columnDefault?.Name,
+                            DefaultObjectId = columnDefault?.ObjectId,*/
+                        Description = columnDescriptions.ItemOrDefault(column.Field),
+                        Collation = columnCollations.ItemOrDefault(column.Field) == databaseCollation || IsNationalCharacterColumn(column, columnCollations)
+                            ? null
+                            : columnCollations.ItemOrDefault(column.Field),
+                        PrimaryKey = columnsInPrimaryKey.Contains(column.Field),
+                        Permissions = tablePermissions?.SubEntityPermissions?.ItemOrDefault(column.Field),
+                        Expression = computedColumns.ItemOrDefault(column.Field)
+                    });
         }
 
         private bool IsNationalCharacterColumn(DescribeOutput column, Dictionary<string, string> columnCollations)

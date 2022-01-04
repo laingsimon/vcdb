@@ -66,7 +66,6 @@ and TABLE_SCHEMA = @databaseName", new { databaseName = options.Database });
                         ForeignKeys = await foreignKeyRepository.GetForeignKeys(connection, tableName)
                     };
                 });
-
         }
     }
 }

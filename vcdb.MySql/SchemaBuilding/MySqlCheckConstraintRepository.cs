@@ -15,7 +15,7 @@ namespace vcdb.MySql.SchemaBuilding
 {
     public class MySqlCheckConstraintRepository : ICheckConstraintRepository
     {
-        internal static readonly Version MinimumSupportedVersion = new Version(8, 0);
+        private static readonly Version MinimumSupportedVersion = new Version(8, 0);
 
         private readonly Version minimumCompatibilityVersion;
         private readonly Options options;
@@ -24,9 +24,9 @@ namespace vcdb.MySql.SchemaBuilding
             DatabaseVersion databaseVersion,
             Options options)
         {
-            this.minimumCompatibilityVersion = databaseVersion.MinimumCompatibilityVersion == null
+            minimumCompatibilityVersion = databaseVersion.MinimumCompatibilityVersion == null
                 ? new Version(0, 0)
-                : new Version(databaseVersion.MinimumCompatibilityVersion.Contains(".") 
+                : new Version(databaseVersion.MinimumCompatibilityVersion.Contains(".")
                     ? databaseVersion.MinimumCompatibilityVersion
                     : databaseVersion.MinimumCompatibilityVersion + ".0");
             this.options = options;
@@ -34,10 +34,10 @@ namespace vcdb.MySql.SchemaBuilding
 
         public async Task<IEnumerable<CheckConstraintDetails>> GetCheckConstraints(DbConnection connection, ObjectName tableName)
         {
-            if (this.minimumCompatibilityVersion < MinimumSupportedVersion)
+            if (minimumCompatibilityVersion < MinimumSupportedVersion)
             {
-                //the information_schema.check_constraints table only exists from versiob 8 of mysql
-                return new CheckConstraintDetails[0];
+                // the information_schema.check_constraints table only exists from version 8 of mysql
+                return Array.Empty<CheckConstraintDetails>();
             }
 
             var checks = await connection.QueryAsync<CheckConstraint>(
@@ -49,11 +49,11 @@ and cc.constraint_name = tc.constraint_name
 and cc.constraint_catalog = tc.constraint_catalog
 where tc.table_schema = @databaseName
 and tc.table_name = @table_name
-and tc.constraint_type = 'CHECK';", 
+and tc.constraint_type = 'CHECK';",
                 new { table_name = tableName.Name, databaseName = options.Database });
 
             return checks
-                .Select(chk => new CheckConstraintDetails 
+                .Select(chk => new CheckConstraintDetails
                 {
                     Check = chk.check_clause.UnwrapDefinition(),
                     ColumnNames = GetColumnNames(chk).ToArray(),
@@ -66,24 +66,21 @@ and tc.constraint_type = 'CHECK';",
                 .ToArray();
         }
 
-        private IEnumerable<string> GetColumnNames(CheckConstraint chk)
+        private static IEnumerable<string> GetColumnNames(CheckConstraint chk)
         {
             if (string.IsNullOrEmpty(chk.check_clause))
-                return new string[0];
+            {
+                return Array.Empty<string>();
+            }
 
             var matches = Regex.Matches(chk.check_clause, @"`(.+?)`");
-            return matches
-                .Cast<Match>()
-                .Select(m => m.Groups[1].Value);
+            return matches.Select(m => m.Groups[1].Value);
         }
 
         private static bool IsSystemNamed(ObjectName tableName, string name)
         {
-            if (string.IsNullOrEmpty(name))
-                return false;
-
-            //Person_chk_1 is the format of a system named check
-            return Regex.IsMatch(name, $@"^{tableName.Name}_chk_\d+$");
+            // Person_chk_1 is the format of a system named check
+            return !string.IsNullOrEmpty(name) && Regex.IsMatch(name, $@"^{tableName.Name}_chk_\d+$");
         }
     }
 }

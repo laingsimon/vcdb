@@ -13,7 +13,7 @@ namespace vcdb.MySql.SchemaBuilding
 {
     public class MySqlUserRepository : IUserRepository
     {
-        private static readonly string[] ExcludedMySqlUserNames = new[]
+        private static readonly string[] ExcludedMySqlUserNames =
         {
             "root@localhost",
             "mysql.session@localhost",
@@ -31,7 +31,7 @@ namespace vcdb.MySql.SchemaBuilding
         public async Task<Dictionary<string, UserDetails>> GetUsers(DbConnection connection)
         {
             var users = await connection.QueryAsync<MySqlUserDetails>(
-                $@"select * from mysql.user",
+                "select * from mysql.user",
                 new { databaseName = options.Database });
 
             return users
@@ -68,7 +68,9 @@ namespace vcdb.MySql.SchemaBuilding
                     return UserType.CertificateAuthority;
                 default:
                     if (user.plugin == "mysql_native_password")
+                    {
                         return UserType.DatabaseAuthority;
+                    }
 
                     throw new NotSupportedException($"Unsure on the UserType for this user {GetUserName(user)}");
             }

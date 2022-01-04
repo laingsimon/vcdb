@@ -15,10 +15,7 @@ namespace vcdb.MySql.SchemaBuilding.Internal
             return Regex.Replace(
                 definition,
                 @"(\(\d+(?:\.\d+)?\))|(\(\'.+?\'\))",
-                match =>
-                {
-                    return match.Value.UnwrapDefinition();
-                });
+                match => match.Value.UnwrapDefinition());
         }
     }
 }

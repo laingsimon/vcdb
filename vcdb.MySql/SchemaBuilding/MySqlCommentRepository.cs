@@ -1,6 +1,7 @@
 ﻿using Dapper;
 using System.Collections.Generic;
 using System.Data.Common;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading.Tasks;
 using vcdb.CommandLine;
@@ -19,7 +20,7 @@ namespace vcdb.MySql.SchemaBuilding
 
         public async Task<Dictionary<string, string>> GetColumnDescriptions(DbConnection connection, ObjectName tableName)
         {
-            var columnComments = await connection.QueryAsync<CommentMapping>($@"
+            var columnComments = await connection.QueryAsync<CommentMapping>(@"
 select COLUMN_NAME as Name, COLUMN_COMMENT as Comment
 from INFORMATION_SCHEMA.COLUMNS
 where TABLE_SCHEMA = @databaseName
@@ -33,7 +34,7 @@ and TABLE_NAME = @tableName", new { databaseName = options.Database, tableName =
 
         public async Task<Dictionary<string, string>> GetForeignKeyDescription(DbConnection connection, ObjectName tableName)
         {
-            var indexComments = await connection.QueryAsync<CommentMapping>($@"
+            var indexComments = await connection.QueryAsync<CommentMapping>(@"
 select COLUMN_NAME as Name, INDEX_COMMENT as Comment
 from INFORMATION_SCHEMA.STATISTICS
 where TABLE_SCHEMA = @databaseName
@@ -48,7 +49,7 @@ and TABLE_NAME = @tableName", new { databaseName = options.Database, tableName =
 
         public async Task<Dictionary<string, string>> GetIndexDescriptions(DbConnection connection, ObjectName tableName)
         {
-            var indexComments = await connection.QueryAsync<CommentMapping>($@"
+            var indexComments = await connection.QueryAsync<CommentMapping>(@"
 select INDEX_NAME as Name, INDEX_COMMENT as Comment
 from INFORMATION_SCHEMA.STATISTICS
 where TABLE_SCHEMA = @databaseName
@@ -68,7 +69,7 @@ and TABLE_NAME = @tableName", new { databaseName = options.Database, tableName =
 
         public async Task<string> GetProcedureDescription(DbConnection connection, ObjectName procedureName)
         {
-            var routineComment = await connection.QuerySingleOrDefaultAsync<string>($@"
+            var routineComment = await connection.QuerySingleOrDefaultAsync<string>(@"
 select ROUTINE_COMMENT
 from INFORMATION_SCHEMA.ROUTINES
 where ROUTINE_SCHEMA = @databaseName
@@ -103,6 +104,8 @@ and TABLE_NAME = @tableName", new { databaseName = options.Database, tableName =
         }
         #endregion
 
+        // ReSharper disable once ClassNeverInstantiated.Local
+        [SuppressMessage("ReSharper", "UnusedAutoPropertyAccessor.Local", Justification = "Dapper sets these properties, as such they're not identified as ever being set")]
         private class CommentMapping
         {
             public string Name { get; set; }

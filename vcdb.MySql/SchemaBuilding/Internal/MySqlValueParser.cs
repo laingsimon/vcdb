@@ -8,16 +8,24 @@ namespace vcdb.MySql.SchemaBuilding.Internal
         public object ParseDefault(string stringDefinition)
         {
             if (string.IsNullOrEmpty(stringDefinition))
+            {
                 return stringDefinition;
+            }
 
             if (stringDefinition.StartsWith("\"") && stringDefinition.EndsWith("\""))
+            {
                 return stringDefinition.Trim('\"');
+            }
 
             if (int.TryParse(stringDefinition, out var intValue))
+            {
                 return intValue;
+            }
 
             if (decimal.TryParse(stringDefinition, out var decimalValue))
+            {
                 return decimalValue;
+            }
 
             return ParseValue(stringDefinition);
         }
