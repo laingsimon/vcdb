@@ -7,6 +7,7 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using vcdb.CommandLine;
 using vcdb.Models;
+using vcdb.MySql.SchemaBuilding.Internal;
 using vcdb.MySql.SchemaBuilding.Models;
 using vcdb.SchemaBuilding;
 

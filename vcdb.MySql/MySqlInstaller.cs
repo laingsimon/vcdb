@@ -2,6 +2,7 @@
 using vcdb.CommandLine;
 using vcdb.DependencyInjection;
 using vcdb.MySql.SchemaBuilding;
+using vcdb.MySql.SchemaBuilding.Internal;
 using vcdb.MySql.Scripting;
 
 namespace vcdb.MySql
@@ -13,6 +14,7 @@ namespace vcdb.MySql
             services.InNamespace<ConnectionFactory>().AddAsSingleton();
             services.InNamespace<MySqlDatabaseRepository>().AddAsSingleton();
             services.InNamespace<MySqlDatabaseScriptBuilder>().AddAsSingleton();
+            services.InNamespace<MySqlValueParser>().AddAsSingleton();
 
             ObjectName.Converter = new ObjectNameConverter(
                 delimiter: ".",

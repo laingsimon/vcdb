@@ -4,6 +4,7 @@ using System.Data.Common;
 using System.Linq;
 using System.Threading.Tasks;
 using vcdb.Models;
+using vcdb.MySql.SchemaBuilding.Internal;
 using vcdb.MySql.SchemaBuilding.Models;
 using vcdb.SchemaBuilding;
 
@@ -14,7 +15,7 @@ namespace vcdb.MySql.SchemaBuilding
         private readonly IDescriptionRepository descriptionRepository;
         private readonly ICollationRepository collationRepository;
         private readonly IPrimaryKeyRepository primaryKeyRepository;
-        private readonly IMySqlComputedColumnRepository computedColumnRepository;
+        private readonly IMySqlGeneratedColumnRepository generatedColumnRepository;
         private readonly IDataTypeParser dataTypeParser;
         private readonly IMySqlValueParser valueParser;
 
@@ -22,14 +23,14 @@ namespace vcdb.MySql.SchemaBuilding
             IDescriptionRepository descriptionRepository,
             ICollationRepository collationRepository,
             IPrimaryKeyRepository primaryKeyRepository,
-            IMySqlComputedColumnRepository computedColumnRepository,
+            IMySqlGeneratedColumnRepository generatedColumnRepository,
             IDataTypeParser dataTypeParser,
             IMySqlValueParser valueParser)
         {
             this.descriptionRepository = descriptionRepository;
             this.collationRepository = collationRepository;
             this.primaryKeyRepository = primaryKeyRepository;
-            this.computedColumnRepository = computedColumnRepository;
+            this.generatedColumnRepository = generatedColumnRepository;
             this.dataTypeParser = dataTypeParser;
             this.valueParser = valueParser;
         }
@@ -40,7 +41,7 @@ namespace vcdb.MySql.SchemaBuilding
             var columnDescriptions = await descriptionRepository.GetColumnDescriptions(connection, tableName);
             var columnCollations = await collationRepository.GetColumnCollations(connection, tableName);
             var columnsInPrimaryKey = await primaryKeyRepository.GetColumnsInPrimaryKey(connection, tableName);
-            var computedColumns = await computedColumnRepository.GetComputedColumns(connection, tableName);
+            var computedColumns = await generatedColumnRepository.GetComputedColumns(connection, tableName);
 
             return await connection.QueryAsync<DescribeOutput>($@"
 describe {tableName.Name}").ToDictionaryAsync(

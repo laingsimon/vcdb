@@ -1,7 +1,7 @@
 ﻿using NUnit.Framework;
-using vcdb.MySql.SchemaBuilding;
+using vcdb.MySql.SchemaBuilding.Internal;
 
-namespace vcdb.MySql.Tests.SchemaBuilding
+namespace vcdb.MySql.Tests.SchemaBuilding.Internal
 {
     [TestFixture]
     public class MySqlValueParserTests

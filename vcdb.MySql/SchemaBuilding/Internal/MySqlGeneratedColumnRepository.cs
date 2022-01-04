@@ -1,18 +1,18 @@
-﻿using Dapper;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Data.Common;
 using System.Linq;
 using System.Threading.Tasks;
+using Dapper;
 using vcdb.CommandLine;
 using vcdb.MySql.SchemaBuilding.Models;
 
-namespace vcdb.MySql.SchemaBuilding
+namespace vcdb.MySql.SchemaBuilding.Internal
 {
-    public class MySqlComputedColumnRepository : IMySqlComputedColumnRepository
+    public class MySqlGeneratedColumnRepository : IMySqlGeneratedColumnRepository
     {
         private readonly Options options;
 
-        public MySqlComputedColumnRepository(Options options)
+        public MySqlGeneratedColumnRepository(Options options)
         {
             this.options = options;
         }

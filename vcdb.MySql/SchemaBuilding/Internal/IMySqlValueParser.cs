@@ -1,4 +1,4 @@
-﻿namespace vcdb.MySql.SchemaBuilding
+﻿namespace vcdb.MySql.SchemaBuilding.Internal
 {
     public interface IMySqlValueParser
     {

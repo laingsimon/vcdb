@@ -2,9 +2,9 @@
 using System.Data.Common;
 using System.Threading.Tasks;
 
-namespace vcdb.MySql.SchemaBuilding
+namespace vcdb.MySql.SchemaBuilding.Internal
 {
-    public interface IMySqlComputedColumnRepository
+    public interface IMySqlGeneratedColumnRepository
     {
         Task<Dictionary<string, string>> GetComputedColumns(DbConnection connection, ObjectName tableName);
     }

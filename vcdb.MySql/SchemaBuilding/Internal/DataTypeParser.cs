@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Text.RegularExpressions;
 
-namespace vcdb.MySql.SchemaBuilding
+namespace vcdb.MySql.SchemaBuilding.Internal
 {
     public class DataTypeParser : IDataTypeParser
     {
